@@ -1,0 +1,16 @@
+{
+  "name": "react-native-codeditor",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.js",
+  "peerDependencies": {
+    "react-native": ">0.30"
+  },
+  "dependencies": {
+    "babel-plugin-inject": "0.0.4",
+    "codemirror-package": "git+https://github.com/burdiuz/js-codemirror-package.git",
+    "event-dispatcher": "git+https://github.com/burdiuz/js-event-dispatcher.git",
+    "messageport-dispatcher": "git+https://github.com/burdiuz/js-messageport-event-dispatcher.git"
+  },
+  "devDependencies": {}
+}

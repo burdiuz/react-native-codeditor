@@ -1,1 +1,1 @@
-# rn-codeeditor-component
+# react-native-codeditor
