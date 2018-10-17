@@ -1,22 +1,16 @@
-/**
- * @flow
- */
-
-'use strict';
 import PropTypes from 'prop-types';
-import { generateEditorHtml, generateInitScript } from './utils';
+import { generateInitScript } from './utils';
 import BaseEditorView from './BaseEditorView';
 import { EditorEvent, EditorResponseEvent } from '../event/EditorEvent';
 
 class CodeEditor extends BaseEditorView {
-
   static propTypes = {
     ...BaseEditorView.propTypes,
     onInitialized: PropTypes.func.isRequired,
     onContentUpdate: PropTypes.func.isRequired,
     onHistorySizeUpdate: PropTypes.func.isRequired,
     modules: PropTypes.arrayOf(PropTypes.string),
-    settings: PropTypes.object,
+    settings: PropTypes.shape({}),
     content: PropTypes.string,
   };
   static defaultProps = {
@@ -44,8 +38,11 @@ class CodeEditor extends BaseEditorView {
 
   initializeWebView() {
     super.initializeWebView();
-    this.dispatcher.addEventListener(EditorResponseEvent.GET_VALUE_RESPONSE, this.onGetValueResponse);
-  };
+    this.dispatcher.addEventListener(
+      EditorResponseEvent.GET_VALUE_RESPONSE,
+      this.onGetValueResponse,
+    );
+  }
 
   readMessageMetaData(meta) {
     super.readMessageMetaData(meta);
@@ -54,13 +51,13 @@ class CodeEditor extends BaseEditorView {
     if (historySize && onHistorySizeUpdate) {
       onHistorySizeUpdate(historySize);
     }
-  };
+  }
 
   onInitialize(content = '') {
     console.log(' SUP onInitialize');
     this.currentContent = content || this.props.content;
     super.onInitialize(this.currentContent);
-  };
+  }
 
   onGetValueResponse = (event) => {
     const content = event.data;
@@ -68,12 +65,14 @@ class CodeEditor extends BaseEditorView {
     this.props.onContentUpdate(content);
   };
 
-  sendUpdatedContent(content, force) {
-    if (force || this.state.initialized && this.currentContent !== content) {
+  sendUpdatedContent(content, force = false) {
+    if (force || (this.state.initialized && this.currentContent !== content)) {
       this.dispatcher.dispatchEvent(EditorEvent.SET_VALUE, content);
+
       if (force) {
         this.dispatcher.dispatchEvent(EditorEvent.HISTORY_CLEAR);
       }
+
       this.currentContent = content;
     }
   }
@@ -82,11 +81,6 @@ class CodeEditor extends BaseEditorView {
     if (this.state.initialized) {
       this.dispatcher.dispatchEvent(EditorEvent.UPDATE_SETTINGS, props);
     }
-  }
-
-  get editorHtml() {
-    const html = generateEditorHtml(this.props.modules);
-    return html;
   }
 
   get editorBaseUrl() {
