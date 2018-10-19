@@ -106,7 +106,6 @@
     "test": "jest --colors",
     "test:watch": "jest --colors --watch",
     "lint-staged": "lint-staged",
-    "precommit": "npm run build && npm run test && npm run lint-staged",
-    "postinstall": "gulp"
+    "precommit": "npm run build && npm run test && npm run lint-staged"
   }
 }
