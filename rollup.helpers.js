@@ -34,6 +34,7 @@ export const cjsConfig = {
     'react',
     'react-native',
     'prop-types',
+    '@actualwave/deferred',
     '@actualwave/event-dispatcher',
     '@actualwave/messageport-dispatcher',
   ],

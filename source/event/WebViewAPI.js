@@ -25,7 +25,7 @@ class MessagePortDummy {
     this.target = target;
   }
 
-  postMessage = (...args) => this.target.postMessage(...args);
+  postMessage = (event) => this.target.postMessage(JSON.stringify(event));
 
   addEventListener = (type, listener) => {
     if (type !== 'message') {
@@ -40,7 +40,7 @@ class MessagePortDummy {
   };
 }
 
-class EditorCommunication extends EditorRequests {
+class WebViewAPI extends EditorRequests {
   webView = null;
 
   dispatcher = null;
@@ -48,23 +48,32 @@ class EditorCommunication extends EditorRequests {
   initialized = false;
 
   constructor({ onInitialized, onHistorySizeUpdate, onLog, onError }) {
-    super((eventType, data = null) => new Request(this.dispatcher, eventType, data));
+    const requiestFactory = (eventType, data = null, responseEventType = '') =>
+      new Request(this.dispatcher, eventType, data, responseEventType);
+
+    super(requiestFactory);
+
     this.handlers = { onInitialized, onHistorySizeUpdate, onLog, onError };
   }
 
-  initialize(webView) {
+  initialize(webView, { content, history, settings } = {}) {
     this.initialized = false;
     this.webView = webView;
+    this.initData = { content, history, settings };
     this.port = new MessagePortDummy(webView);
     this.dispatcher = new MessagePortDispatcher(this.port, null, this.preprocessIncomingMessages);
 
-    this.dispatcher.addEventListener(EditorEvent.INIT, this.webViewInitializeHandler);
+    this.dispatcher.addEventListener(EditorEvent.INITIALIZE, this.webViewInitializeHandler);
     this.dispatcher.addEventListener(EditorEvent.WV_GLOBAL_ERROR, this.webViewGlobalErrorHandler);
     this.dispatcher.addEventListener(EditorEvent.WV_LOG, this.webViewLogHandler);
   }
 
+  /**
+   * @private
+   */
   preprocessIncomingMessages = (event) => {
     const { data: eventData } = event;
+
     if (rawEvents[event.type]) {
       return event;
     }
@@ -81,6 +90,9 @@ class EditorCommunication extends EditorRequests {
     return event;
   };
 
+  /**
+   * @private
+   */
   readMessageMetaData(meta) {
     const { historySize } = meta;
     const { onHistorySizeUpdate } = this.handlers;
@@ -90,21 +102,26 @@ class EditorCommunication extends EditorRequests {
     }
   }
 
-  webViewInitializeHandler = (content = '') => {
-    this.request
-      .dispatch(EditorEvent.HANDSHAKE, {
-        content,
-        //history: ...
-      })
-      .then(this.webViewInitializedHandler);
+  /**
+   * @private
+   */
+  webViewInitializeHandler = () => {
+    this.handshake(this.initData).then(this.webViewInitializedHandler);
   };
 
+  /**
+   * @private
+   */
   webViewInitializedHandler = () => {
     this.initialized = true;
+    this.initData = {};
 
     this.handlers.onInitialized(this);
   };
 
+  /**
+   * @private
+   */
   webViewLogHandler = (event) => {
     const { onLog } = this.handlers;
 
@@ -115,6 +132,9 @@ class EditorCommunication extends EditorRequests {
     onLog(...event.data);
   };
 
+  /**
+   * @private
+   */
   webViewGlobalErrorHandler = (event) => {
     const { onError } = this.handlers;
 
@@ -125,11 +145,16 @@ class EditorCommunication extends EditorRequests {
     onError(composeErrorMessage(event));
   };
 
-  onWebViewMessage = (event) => {
-    const { nativeEvent } = event;
+  addEventListener = (eventType, listener) => this.dispatcher.addEventListener(eventType, listener);
 
-    this.port.callMessageListeners(nativeEvent);
-  };
+  hasEventListener = (eventType) => this.dispatcher.hasEventListener(eventType);
+
+  removeEventListener = (eventType, listener) =>
+    this.dispatcher.removeEventListener(eventType, listener);
+
+  dispatchEvent = (event, data = null) => this.dispatcher.dispatchEvent(event, data);
+
+  onMessage = (event) => this.port.callMessageListeners(event);
 }
 
-export default EditorCommunication;
+export default WebViewAPI;

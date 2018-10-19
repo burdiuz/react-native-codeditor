@@ -5,22 +5,28 @@ class EditorRequests {
     this.requestFactory = requestFactory;
   }
 
-  dispatch = (eventType, data = null) =>
-    this.requestFactory(eventType, data).then((event) => event && event.data);
+  sendRequest = (eventType, data = null, responseEventType = '') =>
+    this.requestFactory(eventType, data, responseEventType).then((event) => event && event.data);
 
-  setValue = (data) => this.dispatch(EditorEvent.SET_VALUE, data);
+  handshake = (data) => this.sendRequest(EditorEvent.HANDSHAKE, data, EditorEvent.INITIALIZED);
 
-  getValue = (data) => this.dispatch(EditorEvent.GET_VALUE, data);
+  setValue = (data) => this.sendRequest(EditorEvent.SET_VALUE, data);
 
-  historyUndo = (data) => this.dispatch(EditorEvent.HISTORY_UNDO, data);
+  getValue = (data) => this.sendRequest(EditorEvent.GET_VALUE, data);
 
-  historyRedo = (data) => this.dispatch(EditorEvent.HISTORY_REDO, data);
+  historyUndo = (data) => this.sendRequest(EditorEvent.HISTORY_UNDO, data);
 
-  historyClear = (data) => this.dispatch(EditorEvent.HISTORY_CLEAR, data);
+  historyRedo = (data) => this.sendRequest(EditorEvent.HISTORY_REDO, data);
 
-  historySize = (data) => this.dispatch(EditorEvent.HISTORY_SIZE, data);
+  historyClear = (data) => this.sendRequest(EditorEvent.HISTORY_CLEAR, data);
 
-  scrollToCursor = (margin) => this.dispatch(EditorEvent.SCROLL_TO_CURSOR, margin);
+  historySize = (data) => this.sendRequest(EditorEvent.HISTORY_SIZE, data);
+
+  scrollToCursor = (margin) => this.sendRequest(EditorEvent.SCROLL_TO_CURSOR, margin);
+
+  updateSettings = (settings) => this.sendRequest(EditorEvent.UPDATE_SETTINGS, settings);
+
+  execCommand = (command, ...args) => this.sendRequest(EditorEvent.EXEC_COMMAND, { command, args });
 }
 
 export default EditorRequests;

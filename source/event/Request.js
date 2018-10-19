@@ -2,9 +2,11 @@ import { getResponseEvent } from './EditorEvent';
 import ResponseListener from './ResponseListener';
 
 class Request {
-  constructor(dispatcher, eventType, data = null) {
-    this.response = new ResponseListener(dispatcher, getResponseEvent(eventType));
-    this.promise = this.response.promise;
+  constructor(dispatcher, eventType, data = null, responseEventType = '') {
+    this.response = new ResponseListener(
+      dispatcher,
+      responseEventType || getResponseEvent(eventType),
+    );
     dispatcher.dispatchEvent(eventType, data);
   }
 
@@ -13,11 +15,11 @@ class Request {
   }
 
   then(handler) {
-    return this.promise.then(handler);
+    return this.response.then(handler);
   }
 
   catch(handler) {
-    return this.promise.catch(handler);
+    return this.response.catch(handler);
   }
 
   cancel() {
@@ -27,7 +29,6 @@ class Request {
   dispose() {
     this.response.dispose();
     this.response = null;
-    this.promise = null;
   }
 }
 

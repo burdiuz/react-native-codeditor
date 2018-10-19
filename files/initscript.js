@@ -5,7 +5,7 @@ let editor = null;
 
 const augmentData = (data) => ({
   meta: {
-    historySize: editor ? editor.historySize() : 0,
+    historySize: editor ? editor.historySize() : null,
   },
   data,
 });
@@ -17,8 +17,7 @@ const augmentEvent = ({ type, data }) => ({
 
 const dispatcherTarget = {
   postMessage: (data) => {
-    console.log('POST:', typeof data, data);
-    window.postMessage(data, '*');
+    window.postMessage(JSON.stringify(data));
   },
   addEventListener: (eventType, listener) => {
     document.addEventListener(eventType, listener);
@@ -61,10 +60,15 @@ const listenForAPIEvent = (type, handler, responseType) =>
     }
   });
 
+const setEditorSettings = (settings) =>
+  Object.keys(settings).forEach((key) => {
+    editor.setOption(key, settings[key]);
+  });
+
 /**
  * Initialize all API event listeners
  */
-const initEventListeners = () => {
+const initEventListeners = (autoUpdateInterval) => {
   listenForAPIEvent('setValue', (event) => {
     editor.setValue(event.data);
   });
@@ -73,6 +77,10 @@ const initEventListeners = () => {
 
   listenForAPIEvent('historyUndo', () => {
     editor.undo();
+  });
+
+  listenForAPIEvent('execCommand', ({ data: { command, args = [] } }) => {
+    editor.execCommand(command, ...args);
   });
 
   listenForAPIEvent('historyRedo', () => {
@@ -100,9 +108,7 @@ const initEventListeners = () => {
   listenForAPIEvent('updateSettings', (event) => {
     const settings = event.data;
 
-    Object.keys(settings).forEach((key) => {
-      editor.setOption(key, settings[key]);
-    });
+    setEditorSettings(settings);
   });
 
   listenForAPIEvent(
@@ -114,27 +120,48 @@ const initEventListeners = () => {
         return;
       }
 
-      const { content = '', history } = data;
+      const { content = '', history, settings } = data;
+
       editor.setValue(content);
+
       if (history) {
         editor.setHistory(history);
       } else {
         editor.clearHistory();
       }
+
+      if (settings) {
+        setEditorSettings(settings);
+      }
     },
     'initialized',
   );
+
+  let waitingForUpdate = false;
+
+  if (autoUpdateInterval) {
+    editor.on('change', () => {
+      if (!waitingForUpdate) {
+        waitingForUpdate = true;
+
+        setTimeout(() => {
+          waitingForUpdate = false;
+          dispatcher.dispatchEvent('autoUpdate', editor.getValue());
+        }, autoUpdateInterval);
+      }
+    });
+  }
 };
 
 /**
  * Entry point of WebView code editor, inits API and starts handshake
  * @param {*} settings
  */
-const runEditor = (settings) => {
-  initEventListeners();
-
+const runEditor = (settings, autoUpdateInterval = 0) => {
   editor = new CodeMirror(document.body, settings);
   editor.setSize('100%', '100%');
+
+  initEventListeners(autoUpdateInterval);
 
   _initializeId = setInterval(() => dispatcher.dispatchEvent('initialize'), 500);
 };

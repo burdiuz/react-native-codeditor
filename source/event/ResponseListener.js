@@ -35,11 +35,11 @@ class ResponseListener {
   };
 
   then(handler) {
-    return this.promise.then(handler);
+    return this.deferred.promise.then(handler);
   }
 
   catch(handler) {
-    return this.promise.catch(handler);
+    return this.deferred.promise.catch(handler);
   }
 
   dispose = () => {

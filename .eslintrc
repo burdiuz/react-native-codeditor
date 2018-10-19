@@ -46,6 +46,7 @@
     "no-bitwise": 0,
     "max-len": ["error", { "code": 120 }],
     "implicit-arrow-linebreak": 0,
-    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }]
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+    "react/sort-comp": 0
   }
 }
