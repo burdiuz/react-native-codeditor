@@ -8,7 +8,7 @@ import CodeEditor from '@actualwave/react-native-codeditor';
 
 export default () => (
   <CodeEditor
-    onInitialized={(api) => console.log('Initialized:', api)}
+    onInitialized={(api) => console.log('Initialized!')}
     onHistorySizeUpdate={(size) => console.log('History Size Update:', size)}
     onLog={(content) => console.log('Log:', content)}
     onError={(content) => console.log('Error:', content)}
