@@ -12,6 +12,8 @@ export const EditorEvent = {
   AUTO_UPDATE: 'autoUpdate',
   SET_VALUE: 'setValue',
   GET_VALUE: 'getValue',
+  GET_SELECTION: 'getSelection',
+  REPLACE_SELECTION: 'replaceSelection',
   HISTORY_UNDO: 'historyUndo',
   HISTORY_REDO: 'historyRedo',
   HISTORY_CLEAR: 'historyClear',

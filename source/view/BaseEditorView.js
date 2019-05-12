@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { View, WebView } from 'react-native';
+import { View } from 'react-native';
+import { WebView } from 'react-native-webview';
 import PropTypes from 'prop-types';
 import WebViewEditor from '../assets/webview';
 import WebViewAPI from '../event/WebViewAPI';
@@ -49,8 +50,8 @@ class BaseEditorView extends Component {
 
   webView = null;
 
-  constructor(props, ...args) {
-    super(props, ...args);
+  constructor(props) {
+    super(props);
 
     this.editor = new WebViewEditor(props.theme, props.modules);
 

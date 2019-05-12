@@ -14,6 +14,10 @@ class EditorRequests {
 
   getValue = (data) => this.sendRequest(EditorEvent.GET_VALUE, data);
 
+  getSelection = (data) => this.sendRequest(EditorEvent.GET_SELECTION, data);
+
+  replaceSelection = (data) => this.sendRequest(EditorEvent.REPLACE_SELECTION, data);
+
   historyUndo = (data) => this.sendRequest(EditorEvent.HISTORY_UNDO, data);
 
   historyRedo = (data) => this.sendRequest(EditorEvent.HISTORY_REDO, data);

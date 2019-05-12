@@ -25,7 +25,21 @@ class MessagePortDummy {
     this.target = target;
   }
 
-  postMessage = (event) => this.target.postMessage(JSON.stringify(event));
+  // original implementation using WebView.postMessage
+  // postMessage = (event) => this.target.postMessage(JSON.stringify(event));
+
+  postMessage = (event) => {
+    const eventStr = JSON.stringify(event);
+    this.target.injectJavaScript(`(
+      (target, data) => {
+        const e = new CustomEvent('message');
+        e.data = data;
+        target.dispatchEvent(e);
+
+        console.log(target, e);
+      }
+    )(window, ${JSON.stringify(eventStr)})`);
+  };
 
   addEventListener = (type, listener) => {
     if (type !== 'message') {
