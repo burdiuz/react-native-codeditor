@@ -12,6 +12,7 @@ export const EditorEvent = {
   AUTO_UPDATE: 'autoUpdate',
   SET_VALUE: 'setValue',
   GET_VALUE: 'getValue',
+  RESET_VALUE: 'resetValue',
   GET_SELECTION: 'getSelection',
   REPLACE_SELECTION: 'replaceSelection',
   HISTORY_UNDO: 'historyUndo',

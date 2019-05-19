@@ -17,7 +17,7 @@ const augmentEvent = ({ type, data }) => ({
 
 const dispatcherTarget = {
   postMessage: (data) => {
-    window.postMessage(JSON.stringify(data));
+    window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify(data));
   },
   addEventListener: (eventType, listener) => {
     document.addEventListener(eventType, listener);
@@ -74,6 +74,15 @@ const initEventListeners = (autoUpdateInterval) => {
   });
 
   listenForAPIEvent('getValue', () => editor.getValue());
+
+  listenForAPIEvent('resetValue', (event) => {
+    editor.setValue(event.data);
+    editor.clearHistory();
+  });
+
+  listenForAPIEvent('getSelection', () => editor.getSelection());
+
+  listenForAPIEvent('replaceSelection', (event) => editor.replaceSelection(event.data));
 
   listenForAPIEvent('historyUndo', () => {
     editor.undo();
