@@ -16,6 +16,8 @@ class EditorRequests {
 
   resetValue = (data) => this.sendRequest(EditorEvent.RESET_VALUE, data);
 
+  focus = (data) => this.sendRequest(EditorEvent.FOCUS, data);
+
   getSelection = (data) => this.sendRequest(EditorEvent.GET_SELECTION, data);
 
   replaceSelection = (data) => this.sendRequest(EditorEvent.REPLACE_SELECTION, data);

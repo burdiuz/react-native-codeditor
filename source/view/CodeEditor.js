@@ -14,7 +14,7 @@ class CodeEditor extends BaseEditorView {
 
   currentContent = '';
 
-  componentWillMount() {
+  componentDidMount() {
     const { settings, modules } = this.props;
 
     // FIXME Add a way to reset theme and modules, cache resulting string to not re-generate HTML
@@ -23,13 +23,19 @@ class CodeEditor extends BaseEditorView {
     this.sendUpdatedSettings(settings);
   }
 
-  componentWillReceiveProps(props) {
-    const { content, settings } = props;
+  componentDidUpdate(oldProps) {
+    const { content: oldContent, settings: oldSettings } = oldProps;
+    const { content, settings } = this.props;
 
-    super.componentWillReceiveProps(props);
+    super.componentDidUpdate(oldProps);
 
-    this.sendUpdatedContent(content);
-    this.sendUpdatedSettings(settings);
+    if (oldContent !== content) {
+      this.sendUpdatedContent(content);
+    }
+
+    if (oldSettings !== settings) {
+      this.sendUpdatedSettings(settings);
+    }
   }
 
   shouldComponentUpdate(nextProps, nextState) {

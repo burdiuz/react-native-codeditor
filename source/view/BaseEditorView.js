@@ -69,14 +69,14 @@ class BaseEditorView extends Component {
     });
   }
 
-  componentWillReceiveProps({ theme: newTheme, modules: newModules, settings: newSettings }) {
+  componentDidUpdate({ theme: oldTheme, modules: oldModules, settings: oldSettings }) {
     const { theme, modules, settings } = this.props;
 
-    if (newTheme !== theme || newModules !== modules) {
+    if (oldTheme !== theme || oldModules !== modules) {
       this.updateEditorHtml();
     }
 
-    if (newTheme !== theme || newSettings !== settings) {
+    if (oldTheme !== theme || oldSettings !== settings) {
       this.updateInitScript();
     }
   }

@@ -80,6 +80,8 @@ const initEventListeners = (autoUpdateInterval) => {
     editor.clearHistory();
   });
 
+  listenForAPIEvent('focus', () => editor.focus());
+
   listenForAPIEvent('getSelection', () => editor.getSelection());
 
   listenForAPIEvent('replaceSelection', (event) => editor.replaceSelection(event.data));

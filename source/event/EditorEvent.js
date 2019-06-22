@@ -13,6 +13,7 @@ export const EditorEvent = {
   SET_VALUE: 'setValue',
   GET_VALUE: 'getValue',
   RESET_VALUE: 'resetValue',
+  FOCUS: 'focus',
   GET_SELECTION: 'getSelection',
   REPLACE_SELECTION: 'replaceSelection',
   HISTORY_UNDO: 'historyUndo',
