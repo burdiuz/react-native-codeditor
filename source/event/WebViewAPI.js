@@ -35,8 +35,6 @@ class MessagePortDummy {
         const e = new CustomEvent('message');
         e.data = data;
         target.dispatchEvent(e);
-
-        console.log(target, e);
       }
     )(window, ${JSON.stringify(eventStr)})`);
   };
