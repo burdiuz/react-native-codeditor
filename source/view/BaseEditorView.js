@@ -1,11 +1,18 @@
 import React, { Component } from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 import PropTypes from 'prop-types';
 import WebViewEditor from '../assets/webview';
 import WebViewAPI from '../event/WebViewAPI';
 import BlockingView from './BlockingView';
 import { generateInitScript } from './utils';
+
+const styles = StyleSheet.create({
+  container: { position: 'relative', flex: 1 },
+  webView: { flex: 1 },
+});
+
+const WHITELIST = [];
 
 class BaseEditorView extends Component {
   static propTypes = {
@@ -55,10 +62,19 @@ class BaseEditorView extends Component {
 
     this.editor = new WebViewEditor(props.theme, props.modules);
 
+    this.baseUrlHref = 'https://actualwave.com/react-native-codeditor';
+    this.baseUrlIndex = 0;
+    this.updateBaseUrl();
+
+    const { settings, theme, content, autoUpdateInterval } = props;
+
     this.state = {
       initialized: false,
-      html: this.editor.toString(),
-      initScript: generateInitScript(props.settings, props.theme, props.autoUpdateInterval),
+      source: {
+        html: this.editor.toString(),
+        baseUrl: this.editorBaseUrl,
+      },
+      initScript: generateInitScript(settings, theme, content, autoUpdateInterval),
     };
 
     this.api = new WebViewAPI({
@@ -67,6 +83,10 @@ class BaseEditorView extends Component {
       onLog: (log) => this.onWebViewLog(log),
       onError: (error) => this.onWebViewGlobalError(error),
     });
+  }
+
+  updateBaseUrl() {
+    this.baseUrl = `${this.baseUrlHref}/${++this.baseUrlIndex}`;
   }
 
   componentDidUpdate({ theme: oldTheme, modules: oldModules, settings: oldSettings }) {
@@ -85,15 +105,26 @@ class BaseEditorView extends Component {
     this.editor.setTheme(theme);
     this.editor.resetModules([...modules]);
 
-    this.setState({ html: this.editor.toString() });
+    const html = this.editor.toString();
+
+    this.setState({
+      source: {
+        html,
+        baseUrl: this.editorBaseUrl,
+      },
+      initialized: false,
+    });
   }
 
-  updateInitScript({ settings, theme, autoUpdateInterval } = this.props) {
-    this.setState({ initScript: generateInitScript(settings, theme, autoUpdateInterval) });
+  updateInitScript({ settings, theme, content, autoUpdateInterval } = this.props) {
+    this.setState({
+      initScript: generateInitScript(settings, theme, content, autoUpdateInterval),
+      initialized: false,
+    });
   }
 
   get editorBaseUrl() {
-    return 'https://actualwave.com/';
+    return this.baseUrl;
   }
 
   onWebViewInitialized(api) {
@@ -145,23 +176,22 @@ class BaseEditorView extends Component {
     return null;
   }
 
+  handleLoadError = (...args) => console.log('WebView Load Error:', ...args);
+
   render() {
-    const { html, initScript } = this.state;
+    const { initScript, source } = this.state;
 
     return (
-      <View style={{ position: 'relative', flex: 1 }}>
+      <View style={styles.container}>
         <WebView
           ref={this.handleWebViewReference}
           onMessage={this.api.onMessage}
-          onError={(...args) => console.log('WebView Load Error:', ...args)}
-          source={{
-            html,
-            baseUrl: this.editorBaseUrl,
-          }}
+          onError={this.handleLoadError}
+          source={this.state.source}
           injectedJavaScript={initScript}
-          style={{ flex: 1 }}
+          style={styles.webView}
           javaScriptEnabled
-          originWhitelist={[]}
+          originWhitelist={WHITELIST}
         />
         {this.renderBlockingView()}
       </View>

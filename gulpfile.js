@@ -50,5 +50,7 @@ const createBundle = (files) =>
     fs.writeFileSync('./source/assets/webview_bundle.json', JSON.stringify(data, null, 2));
   });
 
-gulp.task('webview', () => createBundle(sourceFiles));
-gulp.task('default', ['webview']);
+const webview = () => createBundle(sourceFiles);
+
+exports.webview = webview;
+exports.default = gulp.series(webview);

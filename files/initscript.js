@@ -28,10 +28,15 @@ const dispatcherTarget = {
 const dispatcher = createMessagePortDispatcher(dispatcherTarget, null, null, augmentEvent);
 
 window.onerror = (message, source, lineno, colno, error) => {
-  const data = { message: String(message), source, lineno, colno };
+  const data = {
+    message: message || !error ? String(message) : error.message,
+    source,
+    lineno,
+    colno,
+  };
 
   if (error) {
-    data.error = Object.assign({}, error);
+    data.error = Object.assign({ message: message }, error);
   }
 
   dispatcher.dispatchEvent('wvGlobalError', data);
@@ -70,7 +75,12 @@ const setEditorSettings = (settings) =>
  */
 const initEventListeners = (autoUpdateInterval) => {
   listenForAPIEvent('setValue', (event) => {
-    editor.setValue(event.data);
+    const newValue = event.data || '';
+    const currentValue = editor.getValue();
+
+    if (newValue !== currentValue) {
+      editor.setValue(newValue);
+    }
   });
 
   listenForAPIEvent('getValue', () => editor.getValue());
@@ -82,9 +92,21 @@ const initEventListeners = (autoUpdateInterval) => {
 
   listenForAPIEvent('focus', () => editor.focus());
 
+  listenForAPIEvent('getCursor', ({ data }) => editor.getCursor(data));
+
+  listenForAPIEvent('setCursor', ({ data: { line, ch, options } }) =>
+    editor.setCursor(line, ch, options),
+  );
+
   listenForAPIEvent('getSelection', () => editor.getSelection());
 
+  listenForAPIEvent('setSelection', ({ data: { anchor, head, options } }) =>
+    editor.setSelection(anchor, head, options),
+  );
+
   listenForAPIEvent('replaceSelection', (event) => editor.replaceSelection(event.data));
+
+  listenForAPIEvent('cancelSelection', (event) => editor.setSelection(editor.getCursor('head')));
 
   listenForAPIEvent('historyUndo', () => {
     editor.undo();

@@ -38,8 +38,13 @@ class CodeEditor extends BaseEditorView {
     }
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    return this.state.initialized !== nextState.initialized;
+  shouldComponentUpdate({ settings, modules, theme }, { initialized, source, initScript }) {
+    return (
+      this.state.initialized !== initialized ||
+      this.props.settings !== settings ||
+      this.props.modules !== modules ||
+      this.state.theme !== theme
+    );
   }
 
   onWebViewInitialized(api) {

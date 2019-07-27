@@ -5,15 +5,18 @@ const DEFAULT_SETTINGS = {
   styleActiveLine: true,
 };
 
-export const generateInitScript = (editorSettings, theme = '', autoUpdateInterval = 1000) => {
+export const generateInitScript = (
+  editorSettings = {},
+  theme,
+  content,
+  autoUpdateInterval = 1000,
+) => {
   const settings = {
     ...DEFAULT_SETTINGS,
     ...editorSettings,
+    theme,
+    value: content,
   };
-
-  if (theme) {
-    settings.theme = theme;
-  }
 
   return `
 (function () {

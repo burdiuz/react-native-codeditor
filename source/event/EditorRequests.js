@@ -18,9 +18,19 @@ class EditorRequests {
 
   focus = (data) => this.sendRequest(EditorEvent.FOCUS, data);
 
+  getCursor = (data) => this.sendRequest(EditorEvent.GET_CURSOR, data);
+
+  setCursor = (line, ch, options) =>
+    this.sendRequest(EditorEvent.SET_CURSOR, { line, ch, options });
+
   getSelection = (data) => this.sendRequest(EditorEvent.GET_SELECTION, data);
 
+  setSelection = (anchor, head, options) =>
+    this.sendRequest(EditorEvent.SET_SELECTION, { anchor, head, options });
+
   replaceSelection = (data) => this.sendRequest(EditorEvent.REPLACE_SELECTION, data);
+
+  cancelSelection = () => this.sendRequest(EditorEvent.CANCEL_SELECTION);
 
   historyUndo = (data) => this.sendRequest(EditorEvent.HISTORY_UNDO, data);
 
