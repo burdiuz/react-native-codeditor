@@ -10,6 +10,15 @@ class EditorRequests {
 
   handshake = (data) => this.sendRequest(EditorEvent.HANDSHAKE, data, EditorEvent.INITIALIZED);
 
+  setViewport = ({ maximumScale, minimumScale, intialScale, userScalable, viewportWidth }) =>
+    this.sendRequest(EditorEvent.SET_VIEWPORT, {
+      maximumScale,
+      minimumScale,
+      intialScale,
+      userScalable,
+      viewportWidth,
+    });
+
   setValue = (data) => this.sendRequest(EditorEvent.SET_VALUE, data);
 
   getValue = (data) => this.sendRequest(EditorEvent.GET_VALUE, data);

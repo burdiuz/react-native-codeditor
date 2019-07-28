@@ -10,6 +10,10 @@ export const EditorEvent = {
 
   // If autoUpdateInterval > 0, then WebView will send "autoUpdate" in intervals event after changes to Editor content made
   AUTO_UPDATE: 'autoUpdate',
+
+  // Apply viewport settings for scaling content
+  SET_VIEWPORT: 'setViewport',
+  
   SET_VALUE: 'setValue',
   GET_VALUE: 'getValue',
   RESET_VALUE: 'resetValue',

@@ -9,6 +9,7 @@ export const generateInitScript = (
   editorSettings = {},
   theme,
   content,
+  viewportScaling,
   autoUpdateInterval = 1000,
 ) => {
   const settings = {
@@ -20,6 +21,7 @@ export const generateInitScript = (
 
   return `
 (function () {
+  setViewport(${JSON.stringify(viewportScaling, null, 2)});
   runEditor(${JSON.stringify(settings, null, 2)}, ${
     autoUpdateInterval > 0 ? autoUpdateInterval : 0
   });

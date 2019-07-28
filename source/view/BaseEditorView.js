@@ -26,6 +26,7 @@ class BaseEditorView extends Component {
     modules: PropTypes.arrayOf(PropTypes.string),
     content: PropTypes.string,
     settings: PropTypes.shape({}),
+    viewport: PropTypes.shape({}),
   };
 
   static defaultProps = {
@@ -36,6 +37,7 @@ class BaseEditorView extends Component {
       inputStyle: 'contenteditable',
       styleActiveLine: true,
     },
+    viewport: {},
     modules: [
       'addon/fold/foldgutter',
       'addon/edit/matchbrackets',
@@ -66,7 +68,7 @@ class BaseEditorView extends Component {
     this.baseUrlIndex = 0;
     this.updateBaseUrl();
 
-    const { settings, theme, content, autoUpdateInterval } = props;
+    const { settings, theme, content, viewport, autoUpdateInterval } = props;
 
     this.state = {
       initialized: false,
@@ -74,7 +76,7 @@ class BaseEditorView extends Component {
         html: this.editor.toString(),
         baseUrl: this.editorBaseUrl,
       },
-      initScript: generateInitScript(settings, theme, content, autoUpdateInterval),
+      initScript: generateInitScript(settings, theme, content, viewport, autoUpdateInterval),
     };
 
     this.api = new WebViewAPI({
@@ -89,14 +91,19 @@ class BaseEditorView extends Component {
     this.baseUrl = `${this.baseUrlHref}/${++this.baseUrlIndex}`;
   }
 
-  componentDidUpdate({ theme: oldTheme, modules: oldModules, settings: oldSettings }) {
-    const { theme, modules, settings } = this.props;
+  componentDidUpdate({
+    theme: oldTheme,
+    modules: oldModules,
+    settings: oldSettings,
+    viewport: oldViewport,
+  }) {
+    const { theme, modules, settings, viewport } = this.props;
 
     if (oldTheme !== theme || oldModules !== modules) {
       this.updateEditorHtml();
     }
 
-    if (oldTheme !== theme || oldSettings !== settings) {
+    if (oldTheme !== theme || oldSettings !== settings || oldViewport !== viewport) {
       this.updateInitScript();
     }
   }
@@ -116,9 +123,9 @@ class BaseEditorView extends Component {
     });
   }
 
-  updateInitScript({ settings, theme, content, autoUpdateInterval } = this.props) {
+  updateInitScript({ settings, theme, content, viewport, autoUpdateInterval } = this.props) {
     this.setState({
-      initScript: generateInitScript(settings, theme, content, autoUpdateInterval),
+      initScript: generateInitScript(settings, theme, content, viewport, autoUpdateInterval),
       initialized: false,
     });
   }

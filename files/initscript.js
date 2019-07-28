@@ -3,6 +3,52 @@ const { createMessagePortDispatcher } = MessagePortDispatcher;
 let _initializeId;
 let editor = null;
 
+const generateViewportParamsString = (intial, scalable, width, max, min) => {
+  const params = {
+    width,
+    'initial-scale': intial,
+    'maximum-scale': max,
+    'minimum-scale': min,
+    'user-scalable': scalable ? 'yes' : 'no',
+  };
+
+  return Object.keys(params)
+    .filter((name) => params[name] !== undefined)
+    .map((name) => `${name}=${params[name]}`)
+    .join(', ');
+};
+
+const setViewportParams = (
+  intial = 1,
+  scalable = true,
+  width = 'device-width',
+  max = undefined,
+  min = undefined,
+) => {
+  const content = generateViewportParamsString(intial, scalable, width, max, min);
+  let meta = document.querySelector('meta[name="viewport"]');
+
+  if (meta) {
+    meta.setAttribute('content', content);
+  } else {
+    meta = document.createElement('meta');
+    meta.setAttribute('name', 'viewport');
+    meta.setAttribute('content', content);
+    document.querySelector('head').prepend(meta);
+  }
+};
+
+/*
+  Set viewport scaling options
+*/
+const setViewport = ({
+  intialScale,
+  userScalable,
+  viewportWidth,
+  maximumScale,
+  minimumScale,
+} = {}) => setViewportParams(intialScale, userScalable, viewportWidth, maximumScale, minimumScale);
+
 const augmentData = (data) => ({
   meta: {
     historySize: editor ? editor.historySize() : null,
@@ -74,6 +120,10 @@ const setEditorSettings = (settings) =>
  * Initialize all API event listeners
  */
 const initEventListeners = (autoUpdateInterval) => {
+  listenForAPIEvent('setViewport', (event) => {
+    setViewport(event.data || {});
+  });
+
   listenForAPIEvent('setValue', (event) => {
     const newValue = event.data || '';
     const currentValue = editor.getValue();

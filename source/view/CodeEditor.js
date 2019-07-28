@@ -15,19 +15,28 @@ class CodeEditor extends BaseEditorView {
   currentContent = '';
 
   componentDidMount() {
-    const { settings, modules } = this.props;
+    const { settings, modules, theme } = this.props;
 
-    // FIXME Add a way to reset theme and modules, cache resulting string to not re-generate HTML
-    this.editor.modules = modules;
+    this.editor.setTheme(theme);
+    this.editor.resetModules(modules);
 
     this.sendUpdatedSettings(settings);
   }
 
   componentDidUpdate(oldProps) {
-    const { content: oldContent, settings: oldSettings } = oldProps;
-    const { content, settings } = this.props;
+    const {
+      content: oldContent,
+      modules: oldModules,
+      theme: oldTheme,
+      settings: oldSettings,
+      viewport: oldViewport,
+    } = oldProps;
+    const { content, theme, modules, settings, viewport } = this.props;
 
-    super.componentDidUpdate(oldProps);
+    if (oldTheme !== theme || oldModules !== modules) {
+      this.updateEditorHtml();
+      this.updateInitScript();
+    }
 
     if (oldContent !== content) {
       this.sendUpdatedContent(content);
@@ -36,22 +45,32 @@ class CodeEditor extends BaseEditorView {
     if (oldSettings !== settings) {
       this.sendUpdatedSettings(settings);
     }
+
+    if (oldViewport !== viewport) {
+      this.sendUpdatedViewport(viewport);
+    }
   }
 
-  shouldComponentUpdate({ settings, modules, theme }, { initialized, source, initScript }) {
+  shouldComponentUpdate(
+    { settings, modules, theme, viewport },
+    { initialized, source, initScript },
+  ) {
     return (
       this.state.initialized !== initialized ||
       this.props.settings !== settings ||
+      this.props.viewport !== viewport ||
       this.props.modules !== modules ||
       this.state.theme !== theme
     );
   }
 
   onWebViewInitialized(api) {
+    const { viewport, settings, content } = this.props;
     super.onWebViewInitialized(api);
 
-    this.sendUpdatedContent(this.props.content);
-    this.sendUpdatedSettings(this.props.settings);
+    this.sendUpdatedViewport(viewport);
+    this.sendUpdatedSettings(settings);
+    this.sendUpdatedContent(content);
 
     this.api.addEventListener(getResponseEvent(EditorEvent.GET_VALUE), this.onGetValueResponse);
     this.api.addEventListener(EditorEvent.AUTO_UPDATE, this.onGetValueResponse);
@@ -83,6 +102,12 @@ class CodeEditor extends BaseEditorView {
   sendUpdatedSettings(settings) {
     if (this.state.initialized) {
       this.api.updateSettings(settings);
+    }
+  }
+
+  sendUpdatedViewport(viewport) {
+    if (this.state.initialized) {
+      this.api.setViewport(viewport);
     }
   }
 }
