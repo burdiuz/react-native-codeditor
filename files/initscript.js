@@ -136,7 +136,13 @@ const initEventListeners = (autoUpdateInterval) => {
   listenForAPIEvent('getValue', () => editor.getValue());
 
   listenForAPIEvent('resetValue', (event) => {
-    editor.setValue(event.data);
+    const newValue = event.data || '';
+    const currentValue = editor.getValue();
+
+    if (newValue !== currentValue) {
+      editor.setValue(newValue);
+    }
+
     editor.clearHistory();
   });
 
@@ -194,31 +200,7 @@ const initEventListeners = (autoUpdateInterval) => {
     setEditorSettings(settings);
   });
 
-  listenForAPIEvent(
-    'handshake',
-    ({ data }) => {
-      clearInterval(_initializeId);
-
-      if (!data) {
-        return;
-      }
-
-      const { content = '', history, settings } = data;
-
-      editor.setValue(content);
-
-      if (history) {
-        editor.setHistory(history);
-      } else {
-        editor.clearHistory();
-      }
-
-      if (settings) {
-        setEditorSettings(settings);
-      }
-    },
-    'initialized',
-  );
+  listenForAPIEvent('handshake', () => clearInterval(_initializeId), 'initialized');
 
   let waitingForUpdate = false;
 

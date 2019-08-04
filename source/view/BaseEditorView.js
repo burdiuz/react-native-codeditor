@@ -145,7 +145,7 @@ class BaseEditorView extends Component {
   onWebViewLog(log) {
     const { onLog } = this.props;
 
-    onLog(log);
+    onLog(...log);
   }
 
   onWebViewGlobalError(error) {

@@ -6,13 +6,15 @@ class CodeEditor extends BaseEditorView {
   static propTypes = {
     ...BaseEditorView.propTypes,
     onContentUpdate: PropTypes.func.isRequired,
+    forceUpdates: PropTypes.bool,
   };
 
   static defaultProps = {
     ...BaseEditorView.defaultProps,
+    forceUpdates: false,
   };
 
-  currentContent = '';
+  currentContent = this.props.content;
 
   componentDidMount() {
     const { settings, modules, theme } = this.props;
@@ -65,20 +67,17 @@ class CodeEditor extends BaseEditorView {
   }
 
   onWebViewInitialized(api) {
-    const { viewport, settings, content } = this.props;
+    const { forceUpdates, viewport, settings, content } = this.props;
     super.onWebViewInitialized(api);
 
-    this.sendUpdatedViewport(viewport);
-    this.sendUpdatedSettings(settings);
-    this.sendUpdatedContent(content);
+    if (forceUpdates) {
+      this.sendUpdatedViewport(viewport);
+      this.sendUpdatedSettings(settings);
+      this.sendUpdatedContent(this.currentContent, true);
+    }
 
     this.api.addEventListener(getResponseEvent(EditorEvent.GET_VALUE), this.onGetValueResponse);
     this.api.addEventListener(EditorEvent.AUTO_UPDATE, this.onGetValueResponse);
-  }
-
-  onInitialize(content = '') {
-    this.currentContent = content || this.props.content;
-    super.onInitialize(this.currentContent);
   }
 
   onGetValueResponse = (event) => {

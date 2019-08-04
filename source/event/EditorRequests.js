@@ -41,6 +41,10 @@ class EditorRequests {
 
   cancelSelection = () => this.sendRequest(EditorEvent.CANCEL_SELECTION);
 
+  historyRead = () => this.sendRequest(EditorEvent.HISTORY_READ);
+
+  historyWrite = (data) => this.sendRequest(EditorEvent.HISTORY_WRITE, data);
+
   historyUndo = (data) => this.sendRequest(EditorEvent.HISTORY_UNDO, data);
 
   historyRedo = (data) => this.sendRequest(EditorEvent.HISTORY_REDO, data);

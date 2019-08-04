@@ -24,6 +24,8 @@ export const EditorEvent = {
   SET_SELECTION: 'setSelection',
   REPLACE_SELECTION: 'replaceSelection',
   CANCEL_SELECTION: 'cancelSelection',
+  HISTORY_READ: 'historyRead',
+  HISTORY_WRITE: 'historyWrite',
   HISTORY_UNDO: 'historyUndo',
   HISTORY_REDO: 'historyRedo',
   HISTORY_CLEAR: 'historyClear',

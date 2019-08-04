@@ -126,7 +126,10 @@ class WebViewAPI extends EditorRequests {
    */
   webViewInitializedHandler = () => {
     this.initialized = true;
-    this.initData = {};
+    /*
+     * WebView may be reinitialized
+     * this.initData = {};
+     */
 
     this.handlers.onInitialized(this);
   };
@@ -141,7 +144,7 @@ class WebViewAPI extends EditorRequests {
       return;
     }
 
-    onLog(...event.data);
+    onLog(event.data);
   };
 
   /**
