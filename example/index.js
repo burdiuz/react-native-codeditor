@@ -6,17 +6,17 @@
 
 import React, { Component } from 'react';
 import { AppRegistry } from 'react-native';
-import CodeEditor from './react-native-codeditor';
+import CodeEditor from '@actualwave/react-native-codeditor';
 
 export default class RNCodEditorComponent extends Component {
   render() {
     return (
       <CodeEditor
         modules={[
-          'mode/javascript',
-          'mode/xml',
-          'mode/jsx',
-          'addon/selection/active-line',
+          'addon/fold/foldgutter',
+          'mode/javascript/javascript',
+          'mode/xml/xml',
+          'mode/jsx/jsx',
           'addon/edit/matchbrackets',
           'addon/edit/matchtags',
           'addon/search/match-highlighter',
@@ -28,10 +28,12 @@ export default class RNCodEditorComponent extends Component {
           'addon/fold/comment-fold',
           'addon/fold/indent-fold',
           'addon/fold/xml-fold',
-          'theme/dracula',
         ]}
         settings={{
+          gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+          inputStyle: 'contenteditable',
           styleActiveLine: true,
+          mode: 'text/jsx',
           lineNumbers: true,
           lineWrapping: true,
           foldGutter: true,
@@ -40,8 +42,23 @@ export default class RNCodEditorComponent extends Component {
           matchTags: true,
           autoCloseTags: true,
           highlightSelectionMatches: true,
-          theme: 'dracula',
         }}
+        content={`const ListItem = ({ label, odd, selected, onPress }) => (
+  <TouchableHighlight onPress={onPress}>
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 5,
+        backgroundColor: odd ? BACKGROUND_COLOR : ACTIVE_BACKGROUND_COLOR,
+      }}
+    >
+      <CheckBoxButtonView selected={selected} />
+      <Text>{label}</Text>
+    </View>
+  </TouchableHighlight>
+);`}
+        theme="darcula"
         onInitialized={() => console.log(' -- onInitialized')}
         onContentUpdate={() => console.log(' -- onContentUpdate')}
         onHistorySizeUpdate={() => console.log(' -- onHistorySizeUpdate')}
