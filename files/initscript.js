@@ -116,6 +116,25 @@ const setEditorSettings = (settings) =>
     editor.setOption(key, settings[key]);
   });
 
+  const getPosFromIndex = (pos) => {
+    if (typeof pos === 'number') {
+      return editor.posFromIndex(pos);
+    }
+
+    return pos;
+  };
+
+  const alterPosWithIndex = (pos) => {
+    if (!pos) {
+      return pos;
+    }
+
+    return {
+      ...pos,
+      index: editor.indexFromPos(pos),
+    };
+  };
+
 /**
  * Initialize all API event listeners
  */
@@ -123,6 +142,10 @@ const initEventListeners = (autoUpdateInterval) => {
   listenForAPIEvent('setViewport', (event) => {
     setViewport(event.data || {});
   });
+
+  listenForAPIEvent('getOption', ({ data: option }) => editor.getOption(option));
+
+  listenForAPIEvent('setOption', ({ data: { option, value } }) => editor.setOption(option, value));
 
   listenForAPIEvent('setValue', (event) => {
     const newValue = event.data || '';
@@ -148,16 +171,18 @@ const initEventListeners = (autoUpdateInterval) => {
 
   listenForAPIEvent('focus', () => editor.focus());
 
-  listenForAPIEvent('getCursor', ({ data }) => editor.getCursor(data));
+  listenForAPIEvent('getCursor', ({ data }) => alterPosWithIndex(editor.getCursor(data)));
 
-  listenForAPIEvent('setCursor', ({ data: { line, ch, options } }) =>
-    editor.setCursor(line, ch, options),
-  );
+  listenForAPIEvent('setCursor', ({ data }) => {
+    const { line, ch, options } = getPosFromIndex(data);
+
+    editor.setCursor(line, ch, options);
+  });
 
   listenForAPIEvent('getSelection', () => editor.getSelection());
 
   listenForAPIEvent('setSelection', ({ data: { anchor, head, options } }) =>
-    editor.setSelection(anchor, head, options),
+    editor.setSelection(getPosFromIndex(anchor), getPosFromIndex(head), options),
   );
 
   listenForAPIEvent('replaceSelection', (event) => editor.replaceSelection(event.data));

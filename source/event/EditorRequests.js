@@ -19,6 +19,10 @@ class EditorRequests {
       viewportWidth,
     });
 
+  setOption = (option, value) => this.sendRequest(EditorEvent.SET_OPTION, { option, value });
+
+  getOption = (option) => this.sendRequest(EditorEvent.GET_OPTION, option);
+
   setValue = (data) => this.sendRequest(EditorEvent.SET_VALUE, data);
 
   getValue = (data) => this.sendRequest(EditorEvent.GET_VALUE, data);
