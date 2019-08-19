@@ -20,6 +20,12 @@ class BaseEditorView extends Component {
     onHistorySizeUpdate: PropTypes.func.isRequired,
     onLog: PropTypes.func.isRequired,
     onError: PropTypes.func.isRequired,
+    onWebViewRefUpdated: PropTypes.func,
+    onLoad: PropTypes.func,
+    onLoadStart: PropTypes.func,
+    onLoadProgress: PropTypes.func,
+    onLoadEnd: PropTypes.func,
+    onNavigationStateChange: PropTypes.func,
     renderBlockingView: PropTypes.func,
     autoUpdateInterval: PropTypes.number,
     theme: PropTypes.string,
@@ -27,6 +33,7 @@ class BaseEditorView extends Component {
     content: PropTypes.string,
     settings: PropTypes.shape({}),
     viewport: PropTypes.shape({}),
+    allowFileAccess: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -53,6 +60,13 @@ class BaseEditorView extends Component {
       'addon/fold/xml-fold',
     ],
     content: '',
+    onWebViewRefUpdated: undefined,
+    onLoad: undefined,
+    onLoadStart: undefined,
+    onLoadProgress: undefined,
+    onLoadEnd: undefined,
+    onNavigationStateChange: undefined,
+    allowFileAccess: true,
   };
 
   api = null;
@@ -161,7 +175,7 @@ class BaseEditorView extends Component {
   }
 
   handleWebViewReference = (webView) => {
-    const { content, settings } = this.props;
+    const { content, settings, onWebViewRefUpdated } = this.props;
     this.webView = webView;
 
     this.setState({
@@ -170,6 +184,10 @@ class BaseEditorView extends Component {
 
     if (webView) {
       this.api.initialize(webView, { content, settings });
+    }
+
+    if (onWebViewRefUpdated) {
+      onWebViewRefUpdated(webView);
     }
   };
 
@@ -187,6 +205,14 @@ class BaseEditorView extends Component {
 
   render() {
     const { initScript, source } = this.state;
+    const {
+      onLoad,
+      onLoadStart,
+      onLoadProgress,
+      onLoadEnd,
+      onNavigationStateChange,
+      allowFileAccess,
+    } = this.props;
 
     return (
       <View style={styles.container}>
@@ -194,6 +220,12 @@ class BaseEditorView extends Component {
           ref={this.handleWebViewReference}
           onMessage={this.api.onMessage}
           onError={this.handleLoadError}
+          onLoad={onLoad}
+          onLoadStart={onLoadStart}
+          onLoadProgress={onLoadProgress}
+          onLoadEnd={onLoadEnd}
+          onNavigationStateChange={onNavigationStateChange}
+          allowFileAccess={allowFileAccess}
           source={this.state.source}
           injectedJavaScript={initScript}
           style={styles.webView}
