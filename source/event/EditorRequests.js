@@ -33,8 +33,11 @@ class EditorRequests {
 
   getCursor = (data) => this.sendRequest(EditorEvent.GET_CURSOR, data);
 
-  setCursor = (line, ch, options) =>
-    this.sendRequest(EditorEvent.SET_CURSOR, { line, ch, options });
+  setCursor = (lineOrIndex, ch, options) =>
+    this.sendRequest(
+      EditorEvent.SET_CURSOR,
+      ch === undefined ? lineOrIndex : { line: lineOrIndex, ch, options },
+    );
 
   getSelection = (data) => this.sendRequest(EditorEvent.GET_SELECTION, data);
 
