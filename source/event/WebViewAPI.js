@@ -170,6 +170,8 @@ class WebViewAPI extends EditorRequests {
   dispatchEvent = (event, data = null) => this.dispatcher.dispatchEvent(event, data);
 
   onMessage = (event) => this.port.callMessageListeners(event);
+
+  injectJavaScript = (jsCode) => this.webView.injectJavaScript(jsCode);
 }
 
 export default WebViewAPI;
