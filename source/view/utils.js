@@ -3,6 +3,7 @@ const DEFAULT_SETTINGS = {
   gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
   inputStyle: 'contenteditable',
   styleActiveLine: true,
+  autofocus: true,
 };
 
 export const generateInitScript = (

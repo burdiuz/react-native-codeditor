@@ -172,6 +172,19 @@ class WebViewAPI extends EditorRequests {
   onMessage = (event) => this.port.callMessageListeners(event);
 
   injectJavaScript = (jsCode) => this.webView.injectJavaScript(jsCode);
+
+  requestFocus = () => this.webView.requestFocus();
+
+  focus = (data) => {
+    try {
+      // undocumented command for react-native-webview
+      this.webView.requestFocus();
+    } catch (error) {
+      console.error(error);
+    }
+
+    return this.sendRequest(EditorEvent.FOCUS, data);
+  };
 }
 
 export default WebViewAPI;
