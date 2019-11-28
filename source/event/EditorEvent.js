@@ -13,10 +13,10 @@ export const EditorEvent = {
 
   // Apply viewport settings for scaling content
   SET_VIEWPORT: 'setViewport',
-  
+
   SET_OPTION: 'setOption',
   GET_OPTION: 'getOption',
-  
+
   SET_VALUE: 'setValue',
   GET_VALUE: 'getValue',
   RESET_VALUE: 'resetValue',
@@ -49,11 +49,9 @@ export const EditorResponseEvent = {
 };
 
 export const getResponseEvent = (eventType) => {
-  switch (eventType) {
-    case EditorEvent.HANDSHAKE: {
-      return EditorResponseEvent.INIT_COMPLETE;
-    }
-    default:
-      return `${eventType}Response`;
+  if (eventType === EditorEvent.HANDSHAKE) {
+    return EditorResponseEvent.INIT_COMPLETE;
   }
+
+  return `${eventType}Response`;
 };
