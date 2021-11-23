@@ -67,7 +67,7 @@ class CodeEditor extends BaseEditorView {
   }
 
   onWebViewInitialized(api) {
-    const { forceUpdates, viewport, settings, content } = this.props;
+    const { forceUpdates, viewport, settings } = this.props;
     super.onWebViewInitialized(api);
 
     if (forceUpdates) {

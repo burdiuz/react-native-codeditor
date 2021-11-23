@@ -204,7 +204,7 @@ class BaseEditorView extends Component {
   handleLoadError = (...args) => console.log('WebView Load Error:', ...args);
 
   render() {
-    const { initScript, source } = this.state;
+    const { initScript } = this.state;
     const {
       onLoad,
       onLoadStart,
