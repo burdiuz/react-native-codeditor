@@ -1,34 +1,59 @@
 import { useCallback, useRef, useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CodeEditor from 'react-native-codeditor';
-import type { WebViewAPI } from 'react-native-codeditor';
+import type { HistorySize, WebViewAPI } from 'react-native-codeditor';
 
-const INITIAL_CONTENT = `// Welcome to CodeEditor
+const LANGUAGES = ['javascript', 'python', 'rust', 'sql', 'markdown', 'json'];
+
+const THEMES = ['darcula', 'monokai', 'github', 'nord', 'dracula', 'vscode'];
+
+const SAMPLES: Record<string, string> = {
+  javascript: `// Welcome to CodeEditor
 function greet(name) {
   return 'Hello, ' + name + '!';
 }
 
 console.log(greet('World'));
-`;
+`,
+  python: `# Welcome to CodeEditor
+def greet(name):
+    return f'Hello, {name}!'
 
-const MODULES = [
-  'mode/javascript/javascript',
-  'addon/fold/foldgutter',
-  'addon/fold/foldcode',
-  'addon/fold/brace-fold',
-  'addon/fold/comment-fold',
-  'addon/edit/matchbrackets',
-  'addon/edit/closebrackets',
-  'addon/search/match-highlighter',
-];
+print(greet('World'))
+`,
+  rust: `// Welcome to CodeEditor
+fn greet(name: &str) -> String {
+    format!("Hello, {}!", name)
+}
 
-const SETTINGS = {
-  mode: 'javascript',
-  lineNumbers: true,
-  inputStyle: 'contenteditable' as const,
-  styleActiveLine: true,
-  matchBrackets: true,
-  autoCloseBrackets: true,
+fn main() {
+    println!("{}", greet("World"));
+}
+`,
+  sql: `-- Welcome to CodeEditor
+SELECT *
+FROM users
+WHERE name = 'World'
+ORDER BY id DESC
+LIMIT 10;
+`,
+  markdown: `# Welcome to CodeEditor
+
+A React Native code editor powered by **CodeMirror 6**.
+
+## Features
+
+- Syntax highlighting
+- Multiple themes
+- Offline — no CDN required
+`,
+  json: `{
+  "name": "react-native-codeditor",
+  "version": "0.1.0",
+  "description": "CodeMirror 6 in a WebView",
+  "features": ["offline", "cm6", "dda-bridge"]
+}
+`,
 };
 
 const VIEWPORT = {
@@ -41,8 +66,13 @@ const VIEWPORT = {
 
 export default function App() {
   const apiRef = useRef<WebViewAPI | null>(null);
-  const [historySize, setHistorySize] = useState<{ undo: number; redo: number } | null>(null);
+  const [historySize, setHistorySize] = useState<HistorySize | null>(null);
   const [status, setStatus] = useState('Initializing...');
+  const [langIndex, setLangIndex] = useState(0);
+  const [themeIndex, setThemeIndex] = useState(0);
+
+  const language = LANGUAGES[langIndex]!;
+  const theme = THEMES[themeIndex]!;
 
   const handleInitialized = useCallback((api: WebViewAPI) => {
     apiRef.current = api;
@@ -54,8 +84,8 @@ export default function App() {
     setStatus(`${content.length} chars`);
   }, []);
 
-  const handleHistorySize = useCallback((size: unknown) => {
-    setHistorySize(size as { undo: number; redo: number });
+  const handleHistorySize = useCallback((size: HistorySize) => {
+    setHistorySize(size);
   }, []);
 
   const handleLog = useCallback((...args: unknown[]) => {
@@ -66,6 +96,22 @@ export default function App() {
     console.error('[Editor Error]', error);
   }, []);
 
+  const handleLoad = useCallback((e: unknown) => {
+    console.log('[WebView] onLoad', e);
+  }, []);
+
+  const handleLoadStart = useCallback((e: unknown) => {
+    console.log('[WebView] onLoadStart', e);
+  }, []);
+
+  const handleLoadEnd = useCallback((e: unknown) => {
+    console.log('[WebView] onLoadEnd', e);
+  }, []);
+
+  const handleWebViewRef = useCallback((ref: unknown) => {
+    console.log('[WebView] ref updated:', ref ? 'set' : 'null');
+  }, []);
+
   const handleUndo = useCallback(() => {
     apiRef.current?.historyUndo();
   }, []);
@@ -74,33 +120,74 @@ export default function App() {
     apiRef.current?.historyRedo();
   }, []);
 
+  const handleNextLanguage = useCallback(() => {
+    const next = (langIndex + 1) % LANGUAGES.length;
+    const nextLang = LANGUAGES[next]!;
+    setLangIndex(next);
+    apiRef.current?.setLanguage(nextLang);
+    apiRef.current?.resetValue(SAMPLES[nextLang]);
+  }, [langIndex]);
+
+  const handleNextTheme = useCallback(() => {
+    const next = (themeIndex + 1) % THEMES.length;
+    setThemeIndex(next);
+    apiRef.current?.setTheme(THEMES[next]);
+  }, [themeIndex]);
+
+  const handleResetValue = useCallback(() => {
+    apiRef.current?.resetValue(SAMPLES[language]);
+  }, [language]);
+
   return (
-    <View style={styles.container}>
-      <View style={styles.toolbar}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.toolbarScroll}
+        contentContainerStyle={styles.toolbar}
+      >
         <TouchableOpacity style={styles.button} onPress={handleUndo}>
-          <Text style={styles.buttonText}>Undo</Text>
+          <Text style={styles.buttonText}>↩ Undo</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleRedo}>
-          <Text style={styles.buttonText}>Redo</Text>
+          <Text style={styles.buttonText}>↪ Redo</Text>
         </TouchableOpacity>
+        <View style={styles.separator} />
+        <TouchableOpacity style={styles.button} onPress={handleNextLanguage}>
+          <Text style={styles.buttonText}>Lang: {language}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleNextTheme}>
+          <Text style={styles.buttonText}>Theme: {theme}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, styles.resetButton]} onPress={handleResetValue}>
+          <Text style={styles.buttonText}>Reset</Text>
+        </TouchableOpacity>
+      </ScrollView>
+      <View style={styles.statusBar}>
         <Text style={styles.status}>
           {status}
           {historySize ? `  ↩${historySize.undo} ↪${historySize.redo}` : ''}
         </Text>
       </View>
       <CodeEditor
-        content={INITIAL_CONTENT}
-        theme="darcula"
-        modules={MODULES}
-        settings={SETTINGS}
+        content={SAMPLES[language]}
+        language={language}
+        theme={theme}
         viewport={VIEWPORT}
         onInitialized={handleInitialized}
         onContentUpdate={handleContentUpdate}
         onHistorySizeUpdate={handleHistorySize}
         onLog={handleLog}
         onError={handleError}
+        onLoad={handleLoad}
+        onLoadStart={handleLoadStart}
+        onLoadEnd={handleLoadEnd}
+        onWebViewRefUpdated={handleWebViewRef}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -110,19 +197,40 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     backgroundColor: '#1e1e1e',
   },
+  toolbarScroll: {
+    height: 48,
+    flexShrink: 0,
+    flexGrow: 0,
+    backgroundColor: '#2d2d2d',
+  },
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
+    height: 48,
     backgroundColor: '#2d2d2d',
     gap: 8,
+  },
+  separator: {
+    width: 1,
+    height: 20,
+    backgroundColor: '#555',
+    marginHorizontal: 4,
+  },
+  statusBar: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: '#252525',
   },
   button: {
     backgroundColor: '#0e639c',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 4,
+  },
+  resetButton: {
+    backgroundColor: '#6c3f3f',
   },
   buttonText: {
     color: '#fff',
@@ -131,7 +239,5 @@ const styles = StyleSheet.create({
   status: {
     color: '#aaa',
     fontSize: 12,
-    flex: 1,
-    textAlign: 'right',
   },
 });

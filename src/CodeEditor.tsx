@@ -1,44 +1,28 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
-import WebView from 'react-native-webview';
-import WebViewEditor from './webview';
-import WebViewAPI from './WebViewAPI';
-import BlockingView from './BlockingView';
-import { generateInitScript } from './utils';
-import { EditorEvent, getResponseEvent } from './EditorEvent';
-import type { ViewportSettings } from './EditorRequests';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Platform, View, StyleSheet } from "react-native";
+import WebView from "react-native-webview";
+import WebViewAPI from "./WebViewAPI";
+import BlockingView from "./BlockingView";
+import type { ExtensionSpec, HistorySize, ViewportSettings } from "./EditorAPI";
 
 const styles = StyleSheet.create({
-  container: { position: 'relative', flex: 1 },
+  container: { position: "relative", flex: 1 },
   webView: { flex: 1 },
 });
 
-const WHITELIST: string[] = [];
-const BASE_URL = 'https://actualwave.com/react-native-codeditor/1';
-
-const DEFAULT_MODULES = [
-  'addon/fold/foldgutter',
-  'addon/edit/matchbrackets',
-  'addon/edit/matchtags',
-  'addon/search/match-highlighter',
-  'addon/edit/closebrackets',
-  'addon/edit/closetag',
-  'addon/fold/foldcode',
-  'addon/fold/foldgutter',
-  'addon/fold/brace-fold',
-  'addon/fold/comment-fold',
-  'addon/fold/indent-fold',
-  'addon/fold/xml-fold',
-];
-
-const DEFAULT_SETTINGS: Record<string, unknown> = {
-  inputStyle: 'contenteditable',
-  styleActiveLine: true,
-};
+/**
+ * Default WebView source URI for the bundled editor page.
+ * Android: assets are copied to android/app/src/main/assets/ by react-native link.
+ * iOS: override via editorUri prop until a MainBundlePath helper is added.
+ */
+const DEFAULT_EDITOR_URI = Platform.select({
+  android: "file:///android_asset/editor.html",
+  default: "file:///android_asset/editor.html",
+});
 
 export interface CodeEditorProps {
   onInitialized: (api: WebViewAPI) => void;
-  onHistorySizeUpdate: (size: unknown) => void;
+  onHistorySizeUpdate: (size: HistorySize) => void;
   onLog: (...args: unknown[]) => void;
   onError: (error: unknown) => void;
   onContentUpdate: (content: string) => void;
@@ -49,14 +33,17 @@ export interface CodeEditorProps {
   onLoadEnd?: (event: unknown) => void;
   onNavigationStateChange?: (event: unknown) => void;
   renderBlockingView?: () => React.ReactNode;
-  autoUpdateInterval?: number;
+  /** Language name for syntax highlighting, e.g. 'javascript', 'python'. */
+  language?: string;
+  /** Additional CodeMirror extension specs loaded on top of the language. */
+  extensions?: ExtensionSpec[];
+  /** Theme name from the @uiw/codemirror-themes collection, e.g. 'darcula', 'monokai'. */
   theme?: string;
-  modules?: string[];
   content?: string;
-  settings?: Record<string, unknown>;
   viewport?: ViewportSettings;
   allowFileAccess?: boolean;
-  forceUpdates?: boolean;
+  /** Override the default editor HTML URI (useful on iOS where the bundle path varies). */
+  editorUri?: string;
 }
 
 const CodeEditor = ({
@@ -72,125 +59,157 @@ const CodeEditor = ({
   onLoadEnd,
   onNavigationStateChange,
   renderBlockingView = () => <BlockingView />,
-  autoUpdateInterval = 1000,
+  language,
+  extensions = [],
   theme,
-  modules = DEFAULT_MODULES,
-  content = '',
-  settings = DEFAULT_SETTINGS,
-  viewport = {},
+  content = "",
+  viewport,
   allowFileAccess = true,
-  forceUpdates = false,
+  editorUri = DEFAULT_EDITOR_URI,
 }: CodeEditorProps) => {
   const [initialized, setInitialized] = useState(false);
 
-  const editorRef = useRef<WebViewEditor | null>(null);
   const apiRef = useRef<WebViewAPI | null>(null);
   const currentContentRef = useRef(content);
   const initializedRef = useRef(false);
 
-  // Updated on every render so stable callbacks can always read latest prop values
-  const callbacksRef = useRef({ onInitialized, onContentUpdate, onHistorySizeUpdate, onLog, onError, onWebViewRefUpdated });
-  callbacksRef.current = { onInitialized, onContentUpdate, onHistorySizeUpdate, onLog, onError, onWebViewRefUpdated };
-  const propsRef = useRef({ forceUpdates, viewport, settings, content, theme, modules, autoUpdateInterval });
-  propsRef.current = { forceUpdates, viewport, settings, content, theme, modules, autoUpdateInterval };
-
-  // Lazy sync initialization — runs once, before first render
-  if (editorRef.current === null) {
-    editorRef.current = new WebViewEditor(theme, modules);
-  }
-
-  const [source, setSource] = useState(() => ({
-    html: editorRef.current!.toString(),
-    baseUrl: BASE_URL,
-  }));
-
-  const [initScript, setInitScript] = useState(() =>
-    generateInitScript(settings, theme, content, viewport, autoUpdateInterval),
-  );
+  // Always-current prop snapshot for stable callbacks
+  const callbacksRef = useRef({
+    onInitialized,
+    onContentUpdate,
+    onHistorySizeUpdate,
+    onLog,
+    onError,
+    onWebViewRefUpdated,
+  });
+  callbacksRef.current = {
+    onInitialized,
+    onContentUpdate,
+    onHistorySizeUpdate,
+    onLog,
+    onError,
+    onWebViewRefUpdated,
+  };
+  const propsRef = useRef({ content, language, extensions, theme, viewport });
+  propsRef.current = { content, language, extensions, theme, viewport };
 
   if (apiRef.current === null) {
-    const getValueHandler = (event: unknown) => {
-      const newContent = (event as { data: string }).data;
-      currentContentRef.current = newContent;
-      callbacksRef.current.onContentUpdate(newContent);
-    };
-
     apiRef.current = new WebViewAPI({
       onInitialized: (api) => {
         initializedRef.current = true;
         setInitialized(true);
         callbacksRef.current.onInitialized(api);
-
-        const { forceUpdates: fUpdates, viewport: vp, settings: st } = propsRef.current;
-        if (fUpdates) {
-          void api.setViewport(vp);
-          void api.updateSettings(st);
-          void api.setValue(currentContentRef.current);
-          void api.historyClear();
-        }
-
-        api.addEventListener(getResponseEvent(EditorEvent.GET_VALUE), getValueHandler);
-        api.addEventListener(EditorEvent.AUTO_UPDATE, getValueHandler);
       },
-      onHistorySizeUpdate: (size) => callbacksRef.current.onHistorySizeUpdate(size),
-      onLog: (log) => callbacksRef.current.onLog(log),
+      onContentUpdate: (value) => {
+        currentContentRef.current = value;
+        callbacksRef.current.onContentUpdate(value);
+      },
+      onHistorySizeUpdate: (size) =>
+        callbacksRef.current.onHistorySizeUpdate(size),
+      onLog: (...args) => callbacksRef.current.onLog(...args),
       onError: (error) => callbacksRef.current.onError(error),
     });
   }
 
-  // theme or modules changed → rebuild editor HTML and reload WebView
-  const prevThemeRef = useRef(theme);
-  const prevModulesRef = useRef(modules);
+  // Push content changes to live editor (skip initial render)
+  const prevContentRef = useRef<string | null>(null);
   useEffect(() => {
-    if (prevThemeRef.current === theme && prevModulesRef.current === modules) return;
-    prevThemeRef.current = theme;
-    prevModulesRef.current = modules;
-
-    const editor = editorRef.current!;
-    editor.setTheme(theme);
-    editor.resetModules([...modules]);
-
-    setSource({ html: editor.toString(), baseUrl: BASE_URL });
-    setInitScript(generateInitScript(settings, theme, content, viewport, autoUpdateInterval));
-    setInitialized(false);
-    initializedRef.current = false;
-  }, [theme, modules, settings, content, viewport, autoUpdateInterval]);
-
-  // settings changed → regenerate init script and push to live editor
-  const prevSettingsRef = useRef(settings);
-  useEffect(() => {
-    if (prevSettingsRef.current === settings) return;
-    prevSettingsRef.current = settings;
-
-    setInitScript(generateInitScript(settings, theme, content, viewport, autoUpdateInterval));
-    if (initializedRef.current) {
-      void apiRef.current!.updateSettings(settings);
+    if (prevContentRef.current === null) {
+      prevContentRef.current = content;
+      return;
     }
-  }, [settings, theme, content, viewport, autoUpdateInterval]);
+    if (prevContentRef.current === content) return;
+    prevContentRef.current = content;
 
-  // viewport changed → push to live editor
-  useEffect(() => {
-    if (!initializedRef.current) return;
-    void apiRef.current!.setViewport(viewport);
-  }, [viewport]);
-
-  // content changed → push to live editor
-  useEffect(() => {
     if (initializedRef.current && currentContentRef.current !== content) {
       void apiRef.current!.setValue(content);
       currentContentRef.current = content;
     }
   }, [content]);
 
+  // Push language changes to live editor
+  const prevLanguageRef = useRef<string | undefined | null>(null);
+  useEffect(() => {
+    if (prevLanguageRef.current === null) {
+      prevLanguageRef.current = language;
+      return;
+    }
+    if (prevLanguageRef.current === language) return;
+    prevLanguageRef.current = language;
+
+    if (initializedRef.current && language) {
+      void apiRef.current!.setLanguage(language);
+    }
+  }, [language]);
+
+  // Push theme changes to live editor
+  const prevThemeRef = useRef<string | undefined | null>(null);
+  useEffect(() => {
+    if (prevThemeRef.current === null) {
+      prevThemeRef.current = theme;
+      return;
+    }
+    if (prevThemeRef.current === theme) return;
+    prevThemeRef.current = theme;
+
+    if (initializedRef.current) {
+      void apiRef.current!.setTheme(theme);
+    }
+  }, [theme]);
+
+  // Push extension changes to live editor
+  const prevExtensionsRef = useRef<ExtensionSpec[] | null>(null);
+  useEffect(() => {
+    if (prevExtensionsRef.current === null) {
+      prevExtensionsRef.current = extensions;
+      return;
+    }
+    if (prevExtensionsRef.current === extensions) return;
+    prevExtensionsRef.current = extensions;
+
+    if (initializedRef.current) {
+      void apiRef.current!.setExtensions(extensions);
+    }
+  }, [extensions]);
+
+  // Push viewport changes to live editor
+  const prevViewportRef = useRef<ViewportSettings | undefined | null>(null);
+  useEffect(() => {
+    if (prevViewportRef.current === null) {
+      prevViewportRef.current = viewport;
+      return;
+    }
+    if (prevViewportRef.current === viewport) return;
+    prevViewportRef.current = viewport;
+
+    if (initializedRef.current && viewport) {
+      void apiRef.current!.setViewport(viewport);
+    }
+  }, [viewport]);
+
   const handleWebViewReference = useCallback((webView: WebView | null) => {
     setInitialized(false);
     initializedRef.current = false;
 
     if (webView) {
-      apiRef.current!.initialize(webView as unknown as import('./WebViewAPI').WebViewRef, {
-        content: currentContentRef.current,
-        settings: propsRef.current.settings,
+      const {
+        content: c,
+        language: l,
+        extensions: e,
+        theme: t,
+        viewport: v,
+      } = propsRef.current;
+      currentContentRef.current = c;
+      apiRef.current!.setInitialConfig({
+        content: c,
+        language: l,
+        extensions: e,
+        theme: t,
+        viewport: v,
       });
+      apiRef.current!.initialize(
+        webView as unknown as import("./WebViewAPI").WebViewRef,
+      );
     }
 
     callbacksRef.current.onWebViewRefUpdated?.(webView);
@@ -201,26 +220,47 @@ const CodeEditor = ({
   }, []);
 
   const handleLoadError = useCallback((...args: unknown[]) => {
-    console.log('WebView Load Error:', ...args);
+    console.log("WebView Load Error:", ...args);
   }, []);
 
   return (
     <View style={styles.container}>
       <WebView
         ref={handleWebViewReference}
-        onMessage={handleMessage as (event: Parameters<NonNullable<React.ComponentProps<typeof WebView>['onMessage']>>[0]) => void}
-        onError={handleLoadError as React.ComponentProps<typeof WebView>['onError']}
-        onLoad={onLoad as React.ComponentProps<typeof WebView>['onLoad']}
-        onLoadStart={onLoadStart as React.ComponentProps<typeof WebView>['onLoadStart']}
-        onLoadProgress={onLoadProgress as React.ComponentProps<typeof WebView>['onLoadProgress']}
-        onLoadEnd={onLoadEnd as React.ComponentProps<typeof WebView>['onLoadEnd']}
-        onNavigationStateChange={onNavigationStateChange as React.ComponentProps<typeof WebView>['onNavigationStateChange']}
+        onMessage={
+          handleMessage as (
+            event: Parameters<
+              NonNullable<React.ComponentProps<typeof WebView>["onMessage"]>
+            >[0],
+          ) => void
+        }
+        onError={
+          handleLoadError as React.ComponentProps<typeof WebView>["onError"]
+        }
+        onLoad={onLoad as React.ComponentProps<typeof WebView>["onLoad"]}
+        onLoadStart={
+          onLoadStart as React.ComponentProps<typeof WebView>["onLoadStart"]
+        }
+        onLoadProgress={
+          onLoadProgress as React.ComponentProps<
+            typeof WebView
+          >["onLoadProgress"]
+        }
+        onLoadEnd={
+          onLoadEnd as React.ComponentProps<typeof WebView>["onLoadEnd"]
+        }
+        onNavigationStateChange={
+          onNavigationStateChange as React.ComponentProps<
+            typeof WebView
+          >["onNavigationStateChange"]
+        }
         allowFileAccess={allowFileAccess}
-        source={source}
-        injectedJavaScript={initScript}
+        allowFileAccessFromFileURLs
+        allowUniversalAccessFromFileURLs
+        source={{ uri: editorUri }}
         style={styles.webView}
         javaScriptEnabled
-        originWhitelist={WHITELIST}
+        originWhitelist={["file://*", "about:*"]}
       />
       {!initialized && renderBlockingView()}
     </View>

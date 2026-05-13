@@ -1,0 +1,7 @@
+async function moduleInitFunction(requireAsyncModule,exports={}){const module={exports:exports};var hasRequiredDist,require$$0=await requireAsyncModule("@lezer/rust"),require$$1=await requireAsyncModule("@codemirror/language"),dist={},distExports=function requireDist(){/**
+	Rust language support
+	*/function rust(){return new language.LanguageSupport(rustLanguage)}if(hasRequiredDist)return dist;hasRequiredDist=1;var rust$1=require$$0,language=require$$1;/**
+	A syntax provider based on the [Lezer Rust
+	parser](https://github.com/lezer-parser/rust), extended with
+	highlighting and indentation information.
+	*/const rustLanguage=language.LRLanguage.define({name:"rust",parser:rust$1.parser.configure({props:[language.indentNodeProp.add({IfExpression:language.continuedIndent({except:/^\s*({|else\b)/}),"String BlockComment":()=>null,AttributeItem:cx=>cx.continue(),"Statement MatchArm":language.continuedIndent()}),language.foldNodeProp.add(type=>/(Block|edTokens|List)$/.test(type.name)?language.foldInside:"BlockComment"==type.name?tree=>({from:tree.from+2,to:tree.to-2}):void 0)]}),languageData:{commentTokens:{line:"//",block:{open:"/*",close:"*/"}},indentOnInput:/^\s*(?:\{|\})$/,closeBrackets:{stringPrefixes:["b","r","br"]}}});return dist.rust=rust,dist.rustLanguage=rustLanguage,dist}(),index=/*@__PURE__*/function getDefaultExportFromCjs(x){return x}(distExports);return module.exports=index,module.exports}

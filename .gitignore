@@ -9,6 +9,11 @@
 .vscode/
 jsconfig.json
 
+.yalc/
+.vscode/
+.history/
+.claude/
+
 # Xcode
 #
 build/

@@ -1,164 +1,178 @@
-import MessagePortDispatcher from '@actualwave/messageport-dispatcher';
-import Request from './Request';
-import { EditorEvent } from './EditorEvent';
-import EditorRequests from './EditorRequests';
+import { initializeHost } from '@actualwave/webview-interface';
+import type { EditorAPI, ExtensionSpec, HistorySize, ViewportSettings } from './EditorAPI';
 
 export interface WebViewAPIHandlers {
   onInitialized: (api: WebViewAPI) => void;
-  onHistorySizeUpdate: (size: unknown) => void;
-  onLog: (log: unknown) => void;
+  onHistorySizeUpdate: (size: HistorySize) => void;
+  onContentUpdate: (content: string) => void;
+  onLog: (...args: unknown[]) => void;
   onError: (error: unknown) => void;
 }
 
 export interface WebViewRef {
   injectJavaScript: (js: string) => void;
-  requestFocus: () => void;
+  requestFocus?: () => void;
 }
 
-const composeErrorMessage = (event: unknown) => {
-  const { data } = event as { data: Record<string, unknown> };
-  if (data['error']) {
-    return data['error'];
-  }
-  const { message, source, lineno, colno } = data;
-  return { name: 'Error', message, fileName: source, lineNumber: lineno, columnNumber: colno };
-};
-
-class MessagePortDummy {
-  private listeners: Set<(event: unknown) => void>;
-  private target: WebViewRef;
-
-  constructor(target: WebViewRef) {
-    this.listeners = new Set();
-    this.target = target;
-  }
-
-  postMessage = (event: unknown) => {
-    const eventStr = JSON.stringify(event);
-    this.target.injectJavaScript(`(
-      (target, data) => {
-        const e = new CustomEvent('message');
-        e.data = data;
-        target.dispatchEvent(e);
-      }
-    )(window, ${JSON.stringify(eventStr)})`);
-  };
-
-  addEventListener = (type: string, listener: (event: unknown) => void) => {
-    if (type !== 'message') {
-      throw new Error(`MessagePortDummy is intended for single event type and its not "${type}"`);
-    }
-    this.listeners.add(listener);
-  };
-
-  callMessageListeners = (message: unknown) => {
-    this.listeners.forEach((listener) => listener(message));
-  };
+export interface InitialConfig {
+  content?: string;
+  language?: string;
+  extensions?: ExtensionSpec[];
+  theme?: string;
+  viewport?: ViewportSettings;
 }
 
-class WebViewAPI extends EditorRequests {
-  webView: WebViewRef | null = null;
-  dispatcher: MessagePortDispatcher | null = null;
-  initialized = false;
-
-  private port: MessagePortDummy | null = null;
-  private initData: unknown = {};
+/**
+ * WebViewAPI wraps the DDA proxy to the WebView's EditorController.
+ * All editor methods are async DDA calls; focus() additionally calls requestFocus()
+ * on the native WebView ref to ensure the Android soft keyboard appears.
+ */
+class WebViewAPI implements EditorAPI {
+  private webView: WebViewRef | null = null;
+  private pageApi: EditorAPI | null = null;
+  private stopFn: (() => void) | null = null;
+  private _onMessage: ((event: unknown) => void) | null = null;
+  private _initialConfig: InitialConfig = {};
   private handlers: WebViewAPIHandlers;
 
   constructor(handlers: WebViewAPIHandlers) {
-    const requestFactory = (eventType: string, data: unknown = null, responseEventType = '') =>
-      new Request(
-        // dispatcher is set in initialize() before any requests are made
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.dispatcher!,
-        eventType,
-        data,
-        responseEventType,
-      );
-
-    super(requestFactory);
     this.handlers = handlers;
   }
 
-  initialize(
-    webView: WebViewRef,
-    { content, settings }: { content?: string; settings?: unknown } = {},
-  ) {
-    this.initialized = false;
-    this.webView = webView;
-    this.initData = { content, settings };
-    this.port = new MessagePortDummy(webView);
-    this.dispatcher = new MessagePortDispatcher(this.port, null, this.preprocessIncomingMessages);
-
-    this.dispatcher.addEventListener(EditorEvent.INITIALIZE, this.webViewInitializeHandler);
-    this.dispatcher.addEventListener(EditorEvent.WV_GLOBAL_ERROR, this.webViewGlobalErrorHandler);
-    this.dispatcher.addEventListener(EditorEvent.WV_LOG, this.webViewLogHandler);
+  setInitialConfig(config: InitialConfig) {
+    this._initialConfig = config;
   }
 
-  private preprocessIncomingMessages = (event: {
-    type: string;
-    data: unknown;
-  }): { type: string; data: unknown } => {
-    const { data: eventData } = event;
+  initialize(webView: WebViewRef) {
+    this.webView = webView;
+    this.pageApi = null;
+    this.stopFn?.();
+    this.stopFn = null;
 
-    if (eventData && typeof eventData === 'object') {
-      const { meta, data } = eventData as { meta?: unknown; data?: unknown };
-      if (meta) {
-        this.readMessageMetaData(meta as Record<string, unknown>);
-        return { ...event, data };
+    // Methods exposed to the GUEST via DDA. The GUEST calls these on nativeApi.
+    const hostRoot = {
+      getInitialConfig: () => this._initialConfig,
+      onContentChange: (value: string, historySize?: HistorySize) => {
+        this.handlers.onContentUpdate(value);
+        if (historySize) {
+          this.handlers.onHistorySizeUpdate(historySize);
+        }
+      },
+      onLog: (...args: unknown[]) => this.handlers.onLog(...args),
+      onError: (error: unknown) => this.handlers.onError(error),
+    };
+
+    const { onMessage, connection } = initializeHost({
+      webView,
+      root: hostRoot,
+      handshakeTimeout: 30000,
+    });
+
+    this._onMessage = onMessage as unknown as (event: unknown) => void;
+
+    void connection.then(({ root: pageApi, stop }) => {
+      this.pageApi = pageApi as unknown as EditorAPI;
+      this.stopFn = stop;
+      // onInitialized is called when __editorReady__ arrives (after createEditor completes)
+    });
+  }
+
+  // Intercepts out-of-band messages before DDA sees them:
+  //   __editorLog__   — window.log() calls from the WebView
+  //   __editorError__ — window.onerror / unhandledrejection from the WebView
+  //   __editorReady__ — sent after createEditor + theme/language load; fires onInitialized
+  // Everything else is forwarded to the DDA subscriber.
+  onMessage = (event: unknown) => {
+    const raw = (event as { nativeEvent?: { data?: string }; data?: string })?.nativeEvent?.data ?? (event as { data?: string })?.data;
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed?.type === '__editorError__') {
+          this.handlers.onError(parsed.data);
+          return;
+        }
+        if (parsed?.type === '__editorLog__') {
+          this.handlers.onLog(...(Array.isArray(parsed.data) ? parsed.data : [parsed.data]));
+          return;
+        }
+        if (parsed?.type === '__editorReady__') {
+          // Fires only after the GUEST finishes createEditor (theme + language applied),
+          // so the BlockingView is removed only when the editor is visually complete.
+          this.handlers.onInitialized(this);
+          return;
+        }
+      } catch {
+        // not JSON — fall through to DDA
       }
     }
-
-    return event;
+    this._onMessage?.(event);
   };
 
-  private readMessageMetaData(meta: Record<string, unknown>) {
-    const { historySize } = meta;
-    this.handlers.onHistorySizeUpdate(historySize);
+  stop() {
+    this.stopFn?.();
+    this.stopFn = null;
+    this._onMessage = null;
+    this.pageApi = null;
   }
 
-  private webViewInitializeHandler = () => {
-    void this.handshake(this.initData).then(this.webViewInitializedHandler);
-  };
+  injectJavaScript(code: string) {
+    this.webView?.injectJavaScript(code);
+  }
 
-  private webViewInitializedHandler = () => {
-    this.initialized = true;
-    this.handlers.onInitialized(this);
-  };
+  requestFocus() {
+    this.webView?.requestFocus?.();
+  }
 
-  private webViewLogHandler = (event: unknown) => {
-    this.handlers.onLog((event as { data: unknown }).data);
-  };
+  // --- EditorAPI delegation ---
 
-  private webViewGlobalErrorHandler = (event: unknown) => {
-    this.handlers.onError(composeErrorMessage(event));
-  };
+  getValue = () => this.pageApi!.getValue();
 
-  addEventListener = (eventType: string, listener: (event: unknown) => void) =>
-    this.dispatcher?.addEventListener(eventType, listener);
+  setValue = (value: string) => this.pageApi!.setValue(value);
 
-  hasEventListener = (eventType: string) => this.dispatcher?.hasEventListener(eventType) ?? false;
+  resetValue = (value?: string) => this.pageApi!.resetValue(value);
 
-  removeEventListener = (eventType: string, listener: (event: unknown) => void) =>
-    this.dispatcher?.removeEventListener(eventType, listener);
+  setLanguage = (name: string) => this.pageApi!.setLanguage(name);
 
-  dispatchEvent = (eventType: string, data: unknown = null) =>
-    this.dispatcher?.dispatchEvent(eventType, data);
+  setExtensions = (specs: ExtensionSpec[]) => this.pageApi!.setExtensions(specs);
 
-  onMessage = (event: unknown) => this.port?.callMessageListeners(event);
+  setTheme = (themeName?: string) => this.pageApi!.setTheme(themeName);
 
-  injectJavaScript = (jsCode: string) => this.webView?.injectJavaScript(jsCode);
+  setViewport = (options: ViewportSettings) => this.pageApi!.setViewport(options);
 
-  requestFocus = () => this.webView?.requestFocus();
-
-  focus = (data?: unknown) => {
+  focus = () => {
     try {
-      this.webView?.requestFocus();
-    } catch (error) {
-      console.error(error);
+      this.webView?.requestFocus?.();
+    } catch {
+      // requestFocus is best-effort on Android
     }
-    return this.sendRequest(EditorEvent.FOCUS, data);
+    return this.pageApi!.focus();
   };
+
+  getCursor = (where?: 'from' | 'to' | 'head') => this.pageApi!.getCursor(where);
+
+  setCursor = (line: number, ch?: number) => this.pageApi!.setCursor(line, ch);
+
+  getSelection = () => this.pageApi!.getSelection();
+
+  setSelection = (anchor: number, head?: number) => this.pageApi!.setSelection(anchor, head);
+
+  replaceSelection = (text: string) => this.pageApi!.replaceSelection(text);
+
+  cancelSelection = () => this.pageApi!.cancelSelection();
+
+  historyUndo = () => this.pageApi!.historyUndo();
+
+  historyRedo = () => this.pageApi!.historyRedo();
+
+  historyClear = () => this.pageApi!.historyClear();
+
+  historySize = () => this.pageApi!.historySize();
+
+  scrollToCursor = (margin?: number) => this.pageApi!.scrollToCursor(margin);
+
+  loadExtension = (moduleName: string) => this.pageApi!.loadExtension(moduleName);
+
+  destroy = () => this.pageApi!.destroy();
 }
 
 export default WebViewAPI;

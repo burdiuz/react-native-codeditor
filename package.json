@@ -34,7 +34,8 @@
   "scripts": {
     "example": "yarn workspace react-native-codeditor-example",
     "clean": "del-cli lib",
-    "prepare": "bob build",
+    "copy-assets": "node scripts/copy-assets.js",
+    "prepare": "node scripts/copy-assets.js && bob build",
     "typecheck": "tsc"
   },
   "keywords": [
@@ -56,6 +57,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
+    "@actualwave/js-codemirror-package": "github:burdiuz/js-codemirror-package",
     "@react-native/assets-registry": "^0.85.3",
     "@react-native/babel-preset": "0.85.0",
     "@react-native/js-polyfills": "^0.85.3",
@@ -70,7 +72,7 @@
     "typescript": "^6.0.2"
   },
   "dependencies": {
-    "@actualwave/messageport-dispatcher": "^1.1.10"
+    "@actualwave/webview-interface": "^0.0.1"
   },
   "peerDependencies": {
     "react": "*",
