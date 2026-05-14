@@ -8,7 +8,7 @@ all offline, no CDN required.
 
 ## Features
 
-- CodeMirror 6 with `basicSetup` (line numbers, bracket matching, search, autocomplete, …)
+- CodeMirror 6 with mobile-optimized setup (line numbers, bracket matching, search, autocomplete, …)
 - 20+ syntax languages loaded on demand (`javascript`, `python`, `rust`, `sql`, …)
 - 20+ themes from `@uiw/codemirror-themes` (`darcula`, `monokai`, `github`, `nord`, …)
 - Fully offline — all CM6 assets bundled into the library
@@ -216,7 +216,9 @@ The `api` object received in `onInitialized` provides:
 
 - `api.focus()` — focuses the editor and triggers the Android soft keyboard.
 - `api.editor` — a DDA proxy to the live CM6 editor inside the WebView. All `api.editor.*`
-  methods return Promises resolved by the WebView.
+  methods return Promises resolved by the WebView. **Always `await` these calls** — DDA
+  operates in lazy mode and only dispatches the command when `.then` is accessed on the
+  returned Promise. Calling without `await` (or `void`) silently does nothing.
 - `api.injectJavaScript(code)` / `api.requestFocus()` — synchronous, React Native side only.
 
 ### Focus
@@ -397,15 +399,15 @@ Pass a theme name string to the `theme` prop:
 Switch theme at runtime:
 
 ```ts
-await api.setTheme('monokai');
-await api.setTheme(undefined); // remove theme, use CM6 default
+await api.editor.setTheme('monokai');
+await api.editor.setTheme(undefined); // remove theme, use CM6 default
 ```
 
 ---
 
 ## Supported languages
 
-Pass any of these to the `language` prop or `api.setLanguage()`:
+Pass any of these to the `language` prop or `api.editor.setLanguage()`:
 
 `angular` `cpp` `css` `go` `html` `java` `javascript` `jinja` `json`
 `less` `lezer` `liquid` `markdown` `php` `python` `rust` `sass` `sql`
@@ -479,8 +481,8 @@ export default function EditorScreen() {
     void api.focus();
   }, []);
 
-  const handleUndo = useCallback(() => { apiRef.current?.editor.historyUndo(); }, []);
-  const handleRedo = useCallback(() => { apiRef.current?.editor.historyRedo(); }, []);
+  const handleUndo = useCallback(async () => { await apiRef.current?.editor?.historyUndo(); }, []);
+  const handleRedo = useCallback(async () => { await apiRef.current?.editor?.historyRedo(); }, []);
 
   const handleSwitchLanguage = useCallback(async () => {
     await apiRef.current?.editor.setLanguage('python');
@@ -652,23 +654,17 @@ cp -r src/assets/* example/android/app/src/main/assets/
 
 ## Known issues
 
-### Android: ghost text / cursor not advancing when typing fast
+### Android: cursor not advancing when typing fast
 
-On Android, the soft keyboard communicates with the WebView via the IME (Input Method
-Editor) composition protocol — a sequence of `compositionstart` / `compositionupdate` /
-`compositionend` events that CM6 tracks internally. If anything disrupts the composition
-window (such as a synchronous `MessageEvent` dispatched into the WebView via
-`injectJavaScript`, which is how the DDA HOST→GUEST transport works), the IME and CM6 can
-end up with different views of the document. Symptoms:
+On Android, the soft keyboard uses IME composition (`compositionstart` / `compositionupdate` /
+`compositionend`). CM6's `drawSelection()` extension replaces the native browser cursor with
+a custom overlay, which prevents the Android IME from tracking the cursor position — causing
+characters to appear to the right of the cursor instead of advancing it.
 
-- Characters appear to the right of the cursor instead of advancing it.
-- "Ghost" text that cannot be deleted — selecting it and pressing delete deletes adjacent
-  text instead because CM6's internal state doesn't contain those characters.
+**Fixed**: The library uses a custom `mobileSetup` that omits `drawSelection()`, restoring
+the native browser cursor so Android IME tracks it correctly.
 
-This is a WebView + IME interaction issue and does not have a simple fix at the library
-level. If you hit it reliably, the workaround is to call `api.editor.setValue(await api.editor.getValue())`
-to resync CM6's state with what is displayed, which clears the ghost text (at the cost of
-collapsing undo history for that edit).
+If you add `drawSelection()` to a custom extension set, this issue will return.
 
 ### iOS: editor URI must be provided manually
 

@@ -112,30 +112,30 @@ export default function App() {
     console.log('[WebView] ref updated:', ref ? 'set' : 'null');
   }, []);
 
-  const handleUndo = useCallback(() => {
-    apiRef.current?.editor.historyUndo();
+  const handleUndo = useCallback(async () => {
+    await apiRef.current?.editor?.historyUndo();
   }, []);
 
-  const handleRedo = useCallback(() => {
-    apiRef.current?.editor.historyRedo();
+  const handleRedo = useCallback(async () => {
+    await apiRef.current?.editor?.historyRedo();
   }, []);
 
-  const handleNextLanguage = useCallback(() => {
+  const handleNextLanguage = useCallback(async () => {
     const next = (langIndex + 1) % LANGUAGES.length;
     const nextLang = LANGUAGES[next]!;
     setLangIndex(next);
-    apiRef.current?.editor.setLanguage(nextLang);
-    apiRef.current?.editor.resetValue(SAMPLES[nextLang]);
+    await apiRef.current?.editor?.setLanguage(nextLang);
+    await apiRef.current?.editor?.resetValue(SAMPLES[nextLang]);
   }, [langIndex]);
 
-  const handleNextTheme = useCallback(() => {
+  const handleNextTheme = useCallback(async () => {
     const next = (themeIndex + 1) % THEMES.length;
     setThemeIndex(next);
-    apiRef.current?.editor.setTheme(THEMES[next]);
+    await apiRef.current?.editor?.setTheme(THEMES[next]);
   }, [themeIndex]);
 
-  const handleResetValue = useCallback(() => {
-    apiRef.current?.editor.resetValue(SAMPLES[language]);
+  const handleResetValue = useCallback(async () => {
+    await apiRef.current?.editor?.resetValue(SAMPLES[language]);
   }, [language]);
 
   return (

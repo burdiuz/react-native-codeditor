@@ -127,8 +127,8 @@ const CodeEditor = ({
     prevContentRef.current = content;
 
     if (initializedRef.current && currentContentRef.current !== content) {
-      void apiRef.current!.editor.setValue(content);
       currentContentRef.current = content;
+      void (async () => { await apiRef.current!.editor.setValue(content); })();
     }
   }, [content]);
 
@@ -143,7 +143,7 @@ const CodeEditor = ({
     prevLanguageRef.current = language;
 
     if (initializedRef.current && language) {
-      void apiRef.current!.editor.setLanguage(language);
+      void (async () => { await apiRef.current!.editor.setLanguage(language); })();
     }
   }, [language]);
 
@@ -158,7 +158,7 @@ const CodeEditor = ({
     prevThemeRef.current = theme;
 
     if (initializedRef.current) {
-      void apiRef.current!.editor.setTheme(theme);
+      void (async () => { await apiRef.current!.editor.setTheme(theme); })();
     }
   }, [theme]);
 
@@ -173,7 +173,7 @@ const CodeEditor = ({
     prevExtensionsRef.current = extensions;
 
     if (initializedRef.current) {
-      void apiRef.current!.editor.setExtensions(extensions);
+      void (async () => { await apiRef.current!.editor.setExtensions(extensions); })();
     }
   }, [extensions]);
 
@@ -188,7 +188,7 @@ const CodeEditor = ({
     prevViewportRef.current = viewport;
 
     if (initializedRef.current && viewport) {
-      void apiRef.current!.editor.setViewport(viewport);
+      void (async () => { await apiRef.current!.editor.setViewport(viewport); })();
     }
   }, [viewport]);
 

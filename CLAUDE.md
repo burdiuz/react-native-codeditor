@@ -48,10 +48,14 @@ CodeEditor (React component)
        └─ initializeHost()        ◄──► WebViewInterface.initializeGuest()
             hostRoot proxy               editorTarget (EditorController methods)
             ├─ getInitialConfig()        ↕  DDA RPC over:
-            ├─ onContentChange()    ←──  ReactNativeWebView.postMessage (GUEST→HOST)
-            ├─ onLog()              ←──
+            ├─ onLog()              ←──  ReactNativeWebView.postMessage (GUEST→HOST)
             └─ onError()           ──►  injectJavaScript (HOST→GUEST)
                                          window.dispatchEvent(MessageEvent)
+           out-of-band _rnPost:
+            __contentChange__       ←── ReactNativeWebView.postMessage (one-way)
+            __editorReady__         ←──
+            __editorLog__           ←──
+            __editorError__         ←──
 ```
 
 ### HOST → GUEST (React Native → WebView)
@@ -71,6 +75,11 @@ DDA subscriber.
 | `__editorLog__` | GUEST→HOST | `window.log(...)` calls from the WebView |
 | `__editorError__` | GUEST→HOST | `window.onerror` / `unhandledrejection` |
 | `__editorReady__` | GUEST→HOST | Editor fully ready; HOST fires `onInitialized` |
+| `__contentChange__` | GUEST→HOST | Content/history update on every debounced keystroke |
+
+`__contentChange__` carries `{ value, undo, redo }`. It is a one-way fire-and-forget message
+(no DDA round trip, no `injectJavaScript` response). This keeps all `injectJavaScript` calls
+away from the typing hot path, preventing interference with Android IME composition.
 
 ### Message protocol
 All other messages are DDA command/response envelopes. The DDA layer handles serialisation,
@@ -115,9 +124,9 @@ routing, and Promise resolution transparently on both sides.
    → handlers.onInitialized(this) called — caller receives WebViewAPI handle
    → BlockingView disappears (editor is painted with correct theme)
 
-8. Ongoing: onChange fires in GUEST on every keystroke
-   → nativeApi.onContentChange(value, { undo, redo }) → DDA call to HOST
-   → HOST calls onContentUpdate(value) + onHistorySizeUpdate({ undo, redo })
+8. Ongoing: onChange fires in GUEST on every keystroke (debounced 300ms)
+   → _rnPost('__contentChange__', { value, undo, redo }) — out-of-band, no DDA
+   → HOST.onMessage intercepts → calls onContentUpdate(value) + onHistorySizeUpdate({ undo, redo })
 ```
 
 **Why `__editorReady__` instead of DDA connection:** `connection.then` resolves at step 5,
@@ -209,6 +218,13 @@ an IIFE shows errors via `window.onerror` instead of silently aborting.
 
 Exposes: `window.CodeMirrorEditor = { configure, createEditor, requireAsyncModule, registerExtension }`
 
+`createEditor` uses a custom `mobileSetup` instead of CM6's `basicSetup`. The only
+difference is that `drawSelection()` is omitted — it replaces the native browser cursor
+with a custom overlay which breaks Android IME composition tracking (causes ghost text
+and cursor not advancing when typing fast). All other `basicSetup` extensions are present.
+`foldKeymap` is sourced from `@codemirror/language` (not `@codemirror/commands`), which
+is where CM6 actually exports it.
+
 ---
 
 ## Asset linking — IMPORTANT for Expo
@@ -232,6 +248,29 @@ A proper Expo config plugin should be added to the library to automate this duri
 
 ---
 
+## DDA lazy mode — always `await` calls
+
+DDA operates in **lazy mode** by default. A proxy method call (e.g. `api.editor.historyUndo()`)
+builds a command chain but does NOT dispatch it until `.then` is accessed on the returned
+value — i.e. until the call is `await`-ed. Discarding the result with `void` or ignoring it
+entirely silently does nothing; no command is ever sent to the WebView.
+
+**Every call to `api.editor.*` must be awaited.** Example patterns:
+
+```typescript
+// ✓ correct — dispatches the command
+await apiRef.current?.editor?.historyUndo();
+
+// ✓ also correct — fire and forget inside useEffect
+void (async () => { await apiRef.current!.editor.setLanguage(language); })();
+
+// ✗ wrong — command is never sent
+void apiRef.current?.editor.historyUndo();
+apiRef.current?.editor.historyUndo();
+```
+
+---
+
 ## Effect structure in `CodeEditor.tsx`
 
 Each prop change is guarded by a `prevRef` that starts as `null` — the first render is
@@ -241,11 +280,14 @@ methods, so they are no-ops until the editor is ready.
 
 | Prop changed | Action |
 |---|---|
-| `content` | `api.setValue(content)` if value differs from `currentContentRef` |
-| `language` | `api.setLanguage(language)` |
-| `theme` | `api.setTheme(theme)` |
-| `extensions` | `api.setExtensions(extensions)` |
-| `viewport` | `api.setViewport(viewport)` |
+| `content` | `api.editor.setValue(content)` if value differs from `currentContentRef` |
+| `language` | `api.editor.setLanguage(language)` |
+| `theme` | `api.editor.setTheme(theme)` |
+| `extensions` | `api.editor.setExtensions(extensions)` |
+| `viewport` | `api.editor.setViewport(viewport)` |
+
+Each effect wraps the DDA call in `void (async () => { await ... })()` — `useEffect` callbacks
+must be synchronous, so the async IIFE pattern is used to enable `await` inside them.
 
 Initial values are delivered once during handshake via `nativeApi.getInitialConfig()` —
 not re-pushed as prop-change effects.
@@ -533,7 +575,6 @@ Resolved all startup failures and made the editor work end-to-end:
 - Fixed `@actualwave/deferred-data-access`: `FinalizationRegistry` fallback, CJS subpackage
   bundles, `getMessageEventData` using structural check instead of `instanceof Event`
 - Added out-of-band message protocol (`__editorLog__`, `__editorError__`, `__editorReady__`)
-- Added call queue in `editorTarget` to buffer HOST calls during `createEditor`
 - Moved `onInitialized` trigger to `__editorReady__` (fires after editor is fully painted)
 - Fixed theme loading to use per-package specs (`@uiw/codemirror-theme-{name}`)
 
@@ -542,3 +583,16 @@ Resolved all startup failures and made the editor work end-to-end:
 generates both `src/assets/codemirror-editor.umd.js` and `src/assets/codemirror/` from
 `node_modules/@actualwave/js-codemirror-package/dist/` automatically. `npm run prepare`
 runs the script before `bob build`, so assets are always in sync with the package version.
+
+### Phase 5 — Android IME + DDA call fixes (May 2026)
+Resolved Android typing issues and silent DDA call failures:
+
+- `mobileSetup`: replaced `basicSetup` with custom setup that omits `drawSelection()` — this
+  fixes Android IME ghost text (drawSelection hides the native cursor the IME tracks)
+- `foldKeymap` moved to correct import (`@codemirror/language`, not `@codemirror/commands`)
+- `__contentChange__` out-of-band message: replaced DDA `nativeApi.onContentChange()` call
+  with `_rnPost('__contentChange__', ...)` — eliminates all `injectJavaScript` calls during
+  typing, preventing IME composition disruption; added 300ms debounce
+- All `api.editor.*` calls in `App.tsx` and `CodeEditor.tsx` effects changed to properly
+  `await` — DDA lazy mode silently drops commands that are never awaited (`void x` does not
+  trigger `.then` and therefore never dispatches the command to the WebView)
