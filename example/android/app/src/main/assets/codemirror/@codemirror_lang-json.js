@@ -1,6 +1,6 @@
 async function moduleInitFunction(requireAsyncModule,exports={}){const module={exports:exports};var hasRequiredDist,require$$0=await requireAsyncModule("@lezer/json"),require$$1=await requireAsyncModule("@codemirror/language"),dist={},distExports=function requireDist(){function getErrorPosition(error,doc){let m;return(m=error.message.match(/at position (\d+)/))?Math.min(+m[1],doc.length):(m=error.message.match(/at line (\d+) column (\d+)/))?Math.min(doc.line(+m[1]).from+ +m[2]-1,doc.length):0}/**
 	A language provider that provides JSON parsing.
-	*//**
+	*/ /**
 	JSON language support.
 	*/function json(){return new language.LanguageSupport(jsonLanguage)}if(hasRequiredDist)return dist;hasRequiredDist=1;var json$1=require$$0,language=require$$1;/**
 	Calls

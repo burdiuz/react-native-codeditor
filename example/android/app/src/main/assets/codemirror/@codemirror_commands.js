@@ -81,7 +81,7 @@ for(let next,at=start.head;;){if(next=forward?pos.childAfter(at):pos.childBefore
 	will also delete that whitespace. When the cursor is between
 	matching brackets, an additional newline will be inserted after
 	the cursor.
-	*/function newlineAndIndent(atEof){return({state:state$1,dispatch})=>{if(state$1.readOnly)return!1;let changes=state$1.changeByRange(range=>{let{from,to}=range,line=state$1.doc.lineAt(from),explode=!atEof&&from==to&&isBetweenBrackets(state$1,from);atEof&&(from=to=(to<=line.to?line:state$1.doc.lineAt(to)).to);let cx=new language.IndentContext(state$1,{simulateBreak:from,simulateDoubleBreak:!!explode}),indent=language.getIndentation(cx,from);for(null==indent&&(indent=state.countColumn(/^\s*/.exec(state$1.doc.lineAt(from).text)[0],state$1.tabSize));to<line.to&&/\s/.test(line.text[to-line.from]);)to++;explode?{from,to}=explode:from>line.from&&from<line.from+100&&!/\S/.test(line.text.slice(0,from))&&(from=line.from);let insert=["",language.indentString(state$1,indent)];return explode&&insert.push(language.indentString(state$1,cx.lineIndent(line.from,-1))),{changes:{from,to,insert:state.Text.of(insert)},range:state.EditorSelection.cursor(from+1+insert[1].length)}});return dispatch(state$1.update(changes,{scrollIntoView:!0,userEvent:"input"})),!0}}function changeBySelectedLine(state$1,f){let atLine=-1;return state$1.changeByRange(range=>{let changes=[];for(let line,pos=range.from;pos<=range.to;)line=state$1.doc.lineAt(pos),line.number>atLine&&(range.empty||range.to>line.from)&&(f(line,changes,range),atLine=line.number),pos=line.to+1;let changeSet=state$1.changes(changes);return{changes,range:state.EditorSelection.range(changeSet.mapPos(range.anchor,1),changeSet.mapPos(range.head,1))}})}/**
+	*/function newlineAndIndent(atEof){return({state:state$1,dispatch})=>{if(state$1.readOnly)return!1;let changes=state$1.changeByRange(range=>{let{from,to}=range,line=state$1.doc.lineAt(from),explode=!atEof&&from==to&&isBetweenBrackets(state$1,from);atEof&&(from=to=(to<=line.to?line:state$1.doc.lineAt(to)).to);let cx=new language.IndentContext(state$1,{simulateBreak:from,simulateDoubleBreak:!!explode}),indent=language.getIndentation(cx,from);for(null==indent&&(indent=state.countColumn(/^\s*/.exec(state$1.doc.lineAt(from).text)[0],state$1.tabSize));to<line.to&&/\s/.test(line.text[to-line.from]);)to++;explode?({from,to}=explode):from>line.from&&from<line.from+100&&!/\S/.test(line.text.slice(0,from))&&(from=line.from);let insert=["",language.indentString(state$1,indent)];return explode&&insert.push(language.indentString(state$1,cx.lineIndent(line.from,-1))),{changes:{from,to,insert:state.Text.of(insert)},range:state.EditorSelection.cursor(from+1+insert[1].length)}});return dispatch(state$1.update(changes,{scrollIntoView:!0,userEvent:"input"})),!0}}function changeBySelectedLine(state$1,f){let atLine=-1;return state$1.changeByRange(range=>{let changes=[];for(let line,pos=range.from;pos<=range.to;)line=state$1.doc.lineAt(pos),line.number>atLine&&(range.empty||range.to>line.from)&&(f(line,changes,range),atLine=line.number),pos=line.to+1;let changeSet=state$1.changes(changes);return{changes,range:state.EditorSelection.range(changeSet.mapPos(range.anchor,1),changeSet.mapPos(range.head,1))}})}/**
 	Auto-indent the selected lines. This uses the [indentation service
 	facet](https://codemirror.net/6/docs/ref/#language.indentService) as source for auto-indent
 	information.
@@ -90,42 +90,42 @@ for(let next,at=start.head;;){if(next=forward?pos.childAfter(at):pos.childBefore
 	if available, otherwise falling back to block comments.
 	*/const toggleComment=target=>{let{state}=target,line=state.doc.lineAt(state.selection.main.from),config=getConfig(target.state,line.from);return config.line?toggleLineComment(target):!!config.block&&toggleBlockCommentByLine(target)},toggleLineComment=command(changeLineComment,0/* CommentOption.Toggle */),lineComment=command(changeLineComment,1/* CommentOption.Comment */),lineUncomment=command(changeLineComment,2/* CommentOption.Uncomment */),toggleBlockComment=command(changeBlockComment,0/* CommentOption.Toggle */),blockComment=command(changeBlockComment,1/* CommentOption.Comment */),blockUncomment=command(changeBlockComment,2/* CommentOption.Uncomment */),toggleBlockCommentByLine=command((o,s)=>changeBlockComment(o,s,selectedLineRanges(s)),0/* CommentOption.Toggle */),SearchMargin=50,fromHistory=state.Annotation.define(),isolateHistory=state.Annotation.define(),invertedEffects=state.Facet.define(),historyConfig=state.Facet.define({combine(configs){return state.combineConfig(configs,{minDepth:100,newGroupDelay:500,joinToEvent:(_t,isAdjacent)=>isAdjacent},{minDepth:Math.max,newGroupDelay:Math.min,joinToEvent:(a,b)=>(tr,adj)=>a(tr,adj)||b(tr,adj)})}}),historyField_=state.StateField.define({create(){return HistoryState.empty},update(state$1,tr){let config=tr.state.facet(historyConfig),fromHist=tr.annotation(fromHistory);if(fromHist){let item=HistEvent.fromTransaction(tr,fromHist.selection),from=fromHist.side,other=0==from/* BranchName.Done */?state$1.undone:state$1.done;return other=item?updateBranch(other,other.length,config.minDepth,item):addSelection(other,tr.startState.selection),new HistoryState(0==from/* BranchName.Done */?fromHist.rest:other,0==from/* BranchName.Done */?other:fromHist.rest)}let isolate=tr.annotation(isolateHistory);if(("full"==isolate||"before"==isolate)&&(state$1=state$1.isolate()),!1===tr.annotation(state.Transaction.addToHistory))return tr.changes.empty?state$1:state$1.addMapping(tr.changes.desc);let event=HistEvent.fromTransaction(tr),time=tr.annotation(state.Transaction.time),userEvent=tr.annotation(state.Transaction.userEvent);return event?state$1=state$1.addChanges(event,time,userEvent,config,tr):tr.selection&&(state$1=state$1.addSelection(tr.startState.selection,time,userEvent,config.newGroupDelay)),("full"==isolate||"after"==isolate)&&(state$1=state$1.isolate()),state$1},toJSON(value){return{done:value.done.map(e=>e.toJSON()),undone:value.undone.map(e=>e.toJSON())}},fromJSON(json){return new HistoryState(json.done.map(HistEvent.fromJSON),json.undone.map(HistEvent.fromJSON))}}),historyField=historyField_,undo=cmd(0/* BranchName.Done */,!1),redo=cmd(1/* BranchName.Undone */,!1),undoSelection=cmd(0/* BranchName.Done */,!0),redoSelection=cmd(1/* BranchName.Undone */,!0),undoDepth=depth(0/* BranchName.Done */),redoDepth=depth(1/* BranchName.Undone */);/**
 	Comment the current selection using line comments.
-	*//**
+	*/ /**
 	Uncomment the current selection using line comments.
-	*//**
+	*/ /**
 	Comment or uncomment the current selection using block comments.
 	The block comment syntax is taken from the
 	[`commentTokens`](https://codemirror.net/6/docs/ref/#commands.CommentTokens) [language
 	data](https://codemirror.net/6/docs/ref/#state.EditorState.languageDataAt).
-	*//**
+	*/ /**
 	Comment the current selection using block comments.
-	*//**
+	*/ /**
 	Uncomment the current selection using block comments.
-	*//**
+	*/ /**
 	Comment or uncomment the lines around the current selection using
 	block comments.
-	*//**
+	*/ /**
 	Transaction annotation that will prevent that transaction from
 	being combined with other transactions in the undo history. Given
 	`"before"`, it'll prevent merging with previous transactions. With
 	`"after"`, subsequent transactions won't be combined with this
 	one. With `"full"`, the transaction is isolated on both sides.
-	*//**
+	*/ /**
 	This facet provides a way to register functions that, given a
 	transaction, provide a set of effects that the history should
 	store when inverting the transaction. This can be used to
 	integrate some kinds of effects in the history, so that they can
 	be undone (and redone again).
-	*//**
+	*/ /**
 	Redo a group of history events. Returns false if no group was
 	available.
-	*//**
+	*/ /**
 	Undo a change or selection change.
-	*//**
+	*/ /**
 	Redo a change or selection change.
-	*//**
+	*/ /**
 	The amount of redoable change events available in a given state.
-	*/// History events store groups of changes or effects that need to be
+	*/ // History events store groups of changes or effects that need to be
 // undone/redone together.
 class HistEvent{constructor(// The changes in this event. Normal events hold at least one
 // change or effect. But it may be necessary to store selection
@@ -151,185 +151,185 @@ static fromTransaction(tr,selection){let effects=none;for(let invert of tr.start
 	- Alt-u (Mod-Shift-u on macOS): [`redoSelection`](https://codemirror.net/6/docs/ref/#commands.redoSelection).
 	*/const historyKeymap=[{key:"Mod-z",run:undo,preventDefault:!0},{key:"Mod-y",mac:"Mod-Shift-z",run:redo,preventDefault:!0},{linux:"Ctrl-Shift-z",run:redo,preventDefault:!0},{key:"Mod-u",run:undoSelection,preventDefault:!0},{key:"Alt-u",mac:"Mod-Shift-u",run:redoSelection,preventDefault:!0}],cursorCharLeft=view=>cursorByChar(view,!ltrAtCursor(view)),cursorCharRight=view=>cursorByChar(view,ltrAtCursor(view)),cursorCharForward=view=>cursorByChar(view,!0),cursorCharBackward=view=>cursorByChar(view,!1),cursorCharForwardLogical=target=>moveByCharLogical(target,!0),cursorCharBackwardLogical=target=>moveByCharLogical(target,!1),cursorGroupLeft=view=>cursorByGroup(view,!ltrAtCursor(view)),cursorGroupRight=view=>cursorByGroup(view,ltrAtCursor(view)),cursorGroupForward=view=>cursorByGroup(view,!0),cursorGroupBackward=view=>cursorByGroup(view,!1),cursorGroupForwardWin=view=>moveSel(view,range=>range.empty?view.moveByChar(range,!0,start=>toGroupStart(view,range.head,start)):rangeEnd(range,!0)),segmenter="undefined"!=typeof Intl&&Intl.Segmenter?new Intl.Segmenter(void 0,{granularity:"word"}):null,cursorSubwordForward=view=>cursorBySubword(view,!0),cursorSubwordBackward=view=>cursorBySubword(view,!1),cursorSyntaxLeft=view=>moveSel(view,range=>moveBySyntax(view.state,range,!ltrAtCursor(view))),cursorSyntaxRight=view=>moveSel(view,range=>moveBySyntax(view.state,range,ltrAtCursor(view))),cursorLineUp=view=>cursorByLine(view,!1),cursorLineDown=view=>cursorByLine(view,!0),cursorPageUp=view=>cursorByPage(view,!1),cursorPageDown=view=>cursorByPage(view,!0),cursorLineBoundaryForward=view=>moveSel(view,range=>moveByLineBoundary(view,range,!0)),cursorLineBoundaryBackward=view=>moveSel(view,range=>moveByLineBoundary(view,range,!1)),cursorLineBoundaryLeft=view=>moveSel(view,range=>moveByLineBoundary(view,range,!ltrAtCursor(view))),cursorLineBoundaryRight=view=>moveSel(view,range=>moveByLineBoundary(view,range,ltrAtCursor(view))),cursorLineStart=view=>moveSel(view,range=>state.EditorSelection.cursor(view.lineBlockAt(range.head).from,1)),cursorLineEnd=view=>moveSel(view,range=>state.EditorSelection.cursor(view.lineBlockAt(range.head).to,-1)),cursorMatchingBracket=({state,dispatch})=>toMatchingBracket(state,dispatch,!1),selectMatchingBracket=({state,dispatch})=>toMatchingBracket(state,dispatch,!0),selectCharLeft=view=>selectByChar(view,!ltrAtCursor(view)),selectCharRight=view=>selectByChar(view,ltrAtCursor(view)),selectCharForward=view=>selectByChar(view,!0),selectCharBackward=view=>selectByChar(view,!1),selectCharForwardLogical=target=>extendSel(target,range=>byCharLogical(target.state,range,!0)),selectCharBackwardLogical=target=>extendSel(target,range=>byCharLogical(target.state,range,!1)),selectGroupLeft=view=>selectByGroup(view,!ltrAtCursor(view)),selectGroupRight=view=>selectByGroup(view,ltrAtCursor(view)),selectGroupForward=view=>selectByGroup(view,!0),selectGroupBackward=view=>selectByGroup(view,!1),selectGroupForwardWin=view=>extendSel(view,range=>view.moveByChar(range,!0,start=>toGroupStart(view,range.head,start))),selectSubwordForward=view=>selectBySubword(view,!0),selectSubwordBackward=view=>selectBySubword(view,!1),selectSyntaxLeft=view=>extendSel(view,range=>moveBySyntax(view.state,range,!ltrAtCursor(view))),selectSyntaxRight=view=>extendSel(view,range=>moveBySyntax(view.state,range,ltrAtCursor(view))),selectLineUp=view=>selectByLine(view,!1),selectLineDown=view=>selectByLine(view,!0),selectPageUp=view=>selectByPage(view,!1),selectPageDown=view=>selectByPage(view,!0),selectLineBoundaryForward=view=>extendSel(view,range=>moveByLineBoundary(view,range,!0)),selectLineBoundaryBackward=view=>extendSel(view,range=>moveByLineBoundary(view,range,!1)),selectLineBoundaryLeft=view=>extendSel(view,range=>moveByLineBoundary(view,range,!ltrAtCursor(view))),selectLineBoundaryRight=view=>extendSel(view,range=>moveByLineBoundary(view,range,ltrAtCursor(view))),selectLineStart=view=>extendSel(view,range=>state.EditorSelection.cursor(view.lineBlockAt(range.head).from)),selectLineEnd=view=>extendSel(view,range=>state.EditorSelection.cursor(view.lineBlockAt(range.head).to)),cursorDocStart=({state,dispatch})=>(dispatch(setSel(state,{anchor:0})),!0),cursorDocEnd=({state,dispatch})=>(dispatch(setSel(state,{anchor:state.doc.length})),!0),selectDocStart=({state,dispatch})=>(dispatch(setSel(state,{anchor:state.selection.main.anchor,head:0})),!0),selectDocEnd=({state,dispatch})=>(dispatch(setSel(state,{anchor:state.selection.main.anchor,head:state.doc.length})),!0),selectAll=({state,dispatch})=>(dispatch(state.update({selection:{anchor:0,head:state.doc.length},userEvent:"select"})),!0),selectLine=({state:state$1,dispatch})=>{let ranges=selectedLineBlocks(state$1).map(({from,to})=>state.EditorSelection.range(from,Math.min(to+1,state$1.doc.length)));return dispatch(state$1.update({selection:state.EditorSelection.create(ranges),userEvent:"select"})),!0},selectParentSyntax=({state:state$1,dispatch})=>{let selection=updateSel(state$1.selection,range=>{let tree=language.syntaxTree(state$1),stack=tree.resolveStack(range.from,1);if(range.empty){let stackBefore=tree.resolveStack(range.from,-1);stackBefore.node.from>=stack.node.from&&stackBefore.node.to<=stack.node.to&&(stack=stackBefore)}for(let cur=stack;cur;cur=cur.next){let{node}=cur;if((node.from<range.from&&node.to>=range.to||node.to>range.to&&node.from<=range.from)&&cur.next)return state.EditorSelection.range(node.to,node.from)}return range});return!selection.eq(state$1.selection)&&(dispatch(setSel(state$1,selection)),!0)},addCursorAbove=view=>addCursorVertically(view,!1),addCursorBelow=view=>addCursorVertically(view,!0),simplifySelection=({state:state$1,dispatch})=>{let cur=state$1.selection,selection=null;return(1<cur.ranges.length?selection=state.EditorSelection.create([cur.main]):!cur.main.empty&&(selection=state.EditorSelection.create([state.EditorSelection.cursor(cur.main.head)])),!!selection)&&(dispatch(setSel(state$1,selection)),!0)},deleteByChar=(target,forward,byIndentUnit)=>deleteBy(target,range=>{let before,targetPos,pos=range.from,{state:state$1}=target,line=state$1.doc.lineAt(pos);if(byIndentUnit&&!forward&&pos>line.from&&pos<line.from+200&&!/[^ \t]/.test(before=line.text.slice(0,pos-line.from))){if("\t"==before[before.length-1])return pos-1;let col=state.countColumn(before,state$1.tabSize),drop=col%language.getIndentUnit(state$1)||language.getIndentUnit(state$1);for(let i=0;i<drop&&" "==before[before.length-1-i];i++)pos--;targetPos=pos}else targetPos=state.findClusterBreak(line.text,pos-line.from,forward,forward)+line.from,targetPos==pos&&line.number!=(forward?state$1.doc.lines:1)?targetPos+=forward?1:-1:!forward&&/[\ufe00-\ufe0f]/.test(line.text.slice(targetPos-line.from,pos-line.from))&&(targetPos=state.findClusterBreak(line.text,targetPos-line.from,!1,!1)+line.from);return targetPos}),deleteCharBackward=view=>deleteByChar(view,!1,!0),deleteCharBackwardStrict=view=>deleteByChar(view,!1,!1),deleteCharForward=view=>deleteByChar(view,!0,!1),deleteByGroup=(target,forward)=>deleteBy(target,range=>{let pos=range.head,{state:state$1}=target,line=state$1.doc.lineAt(pos),categorize=state$1.charCategorizer(pos);for(let cat=null;;){if(pos==(forward?line.to:line.from)){pos==range.head&&line.number!=(forward?state$1.doc.lines:1)&&(pos+=forward?1:-1);break}let next=state.findClusterBreak(line.text,pos-line.from,forward)+line.from,nextChar=line.text.slice(Math.min(pos,next)-line.from,Math.max(pos,next)-line.from),nextCat=categorize(nextChar);if(null!=cat&&nextCat!=cat)break;(" "!=nextChar||pos!=range.head)&&(cat=nextCat),pos=next}return pos}),deleteGroupBackward=target=>deleteByGroup(target,!1),deleteGroupForward=target=>deleteByGroup(target,!0),deleteGroupForwardWin=view=>deleteBy(view,range=>view.moveByChar(range,!0,start=>toGroupStart(view,range.head,start)).head),deleteToLineEnd=view=>deleteBy(view,range=>{let lineEnd=view.lineBlockAt(range.head).to;return range.head<lineEnd?lineEnd:Math.min(view.state.doc.length,range.head+1)}),deleteToLineStart=view=>deleteBy(view,range=>{let lineStart=view.lineBlockAt(range.head).from;return range.head>lineStart?lineStart:Math.max(0,range.head-1)}),deleteLineBoundaryBackward=view=>deleteBy(view,range=>{let lineStart=view.moveToLineBoundary(range,!1).head;return range.head>lineStart?lineStart:Math.max(0,range.head-1)}),deleteLineBoundaryForward=view=>deleteBy(view,range=>{let lineStart=view.moveToLineBoundary(range,!0).head;return range.head<lineStart?lineStart:Math.min(view.state.doc.length,range.head+1)}),deleteTrailingWhitespace=({state,dispatch})=>{if(state.readOnly)return!1;let changes=[];for(let pos=0,prev="",iter=state.doc.iter();;){if(iter.next(),iter.lineBreak||iter.done){let trailing=prev.search(/\s+$/);if(-1<trailing&&changes.push({from:pos-(prev.length-trailing),to:pos}),iter.done)break;prev=""}else prev=iter.value;pos+=iter.value.length}return!!changes.length&&(dispatch(state.update({changes,userEvent:"delete"})),!0)},splitLine=({state:state$1,dispatch})=>{if(state$1.readOnly)return!1;let changes=state$1.changeByRange(range=>({changes:{from:range.from,to:range.to,insert:state.Text.of(["",""])},range:state.EditorSelection.cursor(range.from)}));return dispatch(state$1.update(changes,{scrollIntoView:!0,userEvent:"input"})),!0},transposeChars=({state:state$1,dispatch})=>{if(state$1.readOnly)return!1;let changes=state$1.changeByRange(range=>{if(!range.empty||0==range.from||range.from==state$1.doc.length)return{range};let pos=range.from,line=state$1.doc.lineAt(pos),from=pos==line.from?pos-1:state.findClusterBreak(line.text,pos-line.from,!1)+line.from,to=pos==line.to?pos+1:state.findClusterBreak(line.text,pos-line.from,!0)+line.from;return{changes:{from,to,insert:state$1.doc.slice(pos,to).append(state$1.doc.slice(from,pos))},range:state.EditorSelection.cursor(to)}});return!changes.changes.empty&&(dispatch(state$1.update(changes,{scrollIntoView:!0,userEvent:"move.character"})),!0)},moveLineUp=({state,dispatch})=>moveLine(state,dispatch,!1),moveLineDown=({state,dispatch})=>moveLine(state,dispatch,!0),copyLineUp=({state,dispatch})=>copyLine(state,dispatch,!1),copyLineDown=({state,dispatch})=>copyLine(state,dispatch,!0),deleteLine=view=>{if(view.state.readOnly)return!1;let{state}=view,changes=state.changes(selectedLineBlocks(state).map(({from,to})=>(0<from?from--:to<state.doc.length&&to++,{from,to}))),selection=updateSel(state.selection,range=>{let dist;if(view.lineWrapping){let block=view.lineBlockAt(range.head),pos=view.coordsAtPos(range.head,range.assoc||1);pos&&(dist=block.bottom+view.documentTop-pos.bottom+view.defaultLineHeight/2)}return view.moveVertically(range,!0,dist)}).map(changes);return view.dispatch({changes,selection,scrollIntoView:!0,userEvent:"delete.line"}),!0},insertNewline=({state,dispatch})=>(dispatch(state.update(state.replaceSelection(state.lineBreak),{scrollIntoView:!0,userEvent:"input"})),!0),insertNewlineKeepIndent=({state:state$1,dispatch})=>(dispatch(state$1.update(state$1.changeByRange(range=>{let indent=/^\s*/.exec(state$1.doc.lineAt(range.from).text)[0];return{changes:{from:range.from,to:range.to,insert:state$1.lineBreak+indent},range:state.EditorSelection.cursor(range.from+indent.length+1)}}),{scrollIntoView:!0,userEvent:"input"})),!0),insertNewlineAndIndent=newlineAndIndent(!1),insertBlankLine=newlineAndIndent(!0),indentSelection=({state,dispatch})=>{if(state.readOnly)return!1;let updated=Object.create(null),context=new language.IndentContext(state,{overrideIndentation:start=>{let found=updated[start];return null==found?-1:found}}),changes=changeBySelectedLine(state,(line,changes,range)=>{let indent=language.getIndentation(context,line.from);if(null==indent)return;/\S/.test(line.text)||(indent=0);let cur=/^\s*/.exec(line.text)[0],norm=language.indentString(state,indent);(cur!=norm||range.from<line.from+cur.length)&&(updated[line.from]=indent,changes.push({from:line.from,to:line.from+cur.length,insert:norm}))});return changes.changes.empty||dispatch(state.update(changes,{userEvent:"indent"})),!0},indentMore=({state,dispatch})=>!state.readOnly&&(dispatch(state.update(changeBySelectedLine(state,(line,changes)=>{changes.push({from:line.from,insert:state.facet(language.indentUnit)})}),{userEvent:"input.indent"})),!0),indentLess=({state:state$1,dispatch})=>!state$1.readOnly&&(dispatch(state$1.update(changeBySelectedLine(state$1,(line,changes)=>{let space=/^\s*/.exec(line.text)[0];if(!space)return;let col=state.countColumn(space,state$1.tabSize),keep=0,insert=language.indentString(state$1,Math.max(0,col-language.getIndentUnit(state$1)));for(;keep<space.length&&keep<insert.length&&space.charCodeAt(keep)==insert.charCodeAt(keep);)keep++;changes.push({from:line.from+keep,to:line.from+space.length,insert:insert.slice(keep)})}),{userEvent:"delete.dedent"})),!0),toggleTabFocusMode=view=>(view.setTabFocusMode(),!0),temporarilySetTabFocusMode=view=>(view.setTabFocusMode(2e3),!0),insertTab=({state,dispatch})=>state.selection.ranges.some(r=>!r.empty)?indentMore({state,dispatch}):(dispatch(state.update(state.replaceSelection("\t"),{scrollIntoView:!0,userEvent:"input"})),!0),emacsStyleKeymap=[{key:"Ctrl-b",run:cursorCharLeft,shift:selectCharLeft,preventDefault:!0},{key:"Ctrl-f",run:cursorCharRight,shift:selectCharRight},{key:"Ctrl-p",run:cursorLineUp,shift:selectLineUp},{key:"Ctrl-n",run:cursorLineDown,shift:selectLineDown},{key:"Ctrl-a",run:cursorLineStart,shift:selectLineStart},{key:"Ctrl-e",run:cursorLineEnd,shift:selectLineEnd},{key:"Ctrl-d",run:deleteCharForward},{key:"Ctrl-h",run:deleteCharBackward},{key:"Ctrl-k",run:deleteToLineEnd},{key:"Ctrl-Alt-h",run:deleteGroupBackward},{key:"Ctrl-o",run:splitLine},{key:"Ctrl-t",run:transposeChars},{key:"Ctrl-v",run:cursorPageDown}],standardKeymap=[{key:"ArrowLeft",run:cursorCharLeft,shift:selectCharLeft,preventDefault:!0},{key:"Mod-ArrowLeft",mac:"Alt-ArrowLeft",run:cursorGroupLeft,shift:selectGroupLeft,preventDefault:!0},{mac:"Cmd-ArrowLeft",run:cursorLineBoundaryLeft,shift:selectLineBoundaryLeft,preventDefault:!0},{key:"ArrowRight",run:cursorCharRight,shift:selectCharRight,preventDefault:!0},{key:"Mod-ArrowRight",mac:"Alt-ArrowRight",run:cursorGroupRight,shift:selectGroupRight,preventDefault:!0},{mac:"Cmd-ArrowRight",run:cursorLineBoundaryRight,shift:selectLineBoundaryRight,preventDefault:!0},{key:"ArrowUp",run:cursorLineUp,shift:selectLineUp,preventDefault:!0},{mac:"Cmd-ArrowUp",run:cursorDocStart,shift:selectDocStart},{mac:"Ctrl-ArrowUp",run:cursorPageUp,shift:selectPageUp},{key:"ArrowDown",run:cursorLineDown,shift:selectLineDown,preventDefault:!0},{mac:"Cmd-ArrowDown",run:cursorDocEnd,shift:selectDocEnd},{mac:"Ctrl-ArrowDown",run:cursorPageDown,shift:selectPageDown},{key:"PageUp",run:cursorPageUp,shift:selectPageUp},{key:"PageDown",run:cursorPageDown,shift:selectPageDown},{key:"Home",run:cursorLineBoundaryBackward,shift:selectLineBoundaryBackward,preventDefault:!0},{key:"Mod-Home",run:cursorDocStart,shift:selectDocStart},{key:"End",run:cursorLineBoundaryForward,shift:selectLineBoundaryForward,preventDefault:!0},{key:"Mod-End",run:cursorDocEnd,shift:selectDocEnd},{key:"Enter",run:insertNewlineAndIndent,shift:insertNewlineAndIndent},{key:"Mod-a",run:selectAll},{key:"Backspace",run:deleteCharBackward,shift:deleteCharBackward,preventDefault:!0},{key:"Delete",run:deleteCharForward,preventDefault:!0},{key:"Mod-Backspace",mac:"Alt-Backspace",run:deleteGroupBackward,preventDefault:!0},{key:"Mod-Delete",mac:"Alt-Delete",run:deleteGroupForward,preventDefault:!0},{mac:"Mod-Backspace",run:deleteLineBoundaryBackward,preventDefault:!0},{mac:"Mod-Delete",run:deleteLineBoundaryForward,preventDefault:!0}].concat(emacsStyleKeymap.map(b=>({mac:b.key,run:b.run,shift:b.shift}))),defaultKeymap=[{key:"Alt-ArrowLeft",mac:"Ctrl-ArrowLeft",run:cursorSyntaxLeft,shift:selectSyntaxLeft},{key:"Alt-ArrowRight",mac:"Ctrl-ArrowRight",run:cursorSyntaxRight,shift:selectSyntaxRight},{key:"Alt-ArrowUp",run:moveLineUp},{key:"Shift-Alt-ArrowUp",run:copyLineUp},{key:"Alt-ArrowDown",run:moveLineDown},{key:"Shift-Alt-ArrowDown",run:copyLineDown},{key:"Mod-Alt-ArrowUp",run:addCursorAbove},{key:"Mod-Alt-ArrowDown",run:addCursorBelow},{key:"Escape",run:simplifySelection},{key:"Mod-Enter",run:insertBlankLine},{key:"Alt-l",mac:"Ctrl-l",run:selectLine},{key:"Mod-i",run:selectParentSyntax,preventDefault:!0},{key:"Mod-[",run:indentLess},{key:"Mod-]",run:indentMore},{key:"Mod-Alt-\\",run:indentSelection},{key:"Shift-Mod-k",run:deleteLine},{key:"Shift-Mod-\\",run:cursorMatchingBracket},{key:"Mod-/",run:toggleComment},{key:"Alt-A",run:toggleBlockComment},{key:"Ctrl-m",mac:"Shift-Alt-m",run:toggleTabFocusMode}].concat(standardKeymap),indentWithTab={key:"Tab",run:indentMore,shift:indentLess};/**
 	Move the selection one character to the right.
-	*//**
+	*/ /**
 	Move the selection one character forward.
-	*//**
+	*/ /**
 	Move the selection one character backward.
-	*//**
+	*/ /**
 	Move the selection one character backward, in logical string index
 	order.
-	*//**
+	*/ /**
 	Move the selection one group to the right.
-	*//**
+	*/ /**
 	Move the selection one group forward.
-	*//**
+	*/ /**
 	Move the selection one group backward.
-	*//**
+	*/ /**
 	Move the selection one group or camel-case subword backward.
-	*//**
+	*/ /**
 	Move the cursor over the next syntactic element to the right.
-	*//**
+	*/ /**
 	Move the selection one line down.
-	*//**
+	*/ /**
 	Move the selection one page down.
-	*//**
+	*/ /**
 	Move the selection to previous line wrap point, or failing that to
 	the start of the line. If the line is indented, and the cursor
 	isn't already at the end of the indentation, this will move to the
 	end of the indentation instead of the start of the line.
-	*//**
+	*/ /**
 	Move the selection one line wrap point to the left.
-	*//**
+	*/ /**
 	Move the selection one line wrap point to the right.
-	*//**
+	*/ /**
 	Move the selection to the start of the line.
-	*//**
+	*/ /**
 	Move the selection to the end of the line.
-	*//**
+	*/ /**
 	Extend the selection to the bracket matching the one the selection
 	head is currently on, if any.
-	*//**
+	*/ /**
 	Move the selection head one character to the right.
-	*//**
+	*/ /**
 	Move the selection head one character forward.
-	*//**
+	*/ /**
 	Move the selection head one character backward.
-	*//**
+	*/ /**
 	Move the selection head one character forward by logical
 	(non-direction aware) string index order.
-	*//**
+	*/ /**
 	Move the selection head one character backward by logical string
 	index order.
-	*//**
+	*/ /**
 	Move the selection head one group to the right.
-	*//**
+	*/ /**
 	Move the selection head one group forward.
-	*//**
+	*/ /**
 	Move the selection head one group backward.
-	*//**
+	*/ /**
 	Move the selection head one group forward in the default Windows
 	style, skipping to the start of the next group.
-	*//**
+	*/ /**
 	Move the selection head one group or subword backward.
-	*//**
+	*/ /**
 	Move the selection head over the next syntactic element to the left.
-	*//**
+	*/ /**
 	Move the selection head over the next syntactic element to the right.
-	*//**
+	*/ /**
 	Move the selection head one line down.
-	*//**
+	*/ /**
 	Move the selection head one page down.
-	*//**
+	*/ /**
 	Move the selection head to the next line boundary.
-	*//**
+	*/ /**
 	Move the selection head to the previous line boundary.
-	*//**
+	*/ /**
 	Move the selection head one line boundary to the left.
-	*//**
+	*/ /**
 	Move the selection head one line boundary to the right.
-	*//**
+	*/ /**
 	Move the selection head to the start of the line.
-	*//**
+	*/ /**
 	Move the selection head to the end of the line.
-	*//**
+	*/ /**
 	Move the selection to the start of the document.
-	*//**
+	*/ /**
 	Move the selection to the end of the document.
-	*//**
+	*/ /**
 	Move the selection head to the start of the document.
-	*//**
+	*/ /**
 	Move the selection head to the end of the document.
-	*//**
+	*/ /**
 	Select the entire document.
-	*//**
+	*/ /**
 	Expand the selection to cover entire lines.
-	*//**
+	*/ /**
 	Select the next syntactic construct that is larger than the
 	selection. Note that this will only work insofar as the language
 	[provider](https://codemirror.net/6/docs/ref/#language.language) you use builds up a full
 	syntax tree.
-	*//**
+	*/ /**
 	Expand the selection by adding a cursor below the heads of
 	currently selected ranges.
-	*//**
+	*/ /**
 	Simplify the current selection. When multiple ranges are selected,
 	reduce it to its main range. Otherwise, if the selection is
 	non-empty, convert it to a cursor selection.
-	*//**
+	*/ /**
 	Delete the selection, or, for cursor selections, the character or
 	indentation unit before the cursor.
-	*//**
+	*/ /**
 	Delete the selection or the character before the cursor. Does not
 	implement any extended behavior like deleting whole indentation
 	units in one go.
-	*//**
+	*/ /**
 	Delete the selection or the character after the cursor.
-	*//**
+	*/ /**
 	Delete the selection or backward until the end of the next
 	[group](https://codemirror.net/6/docs/ref/#view.EditorView.moveByGroup), only skipping groups of
 	whitespace when they consist of a single space.
-	*//**
+	*/ /**
 	Delete the selection or forward until the end of the next group.
-	*//**
+	*/ /**
 	Variant of [`deleteGroupForward`](https://codemirror.net/6/docs/ref/#commands.deleteGroupForward)
 	that uses the Windows convention of also deleting the whitespace
 	after a word.
-	*//**
+	*/ /**
 	Delete the selection, or, if it is a cursor selection, delete to
 	the end of the line. If the cursor is directly at the end of the
 	line, delete the line break after it.
-	*//**
+	*/ /**
 	Delete the selection, or, if it is a cursor selection, delete to
 	the start of the line. If the cursor is directly at the start of the
 	line, delete the line break before it.
-	*//**
+	*/ /**
 	Delete the selection, or, if it is a cursor selection, delete to
 	the start of the line or the next line wrap before the cursor.
-	*//**
+	*/ /**
 	Delete the selection, or, if it is a cursor selection, delete to
 	the end of the line or the next line wrap after the cursor.
-	*//**
+	*/ /**
 	Delete all whitespace directly before a line end from the
 	document.
-	*//**
+	*/ /**
 	Replace each selection range with a line break, leaving the cursor
 	on the line before the break.
-	*//**
+	*/ /**
 	Flip the characters before and after the cursor(s).
-	*//**
+	*/ /**
 	Move the selected lines down one line.
-	*//**
+	*/ /**
 	Create a copy of the selected lines. Keep the selection in the bottom copy.
-	*//**
+	*/ /**
 	Delete selected lines.
-	*//**
+	*/ /**
 	Replace the selection with a newline.
-	*//**
+	*/ /**
 	Replace the selection with a newline and the same amount of
 	indentation as the line above.
-	*//**
+	*/ /**
 	Create a blank, indented line below the current line.
-	*//**
+	*/ /**
 	Add a [unit](https://codemirror.net/6/docs/ref/#language.indentUnit) of indentation to all selected
 	lines.
-	*//**
+	*/ /**
 	Remove a [unit](https://codemirror.net/6/docs/ref/#language.indentUnit) of indentation from all
 	selected lines.
-	*//**
+	*/ /**
 	Enables or disables
 	[tab-focus mode](https://codemirror.net/6/docs/ref/#view.EditorView.setTabFocusMode). While on, this
 	prevents the editor's key bindings from capturing Tab or
 	Shift-Tab, making it possible for the user to move focus out of
 	the editor with the keyboard.
-	*//**
+	*/ /**
 	Temporarily enables [tab-focus
 	mode](https://codemirror.net/6/docs/ref/#view.EditorView.setTabFocusMode) for two seconds or until
 	another key is pressed.
-	*//**
+	*/ /**
 	Insert a tab character at the cursor or, if something is selected,
 	use [`indentMore`](https://codemirror.net/6/docs/ref/#commands.indentMore) to indent the entire
 	selection.
-	*//**
+	*/ /**
 	Array of key bindings containing the Emacs-style bindings that are
 	available on macOS by default.
 
@@ -347,7 +347,7 @@ static fromTransaction(tr,selection){let effects=none;for(let invert of tr.start
 	 - Ctrl-t: [`transposeChars`](https://codemirror.net/6/docs/ref/#commands.transposeChars)
 	 - Ctrl-v: [`cursorPageDown`](https://codemirror.net/6/docs/ref/#commands.cursorPageDown)
 	 - Alt-v: [`cursorPageUp`](https://codemirror.net/6/docs/ref/#commands.cursorPageUp)
-	*//**
+	*/ /**
 	An array of key bindings closely sticking to platform-standard or
 	widely used bindings. (This includes the bindings from
 	[`emacsStyleKeymap`](https://codemirror.net/6/docs/ref/#commands.emacsStyleKeymap), with their `key`
@@ -379,7 +379,7 @@ static fromTransaction(tr,selection){let effects=none;for(let invert of tr.start
 	 - Ctrl-Delete (Alt-Delete on macOS): [`deleteGroupForward`](https://codemirror.net/6/docs/ref/#commands.deleteGroupForward)
 	 - Cmd-Backspace (macOS): [`deleteLineBoundaryBackward`](https://codemirror.net/6/docs/ref/#commands.deleteLineBoundaryBackward).
 	 - Cmd-Delete (macOS): [`deleteLineBoundaryForward`](https://codemirror.net/6/docs/ref/#commands.deleteLineBoundaryForward).
-	*//**
+	*/ /**
 	The default keymap. Includes all bindings from
 	[`standardKeymap`](https://codemirror.net/6/docs/ref/#commands.standardKeymap) plus the following:
 
@@ -403,7 +403,7 @@ static fromTransaction(tr,selection){let effects=none;for(let invert of tr.start
 	- Ctrl-/ (Cmd-/ on macOS): [`toggleComment`](https://codemirror.net/6/docs/ref/#commands.toggleComment).
 	- Shift-Alt-a: [`toggleBlockComment`](https://codemirror.net/6/docs/ref/#commands.toggleBlockComment).
 	- Ctrl-m (Alt-Shift-m on macOS): [`toggleTabFocusMode`](https://codemirror.net/6/docs/ref/#commands.toggleTabFocusMode).
-	*//**
+	*/ /**
 	A binding that binds Tab to [`indentMore`](https://codemirror.net/6/docs/ref/#commands.indentMore) and
 	Shift-Tab to [`indentLess`](https://codemirror.net/6/docs/ref/#commands.indentLess).
 	Please see the [Tab example](../../examples/tab/) before using

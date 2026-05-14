@@ -1,6 +1,6 @@
 # react-native-codeditor
 
-A React Native code editor component powered by **CodeMirror 6**, embedded inside a `<WebView>`
+A React Native code editor component powered by [CodeMirror 6](https://codemirror.net/), embedded inside a `<WebView>`
 with full bidirectional RPC. Syntax highlighting, themes, history, cursor/selection control —
 all offline, no CDN required.
 
@@ -156,7 +156,7 @@ export default function EditorScreen() {
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `content` | `string` | `''` | Controlled document content. Changing this prop calls `setValue` on the live editor. |
+| `content` | `string` | `''` | Initial document content (see [Content model](#content-model) below). |
 | `language` | `string` | `undefined` | Syntax language, e.g. `'javascript'`, `'python'`, `'sql'`. The language module is loaded from the bundled assets on first use. |
 | `extensions` | `ExtensionSpec[]` | `[]` | Additional CodeMirror 6 extension specs. See [Extension specs](#extension-specs). |
 | `theme` | `string` | `undefined` | Theme name. See [Themes](#themes). |
@@ -178,47 +178,46 @@ export default function EditorScreen() {
 
 ---
 
+## Content model
+
+`CodeEditor` is **uncontrolled** — the editor owns its document state after the first render,
+similar to an `<input defaultValue="…">`. The `content` prop sets the initial document content
+once (delivered via the DDA handshake), but it is not kept in sync with what the user types.
+
+```tsx
+// Initial content is set once; subsequent user edits are not reflected back to the prop.
+<CodeEditor content="const x = 42;" ... />
+```
+
+Changes are reported out via `onContentUpdate` on every keystroke, but writing them back to
+`content` would create a feedback loop where every keystroke triggers a `setValue` call that
+resets the cursor — so **don't** pass user-typed content back as the `content` prop.
+
+To push new content into the editor programmatically, use the API:
+
+```ts
+// Replace content, preserve undo/redo history:
+await api.editor.setValue(newCode);
+
+// Replace content AND clear history (e.g. when opening a new file):
+await api.editor.resetValue(newCode);
+```
+
+`content` prop changes after the initial render do call `api.editor.setValue` internally, so
+prop-driven replacement works (e.g. switching between files stored in React state). Just don't
+do it in response to `onContentUpdate` — only in response to an external event like a file load
+or language switch.
+
+---
+
 ## `WebViewAPI` — editor control
 
-The `api` object received in `onInitialized` exposes the full editor API. All methods
-return Promises (resolved by the WebView) except `injectJavaScript` and `requestFocus`.
+The `api` object received in `onInitialized` provides:
 
-### Content
-
-```ts
-api.getValue(): Promise<string>
-// Returns the current document text.
-
-api.setValue(value: string): Promise<void>
-// Replaces the document content. Preserves history.
-
-api.resetValue(value?: string): Promise<void>
-// Replaces content AND clears undo/redo history.
-```
-
-### Language, extensions, theme
-
-```ts
-api.setLanguage(name: string): Promise<void>
-// Switches syntax language. Loads the language module on demand.
-// e.g. await api.setLanguage('python')
-
-api.setExtensions(specs: ExtensionSpec[]): Promise<void>
-// Replaces the active extension set.
-// e.g. await api.setExtensions(['@codemirror/search'])
-
-api.setTheme(themeName?: string): Promise<void>
-// Switches theme. Pass undefined to remove the theme.
-// e.g. await api.setTheme('monokai')
-```
-
-### Viewport
-
-```ts
-api.setViewport(options: ViewportSettings): Promise<void>
-// Updates <meta name="viewport"> inside the WebView.
-// options: { intialScale?, maximumScale?, minimumScale?, userScalable?, viewportWidth? }
-```
+- `api.focus()` — focuses the editor and triggers the Android soft keyboard.
+- `api.editor` — a DDA proxy to the live CM6 editor inside the WebView. All `api.editor.*`
+  methods return Promises resolved by the WebView.
+- `api.injectJavaScript(code)` / `api.requestFocus()` — synchronous, React Native side only.
 
 ### Focus
 
@@ -227,42 +226,79 @@ api.focus(): Promise<void>
 // Focuses the editor. Also calls webView.requestFocus() to trigger the Android keyboard.
 ```
 
+### Content
+
+```ts
+api.editor.getValue(): Promise<string>
+// Returns the current document text.
+
+api.editor.setValue(value: string): Promise<void>
+// Replaces the document content. Preserves history.
+
+api.editor.resetValue(value?: string): Promise<void>
+// Replaces content AND clears undo/redo history.
+```
+
+### Language, extensions, theme
+
+```ts
+api.editor.setLanguage(name: string): Promise<void>
+// Switches syntax language. Loads the language module on demand.
+// e.g. await api.editor.setLanguage('python')
+
+api.editor.setExtensions(specs: ExtensionSpec[]): Promise<void>
+// Replaces the active extension set.
+// e.g. await api.editor.setExtensions(['@codemirror/search'])
+
+api.editor.setTheme(themeName?: string): Promise<void>
+// Switches theme. Pass undefined to remove the theme.
+// e.g. await api.editor.setTheme('monokai')
+```
+
+### Viewport
+
+```ts
+api.editor.setViewport(options: ViewportSettings): Promise<void>
+// Updates <meta name="viewport"> inside the WebView.
+// options: { intialScale?, maximumScale?, minimumScale?, userScalable?, viewportWidth? }
+```
+
 ### Cursor and selection
 
 ```ts
-api.getCursor(where?: 'from' | 'to' | 'head'): Promise<CursorPosition>
+api.editor.getCursor(where?: 'from' | 'to' | 'head'): Promise<CursorPosition>
 // Returns { line, ch, index } of the cursor (or selection boundary).
 // line is 0-based; index is the absolute character offset.
 
-api.setCursor(line: number, ch?: number): Promise<void>
+api.editor.setCursor(line: number, ch?: number): Promise<void>
 // Moves the cursor to line (0-based) + character offset.
 
-api.getSelection(): Promise<string>
+api.editor.getSelection(): Promise<string>
 // Returns the currently selected text.
 
-api.setSelection(anchor: number, head?: number): Promise<void>
+api.editor.setSelection(anchor: number, head?: number): Promise<void>
 // Sets the selection by absolute character offsets.
 
-api.replaceSelection(text: string): Promise<void>
+api.editor.replaceSelection(text: string): Promise<void>
 // Replaces the current selection with text.
 
-api.cancelSelection(): Promise<void>
+api.editor.cancelSelection(): Promise<void>
 // Collapses the selection to the cursor position.
 ```
 
 ### History
 
 ```ts
-api.historyUndo(): Promise<boolean>
+api.editor.historyUndo(): Promise<boolean>
 // Undoes the last change. Returns true if an undo was performed.
 
-api.historyRedo(): Promise<boolean>
+api.editor.historyRedo(): Promise<boolean>
 // Redoes the last undone change. Returns true if a redo was performed.
 
-api.historyClear(): Promise<void>
+api.editor.historyClear(): Promise<void>
 // Clears the undo/redo history without changing the document.
 
-api.historySize(): Promise<HistorySize>
+api.editor.historySize(): Promise<HistorySize>
 // Returns the current { undo, redo } depth.
 // Note: history size is also reported automatically via onHistorySizeUpdate.
 ```
@@ -270,25 +306,25 @@ api.historySize(): Promise<HistorySize>
 ### Scroll
 
 ```ts
-api.scrollToCursor(margin?: number): Promise<void>
+api.editor.scrollToCursor(margin?: number): Promise<void>
 // Scrolls the editor so the cursor is visible.
 ```
 
 ### Advanced
 
 ```ts
-api.loadExtension(moduleName: string): Promise<object>
+api.editor.loadExtension(moduleName: string): Promise<object>
 // Loads a CM6 module by package name and returns its raw exports.
 // Useful for building custom features on top of bundled modules.
+
+api.editor.destroy(): Promise<void>
+// Destroys the CM6 EditorView and removes it from the DOM.
 
 api.injectJavaScript(code: string): void
 // Runs arbitrary JavaScript inside the WebView. Synchronous, no return value.
 
 api.requestFocus(): void
 // Calls webView.requestFocus() on the native WebView ref (Android keyboard hint).
-
-api.destroy(): Promise<void>
-// Destroys the CM6 EditorView and removes it from the DOM.
 ```
 
 ---
@@ -443,12 +479,12 @@ export default function EditorScreen() {
     void api.focus();
   }, []);
 
-  const handleUndo = useCallback(() => { apiRef.current?.historyUndo(); }, []);
-  const handleRedo = useCallback(() => { apiRef.current?.historyRedo(); }, []);
+  const handleUndo = useCallback(() => { apiRef.current?.editor.historyUndo(); }, []);
+  const handleRedo = useCallback(() => { apiRef.current?.editor.historyRedo(); }, []);
 
   const handleSwitchLanguage = useCallback(async () => {
-    await apiRef.current?.setLanguage('python');
-    await apiRef.current?.setTheme('github');
+    await apiRef.current?.editor.setLanguage('python');
+    await apiRef.current?.editor.setTheme('github');
   }, []);
 
   return (
@@ -507,6 +543,26 @@ const styles = StyleSheet.create({
   status: { color: '#aaa', fontSize: 12, flex: 1, textAlign: 'right' },
 });
 ```
+
+---
+
+## How to run example
+
+```bash
+# 1. Generate WebView assets from node_modules
+npm run copy-assets
+
+# 2. Build lib/ (ESM + type declarations)
+npm run prepare
+
+# 3. Copy assets to the Android project
+cp -r src/assets/* example/android/app/src/main/assets/
+
+# 4. Launch the example app
+cd example && npx expo run:android
+```
+
+Re-run steps 3–4 after any change to `src/assets/`. Re-run step 2 as well after any TypeScript source change.
 
 ---
 
@@ -591,6 +647,34 @@ npm run copy-assets
 # 3. Copy to the example app:
 cp -r src/assets/* example/android/app/src/main/assets/
 ```
+
+---
+
+## Known issues
+
+### Android: ghost text / cursor not advancing when typing fast
+
+On Android, the soft keyboard communicates with the WebView via the IME (Input Method
+Editor) composition protocol — a sequence of `compositionstart` / `compositionupdate` /
+`compositionend` events that CM6 tracks internally. If anything disrupts the composition
+window (such as a synchronous `MessageEvent` dispatched into the WebView via
+`injectJavaScript`, which is how the DDA HOST→GUEST transport works), the IME and CM6 can
+end up with different views of the document. Symptoms:
+
+- Characters appear to the right of the cursor instead of advancing it.
+- "Ghost" text that cannot be deleted — selecting it and pressing delete deletes adjacent
+  text instead because CM6's internal state doesn't contain those characters.
+
+This is a WebView + IME interaction issue and does not have a simple fix at the library
+level. If you hit it reliably, the workaround is to call `api.editor.setValue(await api.editor.getValue())`
+to resync CM6's state with what is displayed, which clears the ghost text (at the cost of
+collapsing undo history for that edit).
+
+### iOS: editor URI must be provided manually
+
+The default `editorUri` points to `file:///android_asset/editor.html` (Android only). On
+iOS you must compute the main bundle path at runtime and pass it via the `editorUri` prop
+(see [iOS: provide the editor URI](#4-ios-provide-the-editor-uri)).
 
 ---
 

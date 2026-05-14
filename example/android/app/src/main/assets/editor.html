@@ -89,33 +89,7 @@
       }),
     });
 
-    // The DDA handshake completes (and HOST fires onInitialized) before createEditor
-    // finishes loading _core.js and language/theme modules via XHR. HOST calls like
-    // api.focus() arrive during that window. Stubs queue them; _drainQueue replays
-    // them once Object.assign populates editorTarget with the real implementations.
-    const _callQueue = [];
-
-    function _queuedMethod(name) {
-      return function (...args) {
-        return new Promise((resolve, reject) => {
-          _callQueue.push({ name, args, resolve, reject });
-        });
-      };
-    }
-
-    function _drainQueue() {
-      const pending = _callQueue.splice(0);
-      for (const { name, args, resolve, reject } of pending) {
-        Promise.resolve(editorTarget[name](...args)).then(resolve, reject);
-      }
-    }
-
     const editorTarget = {};
-    ['getValue','setValue','resetValue','setLanguage','setExtensions','setTheme',
-     'setViewport','focus','getCursor','setCursor','getSelection','setSelection',
-     'replaceSelection','cancelSelection','historyUndo','historyRedo','historyClear',
-     'historySize','scrollToCursor','loadExtension','destroy',
-    ].forEach((name) => { editorTarget[name] = _queuedMethod(name); });
 
     const { root: nativeApi } = await WebViewInterface.initializeGuest({
       root: editorTarget,
@@ -132,14 +106,21 @@
       doc: config.content ?? '',
       language: config.language,
       extensions,
-      onChange: (value) => {
-        const cmds = requireAsyncModule('@codemirror/commands');
-        const state = editor.view.state;
-        nativeApi.onContentChange(value, {
-          undo: cmds.undoDepth(state),
-          redo: cmds.redoDepth(state),
-        });
-      },
+      onChange: (() => {
+        let _timer = null;
+        return () => {
+          clearTimeout(_timer);
+          _timer = setTimeout(() => {
+            const cmds = requireAsyncModule('@codemirror/commands');
+            const state = editor.view.state;
+            _rnPost('__contentChange__', {
+              value: state.doc.toString(),
+              undo: cmds.undoDepth(state),
+              redo: cmds.redoDepth(state),
+            });
+          }, 300);
+        };
+      })(),
     });
 
     // Pre-fetch commands from cache (core bundle already loaded by createEditor).
@@ -168,25 +149,34 @@
       await _applyTheme(config.theme);
     }
 
-    const getView = () => editor.view;
-    const getState = () => editor.view.state;
+    // Spread EditorController methods directly — getValue, setValue, setLanguage,
+    // setExtensions, loadExtension, destroy — then add methods not in EditorController.
+    const { getValue, setValue, setLanguage, setExtensions, loadExtension, destroy } = editor;
 
     Object.assign(editorTarget, {
-      getValue: () => editor.getValue(),
-
-      setValue: (value) => editor.setValue(value),
+      getValue,
+      setValue: (value) => {
+        const { doc, selection } = editor.view.state;
+        editor.view.dispatch({
+          changes: { from: 0, to: doc.length, insert: value ?? '' },
+          selection: {
+            anchor: Math.min(selection.main.anchor, (value ?? '').length),
+            head: Math.min(selection.main.head, (value ?? '').length),
+          },
+        });
+      },
+      setLanguage,
+      setExtensions,
+      loadExtension,
+      destroy,
 
       resetValue: (value) => {
-        const view = getView();
+        const view = editor.view;
         view.dispatch({
           changes: { from: 0, to: view.state.doc.length, insert: value ?? '' },
           effects: clearHistory.of(null),
         });
       },
-
-      setLanguage: (name) => editor.setLanguage(name),
-
-      setExtensions: (specs) => editor.setExtensions(specs),
 
       setTheme: (themeName) => _applyTheme(themeName),
 
@@ -212,10 +202,10 @@
         meta.setAttribute('content', content);
       },
 
-      focus: () => getView().focus(),
+      focus: () => editor.view.focus(),
 
       getCursor: (where) => {
-        const state = getState();
+        const state = editor.view.state;
         const sel = state.selection.main;
         const pos =
           where === 'from' ? sel.from : where === 'to' ? sel.to : sel.head;
@@ -224,66 +214,60 @@
       },
 
       setCursor: (line, ch) => {
-        const view = getView();
+        const view = editor.view;
         const lineObj = view.state.doc.line(line + 1);
         const pos = lineObj.from + (ch ?? 0);
         view.dispatch({ selection: { anchor: pos } });
       },
 
       getSelection: () => {
-        const state = getState();
+        const state = editor.view.state;
         return state.sliceDoc(state.selection.main.from, state.selection.main.to);
       },
 
       setSelection: (anchor, head) => {
-        getView().dispatch({ selection: { anchor, head: head ?? anchor } });
+        editor.view.dispatch({ selection: { anchor, head: head ?? anchor } });
       },
 
       replaceSelection: (text) => {
-        const view = getView();
+        const view = editor.view;
         view.dispatch(view.state.replaceSelection(text));
       },
 
       cancelSelection: () => {
-        const view = getView();
+        const view = editor.view;
         const { head } = view.state.selection.main;
         view.dispatch({ selection: { anchor: head } });
       },
 
-      historyUndo: () => undo(getView()),
+      historyUndo: () => undo(editor.view),
 
-      historyRedo: () => redo(getView()),
+      historyRedo: () => redo(editor.view),
 
       historyClear: () => {
-        getView().dispatch({ effects: clearHistory.of(null) });
+        editor.view.dispatch({ effects: clearHistory.of(null) });
       },
 
       historySize: () => {
-        const state = getState();
+        const state = editor.view.state;
         return { undo: undoDepth(state), redo: redoDepth(state) };
       },
 
       scrollToCursor: (margin) => {
-        const view = getView();
+        const view = editor.view;
         const { head } = view.state.selection.main;
         view.dispatch({
           effects: EditorView.scrollIntoView(head, margin !== undefined ? { y: 'center' } : {}),
         });
       },
-
-      loadExtension: (moduleName) => editor.loadExtension(moduleName),
-
-      destroy: () => editor.destroy(),
     });
 
     if (config.viewport) {
       editorTarget.setViewport(config.viewport);
     }
 
-    _drainQueue();
     // Signal HOST that the editor is fully ready (theme and language applied).
-    // WebViewAPI.onMessage intercepts this and fires onInitialized, which removes
-    // the BlockingView. Sending after _drainQueue ensures the editor is painted.
+    // WebViewAPI.onMessage intercepts this and fires onInitialized, which removes the BlockingView.
     _rnPost('__editorReady__', null);
   } catch (err) {
     _rnPost('__editorError__', { message: String(err), stack: err?.stack, source: 'bootstrap-catch' });

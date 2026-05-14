@@ -14,7 +14,7 @@ for(let a of eventAttributes)GlobalAttrs[a]=null;class Schema{constructor(extraT
 	parser](https://github.com/lezer-parser/html), extended with the
 	JavaScript and CSS parsers to parse the content of `<script>` and
 	`<style>` tags.
-	*//**
+	*/ /**
 	Extension that will automatically insert close tags when a `>` or
 	`/` is typed.
 	*/return dist.autoCloseTags=autoCloseTags,dist.html=html,dist.htmlCompletionSource=htmlCompletionSource,dist.htmlCompletionSourceWith=htmlCompletionSourceWith,dist.htmlLanguage=htmlLanguage,dist}(),index=/*@__PURE__*/function getDefaultExportFromCjs(x){return x}(distExports);return module.exports=index,module.exports}

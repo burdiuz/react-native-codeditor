@@ -92,7 +92,6 @@ routing, and Promise resolution transparently on both sides.
 
 3. GUEST bootstrap runs:
    → configure({ loader: xhrLoader })   ← XHR-based for file:// compatibility
-   → editorTarget pre-populated with queuing stubs for all API methods
    → WebViewInterface.initializeGuest({ root: editorTarget, handshakeTimeout: 30000 })
      starts sending DDA handshake pings via ReactNativeWebView.postMessage
 
@@ -108,9 +107,8 @@ routing, and Promise resolution transparently on both sides.
    → config = await nativeApi.getInitialConfig()
    → editor = await createEditor({ doc, language, extensions, onChange })
      — loads _core.js (861 KB) via XHR, then language + theme files on demand
-   → Object.assign(editorTarget, { all real methods })  — replaces queuing stubs
+   → Object.assign(editorTarget, { all real methods })
    → applies config.viewport if provided
-   → _drainQueue() — replays any HOST calls that arrived during createEditor
    → posts __editorReady__
 
 7. HOST receives __editorReady__:
@@ -121,11 +119,6 @@ routing, and Promise resolution transparently on both sides.
    → nativeApi.onContentChange(value, { undo, redo }) → DDA call to HOST
    → HOST calls onContentUpdate(value) + onHistorySizeUpdate({ undo, redo })
 ```
-
-**Why the call queue:** The DDA handshake (step 5) completes before `createEditor` finishes
-loading modules via XHR (step 6). HOST calls like `api.focus()` that arrive during this
-window are queued in stubs; `_drainQueue` replays them after `Object.assign`. Without this,
-DDA would call `undefined()` and throw.
 
 **Why `__editorReady__` instead of DDA connection:** `connection.then` resolves at step 5,
 before the editor is visually ready. Delaying `onInitialized` to `__editorReady__` ensures

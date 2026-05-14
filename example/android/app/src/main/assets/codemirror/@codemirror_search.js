@@ -6,7 +6,7 @@ async function moduleInitFunction(requireAsyncModule,exports={}){const module={e
 	`-`, document percentages suffixed with `%`, and an optional
 	column position by adding `:` and a second number after the line
 	number.
-	*//**
+	*/ /**
 	This extension highlights text that matches the selection. It uses
 	the `"cm-selectionMatch"` class for the highlighting. When
 	`highlightWordAroundCursor` is enabled, the word at the cursor
@@ -18,7 +18,7 @@ function insideWord(check,state$1,from,to){return check(state$1.sliceDoc(from,fr
 function findNextOccurrence(state,query){let{main,ranges}=state.selection,word=state.wordAt(main.head),fullWord=word&&word.from==main.from&&word.to==main.to;for(let cycled=!1,cursor=new SearchCursor(state.doc,query,ranges[ranges.length-1].to);;)if(cursor.next(),cursor.done){if(cycled)return null;cursor=new SearchCursor(state.doc,query,0,Math.max(0,ranges[ranges.length-1].from-1)),cycled=!0}else{if(cycled&&ranges.some(r=>r.from==cursor.value.from))continue;if(fullWord){let word=state.wordAt(cursor.value.from);if(!word||word.from!=cursor.value.from||word.to!=cursor.value.to)continue}return cursor.value}}/**
 	Select next occurrence of the current selection. Expand selection
 	to the surrounding word when the selection is empty.
-	*//**
+	*/ /**
 	Add search state to the editor configuration, and optionally
 	configure the search extension.
 	([`openSearchPanel`](https://codemirror.net/6/docs/ref/#search.openSearchPanel) will automatically
@@ -99,18 +99,18 @@ prevMatchInRange(state,from,to){for(let pos=to;;){let start=Math.max(from,pos-1e
 	Move the selection to the previous instance of the search query,
 	before the current main selection. Will wrap past the start
 	of the document to start searching at the end again.
-	*//**
+	*/ /**
 	Select all instances of the search query.
-	*//**
+	*/ /**
 	Select all instances of the currently selected text.
-	*//**
+	*/ /**
 	Replace the current match of the search query.
-	*//**
+	*/ /**
 	Replace all instances of the search query with the given
 	replacement.
-	*//**
+	*/ /**
 	Close the search panel.
-	*//**
+	*/ /**
 	Default search-related key bindings.
 
 	 - Mod-f: [`openSearchPanel`](https://codemirror.net/6/docs/ref/#search.openSearchPanel)

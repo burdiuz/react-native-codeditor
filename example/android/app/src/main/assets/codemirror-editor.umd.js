@@ -195,10 +195,54 @@ async function createEditor({
   extensions = [],
   onChange,
 } = {}) {
-  const [{ basicSetup, EditorView }, { EditorState, Compartment }] = await Promise.all([
-    requireAsyncModule('codemirror'),
+  const [
+    { EditorView, lineNumbers, highlightActiveLineGutter, highlightSpecialChars,
+      dropCursor, rectangularSelection, crosshairCursor, highlightActiveLine, keymap },
+    { EditorState, Compartment },
+    { history, defaultKeymap, historyKeymap },
+    { foldGutter, indentOnInput, syntaxHighlighting, defaultHighlightStyle, bracketMatching, foldKeymap },
+    { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap },
+    { highlightSelectionMatches, searchKeymap },
+    { lintKeymap },
+  ] = await Promise.all([
+    requireAsyncModule('@codemirror/view'),
     requireAsyncModule('@codemirror/state'),
+    requireAsyncModule('@codemirror/commands'),
+    requireAsyncModule('@codemirror/language'),
+    requireAsyncModule('@codemirror/autocomplete'),
+    requireAsyncModule('@codemirror/search'),
+    requireAsyncModule('@codemirror/lint'),
   ]);
+
+  // basicSetup without drawSelection() — drawSelection() hides the native browser cursor,
+  // which breaks Android IME composition (ghost text and cursor not advancing when typing fast).
+  const mobileSetup = [
+    lineNumbers(),
+    highlightActiveLineGutter(),
+    highlightSpecialChars(),
+    history(),
+    foldGutter(),
+    dropCursor(),
+    EditorState.allowMultipleSelections.of(true),
+    indentOnInput(),
+    syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+    bracketMatching(),
+    closeBrackets(),
+    autocompletion(),
+    rectangularSelection(),
+    crosshairCursor(),
+    highlightActiveLine(),
+    highlightSelectionMatches(),
+    keymap.of([
+      ...closeBracketsKeymap,
+      ...defaultKeymap,
+      ...searchKeymap,
+      ...historyKeymap,
+      ...foldKeymap,
+      ...completionKeymap,
+      ...lintKeymap,
+    ]),
+  ];
 
   // Separate Compartments allow language and extensions to be swapped independently
   // after the editor is created without rebuilding the entire editor state.
@@ -211,7 +255,7 @@ async function createEditor({
   ]);
 
   const builtinExtensions = [
-    basicSetup,
+    mobileSetup,
     languageCompartment.of(langExt),
     extensionCompartment.of(resolvedExtensions),
   ];

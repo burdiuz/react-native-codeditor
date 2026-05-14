@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "packages": {
+    "@actualwave/deferred-data-access": {
+      "signature": "f0486710a27d693359261490f8091b9f",
+      "file": true
+    },
+    "@actualwave/webview-interface": {
+      "signature": "7af19c3f02537e769831648d55ac0b84",
+      "file": true,
+      "replaced": "^0.0.1"
+    }
+  }
+}

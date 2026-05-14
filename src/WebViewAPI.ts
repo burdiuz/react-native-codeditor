@@ -23,13 +23,14 @@ export interface InitialConfig {
 }
 
 /**
- * WebViewAPI wraps the DDA proxy to the WebView's EditorController.
- * All editor methods are async DDA calls; focus() additionally calls requestFocus()
- * on the native WebView ref to ensure the Android soft keyboard appears.
+ * WebViewAPI wires the DDA bridge between React Native and the WebView editor.
+ * After onInitialized fires, call api.editor to reach the full EditorAPI proxy.
+ * api.focus() is the only method kept here directly — it additionally calls
+ * requestFocus() on the native WebView ref to trigger the Android soft keyboard.
  */
-class WebViewAPI implements EditorAPI {
+class WebViewAPI {
   private webView: WebViewRef | null = null;
-  private pageApi: EditorAPI | null = null;
+  private _editor: EditorAPI | null = null;
   private stopFn: (() => void) | null = null;
   private _onMessage: ((event: unknown) => void) | null = null;
   private _initialConfig: InitialConfig = {};
@@ -39,25 +40,24 @@ class WebViewAPI implements EditorAPI {
     this.handlers = handlers;
   }
 
+  /** DDA proxy to the WebView's EditorController. Available after onInitialized fires. */
+  get editor(): EditorAPI {
+    return this._editor!;
+  }
+
   setInitialConfig(config: InitialConfig) {
     this._initialConfig = config;
   }
 
   initialize(webView: WebViewRef) {
     this.webView = webView;
-    this.pageApi = null;
+    this._editor = null;
     this.stopFn?.();
     this.stopFn = null;
 
     // Methods exposed to the GUEST via DDA. The GUEST calls these on nativeApi.
     const hostRoot = {
       getInitialConfig: () => this._initialConfig,
-      onContentChange: (value: string, historySize?: HistorySize) => {
-        this.handlers.onContentUpdate(value);
-        if (historySize) {
-          this.handlers.onHistorySizeUpdate(historySize);
-        }
-      },
       onLog: (...args: unknown[]) => this.handlers.onLog(...args),
       onError: (error: unknown) => this.handlers.onError(error),
     };
@@ -71,7 +71,7 @@ class WebViewAPI implements EditorAPI {
     this._onMessage = onMessage as unknown as (event: unknown) => void;
 
     void connection.then(({ root: pageApi, stop }) => {
-      this.pageApi = pageApi as unknown as EditorAPI;
+      this._editor = pageApi as unknown as EditorAPI;
       this.stopFn = stop;
       // onInitialized is called when __editorReady__ arrives (after createEditor completes)
     });
@@ -101,6 +101,15 @@ class WebViewAPI implements EditorAPI {
           this.handlers.onInitialized(this);
           return;
         }
+        if (parsed?.type === '__contentChange__') {
+          // One-way notification — no DDA round trip, no injectJavaScript response.
+          // Keeps content updates off the DDA channel so injectJavaScript is never
+          // called while the user is typing (avoids disrupting Android IME composition).
+          const { value, undo, redo } = parsed.data ?? {};
+          this.handlers.onContentUpdate(value ?? '');
+          this.handlers.onHistorySizeUpdate({ undo: undo ?? 0, redo: redo ?? 0 });
+          return;
+        }
       } catch {
         // not JSON — fall through to DDA
       }
@@ -112,7 +121,7 @@ class WebViewAPI implements EditorAPI {
     this.stopFn?.();
     this.stopFn = null;
     this._onMessage = null;
-    this.pageApi = null;
+    this._editor = null;
   }
 
   injectJavaScript(code: string) {
@@ -123,56 +132,16 @@ class WebViewAPI implements EditorAPI {
     this.webView?.requestFocus?.();
   }
 
-  // --- EditorAPI delegation ---
-
-  getValue = () => this.pageApi!.getValue();
-
-  setValue = (value: string) => this.pageApi!.setValue(value);
-
-  resetValue = (value?: string) => this.pageApi!.resetValue(value);
-
-  setLanguage = (name: string) => this.pageApi!.setLanguage(name);
-
-  setExtensions = (specs: ExtensionSpec[]) => this.pageApi!.setExtensions(specs);
-
-  setTheme = (themeName?: string) => this.pageApi!.setTheme(themeName);
-
-  setViewport = (options: ViewportSettings) => this.pageApi!.setViewport(options);
-
-  focus = () => {
+  // focus() is kept here rather than on editor because it must also call
+  // requestFocus() on the native WebView ref to raise the Android soft keyboard.
+  focus = (): Promise<void> => {
     try {
       this.webView?.requestFocus?.();
     } catch {
       // requestFocus is best-effort on Android
     }
-    return this.pageApi!.focus();
+    return this._editor!.focus();
   };
-
-  getCursor = (where?: 'from' | 'to' | 'head') => this.pageApi!.getCursor(where);
-
-  setCursor = (line: number, ch?: number) => this.pageApi!.setCursor(line, ch);
-
-  getSelection = () => this.pageApi!.getSelection();
-
-  setSelection = (anchor: number, head?: number) => this.pageApi!.setSelection(anchor, head);
-
-  replaceSelection = (text: string) => this.pageApi!.replaceSelection(text);
-
-  cancelSelection = () => this.pageApi!.cancelSelection();
-
-  historyUndo = () => this.pageApi!.historyUndo();
-
-  historyRedo = () => this.pageApi!.historyRedo();
-
-  historyClear = () => this.pageApi!.historyClear();
-
-  historySize = () => this.pageApi!.historySize();
-
-  scrollToCursor = (margin?: number) => this.pageApi!.scrollToCursor(margin);
-
-  loadExtension = (moduleName: string) => this.pageApi!.loadExtension(moduleName);
-
-  destroy = () => this.pageApi!.destroy();
 }
 
 export default WebViewAPI;
