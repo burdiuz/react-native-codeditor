@@ -126,13 +126,12 @@
     const config = await nativeApi.getInitialConfig();
 
     const extensions = config.extensions ?? [];
-    const themeSpecs = config.theme ? [getThemeSpec(config.theme)] : [];
 
     const editor = await createEditor({
       parent: document.body,
       doc: config.content ?? '',
       language: config.language,
-      extensions: [...themeSpecs, ...extensions],
+      extensions,
       onChange: (value) => {
         const cmds = requireAsyncModule('@codemirror/commands');
         const state = editor.view.state;
@@ -147,6 +146,27 @@
     const { undo, redo, undoDepth, redoDepth, clearHistory } =
       await requireAsyncModule('@codemirror/commands');
     const { EditorView } = await requireAsyncModule('@codemirror/view');
+
+    // Separate compartment for the theme so setTheme and setExtensions never clobber each other.
+    // appendConfig adds it to the live state; themeCompartment.reconfigure() updates it in-place.
+    const { Compartment, StateEffect } = await requireAsyncModule('@codemirror/state');
+    const themeCompartment = new Compartment();
+    editor.view.dispatch({ effects: StateEffect.appendConfig.of(themeCompartment.of([])) });
+
+    // Load and apply a theme by name. Returns the resolved CM6 extension.
+    const _applyTheme = async (themeName) => {
+      if (!themeName) {
+        editor.view.dispatch({ effects: themeCompartment.reconfigure([]) });
+        return;
+      }
+      const exportName = _themeExportNames[themeName] ?? themeName;
+      const mod = await requireAsyncModule(`@uiw/codemirror-theme-${themeName}`);
+      editor.view.dispatch({ effects: themeCompartment.reconfigure(mod[exportName]) });
+    };
+
+    if (config.theme) {
+      await _applyTheme(config.theme);
+    }
 
     const getView = () => editor.view;
     const getState = () => editor.view.state;
@@ -168,10 +188,7 @@
 
       setExtensions: (specs) => editor.setExtensions(specs),
 
-      setTheme: async (themeName) => {
-        const specs = themeName ? [getThemeSpec(themeName)] : [];
-        await editor.setExtensions([...specs, ...extensions]);
-      },
+      setTheme: (themeName) => _applyTheme(themeName),
 
       setViewport: (options) => {
         const {

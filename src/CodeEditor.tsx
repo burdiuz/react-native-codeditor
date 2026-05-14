@@ -10,6 +10,11 @@ const styles = StyleSheet.create({
   webView: { flex: 1 },
 });
 
+// Stable empty array used as the default for the extensions prop.
+// A new [] on every render would cause the extensions effect to fire every re-render,
+// calling setExtensions([]) and wiping the theme from the extensionCompartment.
+const DEFAULT_EXTENSIONS: ExtensionSpec[] = [];
+
 /**
  * Default WebView source URI for the bundled editor page.
  * Android: assets are copied to android/app/src/main/assets/ by react-native link.
@@ -60,7 +65,7 @@ const CodeEditor = ({
   onNavigationStateChange,
   renderBlockingView = () => <BlockingView />,
   language,
-  extensions = [],
+  extensions = DEFAULT_EXTENSIONS,
   theme,
   content = "",
   viewport,
