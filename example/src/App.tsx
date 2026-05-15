@@ -113,29 +113,31 @@ export default function App() {
   }, []);
 
   const handleUndo = useCallback(async () => {
-    await apiRef.current?.editor?.historyUndo();
+    try { await apiRef.current?.editor?.historyUndo(); } catch (e) { console.error('[Undo]', e); }
   }, []);
 
   const handleRedo = useCallback(async () => {
-    await apiRef.current?.editor?.historyRedo();
+    try { await apiRef.current?.editor?.historyRedo(); } catch (e) { console.error('[Redo]', e); }
   }, []);
 
   const handleNextLanguage = useCallback(async () => {
     const next = (langIndex + 1) % LANGUAGES.length;
     const nextLang = LANGUAGES[next]!;
     setLangIndex(next);
-    await apiRef.current?.editor?.setLanguage(nextLang);
-    await apiRef.current?.editor?.resetValue(SAMPLES[nextLang]);
+    try {
+      await apiRef.current?.editor?.setLanguage(nextLang);
+      await apiRef.current?.editor?.resetValue(SAMPLES[nextLang]);
+    } catch (e) { console.error('[Lang]', e); }
   }, [langIndex]);
 
   const handleNextTheme = useCallback(async () => {
     const next = (themeIndex + 1) % THEMES.length;
     setThemeIndex(next);
-    await apiRef.current?.editor?.setTheme(THEMES[next]);
+    try { await apiRef.current?.editor?.setTheme(THEMES[next]); } catch (e) { console.error('[Theme]', e); }
   }, [themeIndex]);
 
   const handleResetValue = useCallback(async () => {
-    await apiRef.current?.editor?.resetValue(SAMPLES[language]);
+    try { await apiRef.current?.editor?.resetValue(SAMPLES[language]); } catch (e) { console.error('[Reset]', e); }
   }, [language]);
 
   return (

@@ -214,6 +214,13 @@ async function createEditor({
     requireAsyncModule('@codemirror/lint'),
   ]);
 
+  // Chrome 126+ WebView uses the EditContext API for IME input. On Chrome 147 there is a
+  // race condition where successive textupdate events arrive faster than CM6 can sync back
+  // via editContext.updateText/updateSelection, causing characters to appear after the cursor.
+  // Disabling EditContext makes CM6 fall back to the contenteditable MutationObserver path,
+  // which is stable for fast typing when drawSelection() is omitted (native cursor stays visible).
+  EditorView.EDIT_CONTEXT = false;
+
   // basicSetup without drawSelection() — drawSelection() hides the native browser cursor,
   // which breaks Android IME composition (ghost text and cursor not advancing when typing fast).
   const mobileSetup = [

@@ -654,17 +654,26 @@ cp -r src/assets/* example/android/app/src/main/assets/
 
 ## Known issues
 
-### Android: cursor not advancing when typing fast
+### Android: characters appearing after the cursor when typing fast
 
-On Android, the soft keyboard uses IME composition (`compositionstart` / `compositionupdate` /
-`compositionend`). CM6's `drawSelection()` extension replaces the native browser cursor with
-a custom overlay, which prevents the Android IME from tracking the cursor position — causing
-characters to appear to the right of the cursor instead of advancing it.
+Two separate issues can cause this, both fixed in the library:
 
-**Fixed**: The library uses a custom `mobileSetup` that omits `drawSelection()`, restoring
-the native browser cursor so Android IME tracks it correctly.
+**1. `drawSelection()` hiding the native cursor**
 
-If you add `drawSelection()` to a custom extension set, this issue will return.
+CM6's `drawSelection()` extension replaces the native browser cursor with a custom overlay.
+Android's IME tracks the native cursor to know where to insert text — hiding it causes characters
+to appear to the right of the cursor instead of advancing it.
+
+**Fixed**: The library uses a custom `mobileSetup` that omits `drawSelection()`, keeping the
+native cursor visible. If you add `drawSelection()` via a custom extension, this issue returns.
+
+**2. EditContext API race condition (Chrome 126+ WebView)**
+
+Chrome 126 introduced the [EditContext API](https://developer.chrome.com/docs/web-platform/editcontext/), which CM6 v6.42+ activates automatically on Android Chrome. In Chrome 147 there is a race condition where successive IME `textupdate` events arrive faster than CM6 can sync back via `editContext.updateText/updateSelection`, again placing characters after the cursor during fast typing.
+
+**Fixed**: The library sets `EditorView.EDIT_CONTEXT = false` in `createEditor` (after the CM6
+modules load but before the `EditorView` is constructed), falling back to the `contenteditable` +
+MutationObserver path which is stable at any typing speed when `drawSelection()` is omitted.
 
 ### iOS: editor URI must be provided manually
 

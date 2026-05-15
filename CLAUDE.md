@@ -225,6 +225,17 @@ and cursor not advancing when typing fast). All other `basicSetup` extensions ar
 `foldKeymap` is sourced from `@codemirror/language` (not `@codemirror/commands`), which
 is where CM6 actually exports it.
 
+`EditorView.EDIT_CONTEXT = false` is set inside `createEditor` (in `js-codemirror-package/index.js`)
+immediately after the `Promise.all` destructuring resolves, before `new EditorView()` is called.
+Chrome 126+ WebView uses the EditContext API for IME; Chrome 147 has a race condition where
+successive `textupdate` events arrive faster than CM6 can sync back via
+`editContext.updateText/updateSelection`, causing characters to appear after the cursor during
+fast typing. Setting `EDIT_CONTEXT = false` makes CM6 fall back to the `contenteditable` +
+MutationObserver path, which is stable when `drawSelection()` is omitted (native cursor stays
+visible for the IME to track). The flag must be set on the real `EditorView` class extracted
+from the `Promise.all` result — setting it on the module stub before `_core.js` loads would be
+overwritten by `Object.assign(stub, actualExports)` when loading completes.
+
 ---
 
 ## Asset linking — IMPORTANT for Expo
@@ -596,3 +607,7 @@ Resolved Android typing issues and silent DDA call failures:
 - All `api.editor.*` calls in `App.tsx` and `CodeEditor.tsx` effects changed to properly
   `await` — DDA lazy mode silently drops commands that are never awaited (`void x` does not
   trigger `.then` and therefore never dispatches the command to the WebView)
+- `EditorView.EDIT_CONTEXT = false` set in `createEditor` (after `Promise.all` resolves, before
+  `new EditorView()`) — disables Chrome 126+ EditContext API which has a race condition in
+  Chrome 147 WebView during fast typing (characters appearing after cursor); falls back to
+  contenteditable + MutationObserver path which is stable without `drawSelection()`

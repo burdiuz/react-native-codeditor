@@ -3,7 +3,7 @@ import { Platform, View, StyleSheet } from "react-native";
 import WebView from "react-native-webview";
 import WebViewAPI from "./WebViewAPI";
 import BlockingView from "./BlockingView";
-import type { ExtensionSpec, HistorySize, ViewportSettings } from "./EditorAPI";
+import type { EditorAPI, ExtensionSpec, HistorySize, ViewportSettings } from "./EditorAPI";
 
 const styles = StyleSheet.create({
   container: { position: "relative", flex: 1 },
@@ -116,6 +116,18 @@ const CodeEditor = ({
     });
   }
 
+  const callEditor = (fn: (e: EditorAPI) => Promise<unknown>) => {
+    if (initializedRef.current) {
+      void (async () => {
+        try {
+          await fn(apiRef.current!.editor);
+        } catch (e) {
+          callbacksRef.current.onError(e);
+        }
+      })();
+    }
+  };
+
   // Push content changes to live editor (skip initial render)
   const prevContentRef = useRef<string | null>(null);
   useEffect(() => {
@@ -128,7 +140,7 @@ const CodeEditor = ({
 
     if (initializedRef.current && currentContentRef.current !== content) {
       currentContentRef.current = content;
-      void (async () => { await apiRef.current!.editor.setValue(content); })();
+      callEditor(e => e.setValue(content));
     }
   }, [content]);
 
@@ -142,9 +154,7 @@ const CodeEditor = ({
     if (prevLanguageRef.current === language) return;
     prevLanguageRef.current = language;
 
-    if (initializedRef.current && language) {
-      void (async () => { await apiRef.current!.editor.setLanguage(language); })();
-    }
+    if (language) callEditor(e => e.setLanguage(language));
   }, [language]);
 
   // Push theme changes to live editor
@@ -157,9 +167,7 @@ const CodeEditor = ({
     if (prevThemeRef.current === theme) return;
     prevThemeRef.current = theme;
 
-    if (initializedRef.current) {
-      void (async () => { await apiRef.current!.editor.setTheme(theme); })();
-    }
+    callEditor(e => e.setTheme(theme));
   }, [theme]);
 
   // Push extension changes to live editor
@@ -172,9 +180,7 @@ const CodeEditor = ({
     if (prevExtensionsRef.current === extensions) return;
     prevExtensionsRef.current = extensions;
 
-    if (initializedRef.current) {
-      void (async () => { await apiRef.current!.editor.setExtensions(extensions); })();
-    }
+    callEditor(e => e.setExtensions(extensions));
   }, [extensions]);
 
   // Push viewport changes to live editor
@@ -187,9 +193,7 @@ const CodeEditor = ({
     if (prevViewportRef.current === viewport) return;
     prevViewportRef.current = viewport;
 
-    if (initializedRef.current && viewport) {
-      void (async () => { await apiRef.current!.editor.setViewport(viewport); })();
-    }
+    if (viewport) callEditor(e => e.setViewport(viewport));
   }, [viewport]);
 
   const handleWebViewReference = useCallback((webView: WebView | null) => {

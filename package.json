@@ -35,7 +35,7 @@
     "example": "yarn workspace react-native-codeditor-example",
     "clean": "del-cli lib",
     "copy-assets": "node scripts/copy-assets.js",
-    "prepare": "node scripts/copy-assets.js && bob build",
+    "--prepare": "node scripts/copy-assets.js && bob build",
     "typecheck": "tsc"
   },
   "keywords": [
@@ -72,8 +72,7 @@
     "typescript": "^6.0.2"
   },
   "dependencies": {
-    "@actualwave/deferred-data-access": "file:.yalc/@actualwave/deferred-data-access",
-    "@actualwave/webview-interface": "file:.yalc/@actualwave/webview-interface"
+    "@actualwave/webview-interface": "^0.0.2"
   },
   "peerDependencies": {
     "react": "*",

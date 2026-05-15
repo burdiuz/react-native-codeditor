@@ -89,7 +89,11 @@
       }),
     });
 
-    const editorTarget = {};
+    // Assigned to window to prevent Chromium's GC from collecting it.
+    // DDA's ResourcePool holds resources weakly (WeakValueMap + FinalizationRegistry);
+    // without a strong reference from a long-lived scope, the GC would clean up the
+    // resource and all subsequent HOST calls would fail with "Resource does not exist".
+    const editorTarget = window._editorRoot = {};
 
     const { root: nativeApi } = await WebViewInterface.initializeGuest({
       root: editorTarget,
