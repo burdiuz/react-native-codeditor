@@ -10,11 +10,11 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		5CF3C42820BDF071B360DF73 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F5371AD5C9524B8BBBA62F8 /* ExpoModulesProvider.swift */; };
+		A848AA45C31E4A90B3653E7B /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 7C3D5FB74E25417483E50113 /* assets */; settings = {}; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		D14759E75AEC1D1222B3AFAA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 505E4B29958A44A573F5EC6F /* PrivacyInfo.xcprivacy */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 		F2F81592D3A501290E664053 /* libPods-CodeditorExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CAECEE6407338475A4365C6 /* libPods-CodeditorExample.a */; };
-		A848AA45C31E4A90B3653E7B /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 7C3D5FB74E25417483E50113; settings = {}; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +24,7 @@
 		2CAECEE6407338475A4365C6 /* libPods-CodeditorExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CodeditorExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		37E50EFB27DF791909BC5177 /* Pods-CodeditorExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CodeditorExample.debug.xcconfig"; path = "Target Support Files/Pods-CodeditorExample/Pods-CodeditorExample.debug.xcconfig"; sourceTree = "<group>"; };
 		505E4B29958A44A573F5EC6F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = CodeditorExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		7C3D5FB74E25417483E50113 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = CodeditorExample/assets; sourceTree = "<group>"; };
 		8F5371AD5C9524B8BBBA62F8 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-CodeditorExample/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = CodeditorExample/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
@@ -31,7 +32,6 @@
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = CodeditorExample/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* CodeditorExample-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CodeditorExample-Bridging-Header.h"; path = "CodeditorExample/CodeditorExample-Bridging-Header.h"; sourceTree = "<group>"; };
 		F724EBC73B46E94E911C0495 /* Pods-CodeditorExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CodeditorExample.release.xcconfig"; path = "Target Support Files/Pods-CodeditorExample/Pods-CodeditorExample.release.xcconfig"; sourceTree = "<group>"; };
-		7C3D5FB74E25417483E50113 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = assets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

@@ -260,6 +260,121 @@ npx expo run:ios
 
 ---
 
+## Problem 3: "Error loading page" — WebView cannot load `editor.html`
+
+### Background
+
+After fixing the Swift build errors the iOS app launched, but the WebView showed
+"Error loading page" instead of the code editor.
+
+### Root causes
+
+**Root cause 1: Assets folder not in Xcode's Copy Bundle Resources**
+
+`expo prebuild` runs the Expo config plugin (`copy-assets-plugin.js`) which copies the
+`src/assets/` tree into `ios/CodeditorExample/assets/codeditor/` on disk. However,
+copying files to disk is not enough — Xcode must also know about the folder. The file
+reference must be added to `project.pbxproj` as a folder reference in PBXFileReference
+and wired into the PBXResourcesBuildPhase, otherwise Xcode ignores the files and they
+are not included in the `.app` bundle.
+
+Symptoms: `editor.html` physically present on disk at
+`ios/CodeditorExample/assets/codeditor/editor.html` but `WKWebView` returns a "file not
+found" error when trying to load it.
+
+**Root cause 2: Invalid iOS URI in the React Native component**
+
+The default `editorUri` in `CodeEditor.tsx` is `"file:///android_asset/editor.html"` —
+an Android-only path. WKWebView on iOS cannot resolve this URI.
+
+The correct iOS URI uses `expo-file-system`'s `bundleDirectory` property, which gives
+the `file://` path to the running `.app` bundle at runtime.
+
+### Fix
+
+#### Part 1: Add folder reference to Xcode project
+
+The `copy-assets-plugin.js` was updated to use `withXcodeProject` (from
+`@expo/config-plugins`) so that every `expo prebuild` both:
+1. Copies the `src/assets/` tree to `ios/<ProjectName>/assets/codeditor/` on disk
+2. Adds the `assets` folder as a folder reference in `project.pbxproj`:
+   - Creates a `PBXFileReference` with `lastKnownFileType = folder`
+   - Adds it to the main app PBXGroup (`<ProjectName>`)
+   - Creates a `PBXBuildFile` and appends it to `PBXResourcesBuildPhase`
+
+The plugin is idempotent — if a folder reference with `name = assets` and
+`lastKnownFileType = folder` already exists, it skips the step.
+
+For the current project, the folder reference was also added directly to
+`project.pbxproj` once using the `xcode` npm package (since `expo prebuild` was not
+re-run). Future prebuilds will maintain it automatically via the plugin.
+
+**File reference entry added:**
+```
+7C3D5FB74E25417483E50113 /* assets */ = {
+  isa = PBXFileReference;
+  lastKnownFileType = folder;
+  name = assets;
+  path = CodeditorExample/assets;
+  sourceTree = "<group>";
+};
+```
+
+> **Critical:** `path` must be `<ProjectName>/assets` (e.g. `CodeditorExample/assets`),
+> not bare `assets`. All PBXFileReferences in this project use paths relative to the Xcode
+> project root (`ios/`). A bare `path = assets` makes Xcode look for `ios/assets` which
+> does not exist and causes a build error:
+> `error: /path/to/ios/assets: No such file or directory`
+
+#### Part 2: Compute the correct iOS URI
+
+Added `expo-file-system` to the example's dependencies (version `~55.0.20` for Expo
+SDK 55). The correct URI is derived at runtime:
+
+```typescript
+import * as FileSystem from 'expo-file-system';
+
+// bundleDirectory gives file:// path to the .app bundle folder (iOS only)
+const IOS_EDITOR_URI = Platform.OS === 'ios'
+  ? (FileSystem.bundleDirectory ?? '') + 'assets/codeditor/editor.html'
+  : undefined;
+```
+
+This is then passed to `<CodeEditor editorUri={IOS_EDITOR_URI} />`. When `editorUri`
+is `undefined` (Android), `CodeEditor` falls back to `"file:///android_asset/editor.html"`.
+
+**Why `bundleDirectory`?**
+
+WKWebView requires an absolute `file://` URL to load local HTML. The `.app` bundle
+path is not fixed — it changes with each Xcode build (the GUID in
+`DerivedData/Build/Products/Debug-iphoneos/<AppName>-<guid>.app`). `bundleDirectory`
+resolves to the actual runtime path, making this work on both simulator and real devices.
+
+**Path derivation:**
+- Assets are copied to: `ios/CodeditorExample/assets/codeditor/`
+- Xcode bundles them as: `MyApp.app/assets/codeditor/`
+- `FileSystem.bundleDirectory` returns: `file:///path/to/MyApp.app/`
+- Full URI: `file:///path/to/MyApp.app/assets/codeditor/editor.html`
+
+### Files changed
+
+| File | Change |
+|---|---|
+| `example/copy-assets-plugin.js` | Added `withXcodeProject` block to add folder reference to Xcode project on every prebuild |
+| `example/src/App.tsx` | Added `expo-file-system` import + `IOS_EDITOR_URI` constant + `editorUri={IOS_EDITOR_URI}` prop on `<CodeEditor>` |
+| `example/package.json` | Added `expo-file-system: ~55.0.20` to dependencies |
+
+### On a new machine: what prebuild does automatically
+
+After this fix, `expo prebuild` will:
+1. Copy assets to Android `assets/codeditor/` ✅
+2. Copy assets to iOS `CodeditorExample/assets/codeditor/` ✅
+3. Add the `assets` folder reference to `project.pbxproj` ✅ (new — via `withXcodeProject`)
+
+No manual Xcode project editing needed on a fresh clone.
+
+---
+
 ## Summary of all changes made
 
 | File | Change |
@@ -268,6 +383,10 @@ npx expo run:ios
 | `example/ios/Gemfile` | Created — pins `cocoapods ~> 1.16` |
 | `patches/expo-modules-core+55.0.25.patch` | Created — removes invalid `@MainActor` from 3 conformance positions |
 | `package.json` | Added `"postinstall": "patch-package"` to auto-apply patch after `npm install` |
+| `example/copy-assets-plugin.js` | Added `withXcodeProject` to add assets folder reference to Xcode project during `expo prebuild` |
+| `example/src/App.tsx` | Added `IOS_EDITOR_URI` using `expo-file-system`; passed as `editorUri` prop to `<CodeEditor>` |
+| `example/package.json` | Added `expo-file-system: ~55.0.20` to dependencies |
+| `example/ios/CodeditorExample.xcodeproj/project.pbxproj` | Added `assets` folder reference to PBXFileReference + PBXResourcesBuildPhase |
 
 | Fix | Status |
 |---|---|
@@ -275,4 +394,7 @@ npx expo run:ios
 | `SWIFT_STRICT_CONCURRENCY = minimal` in Podfile | ✅ Applied |
 | `SWIFT_VERSION = '5'` for Expo Swift 6 targets | ✅ Applied |
 | patch-package for 3 invalid `@MainActor` conformance sites | ✅ Applied |
-| iOS build | ⏳ Pending verification |
+| iOS build (compilation) | ✅ Working |
+| Assets folder in Xcode Copy Bundle Resources | ✅ Applied |
+| iOS URI via `expo-file-system` `bundleDirectory` | ✅ Applied |
+| iOS editor loading | ✅ Working |

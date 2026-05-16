@@ -74,7 +74,7 @@ function copyAssets(config) {
 
     // Check if the assets folder reference is already in the project
     const existingRef = Object.values(xcodeProject.hash.project.objects.PBXFileReference || {}).find(
-      (ref) => ref && typeof ref === "object" && ref.path === "assets" && ref.lastKnownFileType === "folder",
+      (ref) => ref && typeof ref === "object" && ref.name === "assets" && ref.lastKnownFileType === "folder",
     );
 
     if (existingRef) {
@@ -101,7 +101,7 @@ function copyAssets(config) {
       isa: "PBXFileReference",
       lastKnownFileType: "folder",
       name: "assets",
-      path: "assets",
+      path: `${projectName}/assets`,
       sourceTree: '"<group>"',
     };
 
