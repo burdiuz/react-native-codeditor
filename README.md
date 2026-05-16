@@ -35,39 +35,47 @@ all offline, no CDN required.
 npm install react-native-codeditor react-native-webview
 ```
 
-### 2. Link native assets
+### 2. Copy native assets
 
-The library ships CodeMirror 6 as static files that must be copied into your app's native
-asset directories. How you do this depends on your setup:
+The library ships CodeMirror 6 as static files that must be copied into your app's
+native asset directories. `expo prebuild` does not process `react-native.config.js`
+asset declarations from npm packages, so this step is manual (or automated via a config
+plugin you write — see the pattern in `example/copy-assets-plugin.js`).
 
-**React Native CLI (bare workflow):**
-```sh
-npx react-native link
-```
-This copies `src/assets/` to `android/app/src/main/assets/` (Android) and your Xcode
-project's bundle resources (iOS).
-
-**Expo managed / prebuild:**
-
-`expo prebuild` does not process `react-native.config.js` asset declarations from npm
-packages. Copy the assets manually after running prebuild:
+#### Android
 
 ```sh
-npx expo prebuild
-
-# Android
-mkdir -p android/app/src/main/assets
-cp -r node_modules/react-native-codeditor/src/assets/* android/app/src/main/assets/
+mkdir -p android/app/src/main/assets/codeditor
+cp -r node_modules/react-native-codeditor/src/assets/* android/app/src/main/assets/codeditor/
 ```
 
-For iOS, copy the files into your Xcode project's Copy Bundle Resources phase and add them
-to the target. The required files are:
-- `editor.html`
-- `webview-interface.umd.js`
-- `codemirror-editor.umd.js`
-- `codemirror/` directory (entire folder)
+Re-run after every `react-native-codeditor` upgrade.
 
-> Re-run the copy after every library upgrade to refresh the bundled assets.
+#### iOS
+
+**Step 1 — copy files**
+
+```sh
+mkdir -p ios/<YourProject>/assets/codeditor
+cp -r node_modules/react-native-codeditor/src/assets/* ios/<YourProject>/assets/codeditor/
+```
+
+**Step 2 — add a folder reference in Xcode**
+
+Copied files are not bundled automatically — Xcode must know about the folder:
+
+1. Open your `.xcworkspace` in Xcode.
+2. In the Project Navigator, right-click your app group → **Add Files to "\<YourProject\>"…**
+3. Select the `assets` folder inside `ios/<YourProject>/`.
+4. In the options sheet, set **Added folders** to **Create folder references** (blue icon).
+   Make sure **Add to targets: \<YourProject\>** is checked.
+5. Click **Add**.
+
+The folder appears with a blue icon. A yellow group would break when new language or
+theme files are added; a blue folder reference copies the whole tree automatically.
+
+> Re-run the file copy after every `react-native-codeditor` upgrade. The Xcode folder
+> reference only needs to be added once.
 
 ### 3. Android: keyboard resize mode
 
@@ -83,20 +91,33 @@ soft keyboard appears (instead of being hidden behind it):
 
 ### 4. iOS: provide the editor URI
 
-On Android the editor page loads from `file:///android_asset/editor.html` (the default).
-On iOS the bundle path varies per device. Compute it at runtime and pass it via the
-`editorUri` prop:
+On Android the editor page loads from `file:///android_asset/codeditor/editor.html` (the
+default). On iOS the `.app` bundle path varies per device and build. Compute it at
+runtime using `expo-file-system` and pass it via the `editorUri` prop:
+
+```sh
+npm install expo-file-system
+```
 
 ```tsx
 import { Platform } from 'react-native';
-import RNFS from 'react-native-fs'; // react-native-fs or equivalent
+import * as FileSystem from 'expo-file-system';
 
-const editorUri = Platform.select({
-  android: 'file:///android_asset/editor.html',
-  ios: `file://${RNFS.MainBundlePath}/editor.html`,
-});
+const IOS_EDITOR_URI = Platform.OS === 'ios'
+  ? (FileSystem.bundleDirectory ?? '') + 'assets/codeditor/editor.html'
+  : undefined;
 
-<CodeEditor editorUri={editorUri} ... />
+<CodeEditor editorUri={IOS_EDITOR_URI} ... />
+```
+
+`FileSystem.bundleDirectory` returns the `file://` path to the `.app` folder (e.g.
+`file:///var/containers/Bundle/Application/<UUID>/MyApp.app/`), which is stable on both
+simulators and real devices regardless of where iOS installed the app.
+
+After installing `expo-file-system`, re-run `pod install` to link its native module:
+
+```sh
+cd ios && pod install
 ```
 
 ---
@@ -548,27 +569,7 @@ const styles = StyleSheet.create({
 
 ---
 
-## How to run example
-
-```bash
-# 1. Generate WebView assets from node_modules
-npm run copy-assets
-
-# 2. Build lib/ (ESM + type declarations)
-npm run prepare
-
-# 3. Copy assets to the Android project
-cp -r src/assets/* example/android/app/src/main/assets/
-
-# 4. Launch the example app
-cd example && npx expo run:android
-```
-
-Re-run steps 3–4 after any change to `src/assets/`. Re-run step 2 as well after any TypeScript source change.
-
----
-
-## Building the library (contributors)
+## Contributing
 
 ### Initial setup
 
@@ -587,11 +588,10 @@ node node_modules/@actualwave/js-codemirror-package/start.js
 ### Prepare the library
 
 ```bash
-# Generate WebView assets from node_modules + build lib/ (ESM + type declarations).
-# Both steps run together via prepare:
+# Generate WebView assets from node_modules + build lib/ (ESM + type declarations):
 npm run prepare
 
-# Or run only the asset generation (faster, skips TypeScript compilation):
+# Or regenerate only the assets (faster, skips TypeScript compilation):
 npm run copy-assets
 ```
 
@@ -599,26 +599,31 @@ npm run copy-assets
 - `src/assets/codemirror-editor.umd.js` — plain IIFE bundle (no `import`/`export`)
 - `src/assets/codemirror/` — individual CM6 module files
 
-### Copy assets to the example app
-
-`expo prebuild` does not handle the `react-native.config.js` asset declarations from a
-workspace-linked package. Copy manually instead:
+### Run the example app
 
 ```bash
-mkdir -p example/android/app/src/main/assets
-cp -r src/assets/* example/android/app/src/main/assets/
+# 1. Build library + generate assets
+npm run prepare
+
+# 2. Copy assets to the example's Android project
+mkdir -p example/android/app/src/main/assets/codeditor
+cp -r src/assets/* example/android/app/src/main/assets/codeditor/
+
+# 3. Copy assets to the example's iOS project
+mkdir -p example/ios/CodeditorExample/assets/codeditor
+cp -r src/assets/* example/ios/CodeditorExample/assets/codeditor/
+
+# 4. Launch
+cd example && npx expo run:android   # or run:ios
 ```
 
-Run this after `npm run copy-assets` or any time the assets change.
+For iOS, also ensure the `assets` folder reference exists in Xcode (`project.pbxproj`).
+See `COPY_ASSETS.md` for the full manual and automated steps.
 
-### Run the example
-
-```bash
-cd example && npx expo run:android
-```
+Re-run steps 2–4 after any change to `src/assets/`. Re-run step 1 as well after any
+TypeScript source change.
 
 Metro resolves `react-native-codeditor` from the workspace root via `lib/module/index.js`.
-**Run `npm run prepare` after every TypeScript source change.**
 
 Do NOT use `./gradlew clean` — it fails because `react-native-webview` codegen JNI
 directories don't exist until after the first successful build. Use `npx expo run:android` directly.
@@ -631,7 +636,7 @@ npx tsc --noEmit
 
 ---
 
-## Updating dependencies
+## Updating dependencies (contributors)
 
 ### Updating CodeMirror assets
 
@@ -647,8 +652,12 @@ node node_modules/@actualwave/js-codemirror-package/start.js
 npm run copy-assets
 
 # 3. Copy to the example app:
-cp -r src/assets/* example/android/app/src/main/assets/
+cp -r src/assets/* example/android/app/src/main/assets/codeditor/
+cp -r src/assets/* example/ios/CodeditorExample/assets/codeditor/
 ```
+
+Library consumers should copy from `node_modules/react-native-codeditor/src/assets/`
+into their own project (see [Copy native assets](#2-copy-native-assets)).
 
 ---
 
@@ -677,9 +686,9 @@ MutationObserver path which is stable at any typing speed when `drawSelection()`
 
 ### iOS: editor URI must be provided manually
 
-The default `editorUri` points to `file:///android_asset/editor.html` (Android only). On
-iOS you must compute the main bundle path at runtime and pass it via the `editorUri` prop
-(see [iOS: provide the editor URI](#4-ios-provide-the-editor-uri)).
+The default `editorUri` points to `file:///android_asset/codeditor/editor.html` (Android
+only). On iOS you must compute the `.app` bundle path at runtime and pass it via the
+`editorUri` prop (see [iOS: provide the editor URI](#4-ios-provide-the-editor-uri)).
 
 ---
 
