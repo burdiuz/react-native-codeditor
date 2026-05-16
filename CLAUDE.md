@@ -94,7 +94,7 @@ routing, and Promise resolution transparently on both sides.
    → WebViewAPI constructed (bridge not yet active)
    → CodeEditor renders <WebView source={{ uri: editorUri }} />
 
-2. WebView loads editor.html from file:///android_asset/editor.html
+2. WebView loads editor.html from file:///android_asset/codeditor/editor.html
    → <script src="./webview-interface.umd.js"> → defines window.WebViewInterface
    → <script src="./codemirror-editor.umd.js"> → defines window.CodeMirrorEditor
    → async IIFE begins executing
@@ -242,20 +242,52 @@ overwritten by `Object.assign(stub, actualExports)` when loading completes.
 
 **`expo prebuild` does NOT copy `react-native.config.js` assets from workspace packages.**
 The `assets` field in `react-native.config.js` is only processed by `npx react-native link`
-(bare RN CLI). With Expo you must copy assets manually:
+(bare RN CLI). With Expo you must copy assets manually or via a config plugin.
+
+### Correct destination paths
+
+Assets must land in a `codeditor/` subfolder on both platforms:
 
 ```bash
-# Full copy (first time or after any asset changes)
-mkdir -p example/android/app/src/main/assets
-cp -r src/assets/* example/android/app/src/main/assets/
+# Android
+mkdir -p example/android/app/src/main/assets/codeditor
+cp -r src/assets/* example/android/app/src/main/assets/codeditor/
 
-# Or after updating webview-interface, regenerate all assets:
-npm run copy-assets
-cp -r src/assets/* example/android/app/src/main/assets/
+# iOS
+mkdir -p example/ios/CodeditorExample/assets/codeditor
+cp -r src/assets/* example/ios/CodeditorExample/assets/codeditor/
 ```
 
-A proper Expo config plugin should be added to the library to automate this during
-`expo prebuild`. This is a known gap.
+### iOS: Xcode folder reference required
+
+Copying files to disk is not enough on iOS — Xcode must have a folder reference in
+`project.pbxproj` pointing to `CodeditorExample/assets` (path relative to `ios/`).
+The `example/copy-assets-plugin.js` handles this via `withXcodeProject` during
+`expo prebuild`. See `COPY_ASSETS.md` for the full manual Xcode steps.
+
+### iOS: editorUri
+
+The default `editorUri` is Android-only. For iOS, compute the bundle path at runtime:
+
+```tsx
+import * as FileSystem from 'expo-file-system';
+
+const IOS_EDITOR_URI = Platform.OS === 'ios'
+  ? (FileSystem.bundleDirectory ?? '') + 'assets/codeditor/editor.html'
+  : undefined;
+
+<CodeEditor editorUri={IOS_EDITOR_URI} ... />
+```
+
+`expo-file-system` must be installed (`npm install expo-file-system`) and its iOS pod
+linked (`pod install`). It is already present in `example/` (`ExpoFileSystem` in
+`Podfile.lock`).
+
+### Expo config plugin
+
+`example/copy-assets-plugin.js` automates the copy + Xcode project edit during
+`expo prebuild`. Add it to `app.json` plugins to avoid manual steps on future prebuilds.
+See `COPY_ASSETS.md` for detailed documentation.
 
 ---
 
@@ -320,7 +352,7 @@ not re-pushed as prop-change effects.
 | `content` | `string` | `''` | Controlled document content |
 | `viewport` | `ViewportSettings` | `undefined` | Viewport meta scaling |
 | `allowFileAccess` | `boolean` | `true` | WebView prop; required for file:// asset loading |
-| `editorUri` | `string` | `'file:///android_asset/editor.html'` | Override for iOS or custom servers |
+| `editorUri` | `string` | `'file:///android_asset/codeditor/editor.html'` | Override for iOS — use `expo-file-system` `bundleDirectory` (see iOS notes below) |
 | `renderBlockingView` | `() => ReactNode` | `() => <BlockingView />` | Loading overlay |
 | `onWebViewRefUpdated` | `(ref) => void` | — | Called when internal WebView ref changes |
 | `onLoad/Start/Progress/End` | func | — | WebView event pass-throughs |
@@ -446,10 +478,11 @@ npm install
 
 # 3. Regenerate all assets (includes webview-interface.umd.js) and rebuild:
 npm run prepare
-cp -r src/assets/* example/android/app/src/main/assets/
+cp -r src/assets/* example/android/app/src/main/assets/codeditor/
+cp -r src/assets/* example/ios/CodeditorExample/assets/codeditor/
 
 # 4. Run:
-cd example && npx expo run:android
+cd example && npx expo run:android   # or run:ios
 ```
 
 ---
@@ -513,12 +546,14 @@ npm run copy-assets
 # Type-check
 npx tsc --noEmit
 
-# Copy assets to Android project (expo prebuild does NOT do this automatically)
-mkdir -p example/android/app/src/main/assets
-cp -r src/assets/* example/android/app/src/main/assets/
+# Copy assets to example projects (expo prebuild does NOT do this automatically)
+mkdir -p example/android/app/src/main/assets/codeditor
+cp -r src/assets/* example/android/app/src/main/assets/codeditor/
+mkdir -p example/ios/CodeditorExample/assets/codeditor
+cp -r src/assets/* example/ios/CodeditorExample/assets/codeditor/
 
-# Run example on Android
-cd example && npx expo run:android
+# Run example on Android or iOS
+cd example && npx expo run:android   # or run:ios
 ```
 
 Metro resolves `react-native-codeditor` → workspace root → `lib/module/index.js`.
@@ -531,29 +566,21 @@ directory doesn't exist until after first build. Use `npx expo run:android` dire
 
 ## Known limitations / future work
 
-1. **iOS asset URI** — Default `editorUri` points to `file:///android_asset/editor.html`
-   (Android only). For iOS, compute the bundle path (e.g. via `react-native-fs`
-   `MainBundlePath`) and pass it via the `editorUri` prop.
-
-2. **Expo asset plugin missing** — `react-native.config.js` assets are ignored by
-   `expo prebuild`. A proper Expo config plugin should be written to copy `src/assets/`
-   during prebuild automatically.
-
-3. **`_core.js` cold-start cost** — The core bundle is 861 KB. First load downloads and
+1. **`_core.js` cold-start cost** — The core bundle is 861 KB. First load downloads and
    `eval()`s it synchronously on the DDA-resolved Promise chain. On slow devices the
    initial editor appearance may take 1–2 seconds after the WebView loads.
 
-4. **No `forwardRef`** — The `api` handle is delivered via `onInitialized(api)`.
+2. **No `forwardRef`** — The `api` handle is delivered via `onInitialized(api)`.
 
-5. **No tests** — `WebViewAPI` and `CodeEditor` require a React Native + WebView mock
+3. **No tests** — `WebViewAPI` and `CodeEditor` require a React Native + WebView mock
    environment.
 
-6. **Updating codemirror assets** — Update `@actualwave/js-codemirror-package` in
+4. **Updating codemirror assets** — Update `@actualwave/js-codemirror-package` in
    `package.json`, run `npm install`, then `npm run copy-assets`. Both
    `src/assets/codemirror-editor.umd.js` and `src/assets/codemirror/` are regenerated
    automatically by `scripts/copy-assets.js`.
 
-7. **Initial theme flash** — `onInitialized` fires after `createEditor` completes (via
+5. **Initial theme flash** — `onInitialized` fires after `createEditor` completes (via
    `__editorReady__`), so the BlockingView disappears only when the editor is painted.
    However there may still be a brief flash on very slow devices if the WebView renders
    before `createEditor` finishes. No known fix yet.
@@ -594,6 +621,24 @@ Resolved all startup failures and made the editor work end-to-end:
 generates both `src/assets/codemirror-editor.umd.js` and `src/assets/codemirror/` from
 `node_modules/@actualwave/js-codemirror-package/dist/` automatically. `npm run prepare`
 runs the script before `bob build`, so assets are always in sync with the package version.
+
+### Phase 6 — iOS support (May 2026)
+Made the editor work end-to-end on iOS:
+
+- Fixed Ruby 4.0 / CocoaPods incompatibility — switched to Ruby 3.3 via Homebrew
+- Fixed expo-modules-core 55.0.25 Swift 6 build errors: `SWIFT_STRICT_CONCURRENCY = minimal`
+  in Podfile + `SWIFT_VERSION = '5'` for the three Expo targets that default to Swift 6;
+  patch-package removes invalid `@MainActor` conformance syntax from 3 source files
+- Fixed iOS WebView "Error loading page": assets now land in `ios/CodeditorExample/assets/codeditor/`
+  with a folder reference added to `project.pbxproj` (`path = CodeditorExample/assets`,
+  `lastKnownFileType = folder`) so Xcode includes them in Copy Bundle Resources
+- `editorUri` for iOS: `FileSystem.bundleDirectory + 'assets/codeditor/editor.html'` via
+  `expo-file-system`; passes `undefined` on Android so the default URI is used
+- `example/copy-assets-plugin.js` extended with `withXcodeProject` to automate the Xcode
+  folder reference on future `expo prebuild` runs
+- Asset destination changed to `codeditor/` subfolder on both platforms (Android URI updated
+  to `file:///android_asset/codeditor/editor.html`)
+- Full details in `FIX_IOS_NOTES.md` and `COPY_ASSETS.md`
 
 ### Phase 5 — Android IME + DDA call fixes (May 2026)
 Resolved Android typing issues and silent DDA call failures:
