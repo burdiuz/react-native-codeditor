@@ -27,6 +27,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["./copy-assets-plugin.js"]
+    "plugins": ["react-native-codeditor"]
   }
 }
