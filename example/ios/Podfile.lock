@@ -1,7 +1,7 @@
 PODS:
   - EXConstants (55.0.16):
     - ExpoModulesCore
-  - Expo (55.0.23):
+  - Expo (55.0.24):
     - ExpoModulesCore
     - hermes-engine
     - RCTRequired
@@ -30,7 +30,7 @@ PODS:
     - ExpoModulesCore
   - ExpoDomWebView (55.0.6):
     - ExpoModulesCore
-  - ExpoFileSystem (55.0.19):
+  - ExpoFileSystem (55.0.20):
     - ExpoModulesCore
   - ExpoFont (55.0.7):
     - ExpoModulesCore
@@ -1465,6 +1465,28 @@ PODS:
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
+  - react-native-webview (13.16.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - React-NativeModulesApple (0.83.6):
     - hermes-engine
     - React-callinvoker
@@ -1901,6 +1923,7 @@ DEPENDENCIES:
   - React-logger (from `../../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
+  - react-native-webview (from `../../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-networking (from `../../node_modules/react-native/ReactCommon/react/networking`)
   - React-oscompat (from `../../node_modules/react-native/ReactCommon/oscompat`)
@@ -2035,6 +2058,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native/ReactCommon"
   React-microtasksnativemodule:
     :path: "../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
+  react-native-webview:
+    :path: "../../node_modules/react-native-webview"
   React-NativeModulesApple:
     :path: "../../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios"
   React-networking:
@@ -2108,10 +2133,10 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   EXConstants: 255fd9f72f94bfccaed1d161edac04a552baa8d9
-  Expo: b22a37ede804d02021a013ecf06160dcbc78a79c
+  Expo: ff34168d490d9ebe8ce8f3ed4fc9150eaf454fb5
   ExpoAsset: 9d035bcc19d8688e9ddb2c579c50c8f83824188e
   ExpoDomWebView: 317a0d188cfdb850fc6fd2a43a2fc132dfd171ee
-  ExpoFileSystem: ca98bb8f923e3462ac5786b713b4298ab1b1f559
+  ExpoFileSystem: 8d40e561cc4435c9026ca55ebb6f53f4c16a4546
   ExpoFont: 94161a5527201e499f02c3d4397ae56f8734eea9
   ExpoKeepAwake: 45e456e29335bbd400554646a2f29e628c24072e
   ExpoLogBox: 81d123959f6f1fc9926e4298bbc439c31b1b07ad
@@ -2127,7 +2152,7 @@ SPEC CHECKSUMS:
   React: 9b033c7a99e1c8eec40960b6b2e6844e011e8bd1
   React-callinvoker: f64c8d57f45173835b6b9891cda27f1625551972
   React-Core: 7e1136eecefd040dc95b06301778dbfd8a61c32a
-  React-Core-prebuilt: 99d280da158eb2eefe7a50123e42beab3d406d18
+  React-Core-prebuilt: 4eab881e3231fa46bf47fca8fcc8f8b9ec7c635b
   React-CoreModules: 5ce99b935ea174a7fedb6c1066dd6b66feae2c04
   React-cxxreact: d45093410e3cd016ea47d4a73a2295a46d6c72bb
   React-debug: eb0f19ff879ad3870dc760b6c21ad56cbb3e4b98
@@ -2155,6 +2180,7 @@ SPEC CHECKSUMS:
   React-logger: 8f320ad2007af122573c11ced727bf3ef795c58b
   React-Mapbuffer: b6935d45926a7a230806e70afd0e67d3daa24ae7
   React-microtasksnativemodule: 0698007c05abab165ee02ee8b1f23a9f577f31bd
+  react-native-webview: 28592896970bf53d9864e8db084a0ad11fd81582
   React-NativeModulesApple: 9af02ea7a28301aee846322b8ba14eeed9077c2e
   React-networking: 5332952e3074bca9383c3e2c4c1a786243bbf427
   React-oscompat: 05afae2c7689405dbb4f6458110d501d55357980
@@ -2191,6 +2217,6 @@ SPEC CHECKSUMS:
   ReactNativeDependencies: 8044637f13cf2306e7560b09e96a610ff577033e
   Yoga: e41d64347f52d634dd8c2f6bac33f95081959fd3
 
-PODFILE CHECKSUM: 6a84a4026d3c06f03f61c8e7711ed5ad2094d60d
+PODFILE CHECKSUM: 60fec216acf572ae1a3562136a900bdbcd9cc91f
 
 COCOAPODS: 1.16.2

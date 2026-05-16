@@ -3,7 +3,12 @@ import { Platform, View, StyleSheet } from "react-native";
 import WebView from "react-native-webview";
 import WebViewAPI from "./WebViewAPI";
 import BlockingView from "./BlockingView";
-import type { EditorAPI, ExtensionSpec, HistorySize, ViewportSettings } from "./EditorAPI";
+import type {
+  EditorAPI,
+  ExtensionSpec,
+  HistorySize,
+  ViewportSettings,
+} from "./EditorAPI";
 
 const styles = StyleSheet.create({
   container: { position: "relative", flex: 1 },
@@ -21,8 +26,9 @@ const DEFAULT_EXTENSIONS: ExtensionSpec[] = [];
  * iOS: override via editorUri prop until a MainBundlePath helper is added.
  */
 const DEFAULT_EDITOR_URI = Platform.select({
-  android: "file:///android_asset/editor.html",
-  default: "file:///android_asset/editor.html",
+  android: "file:///android_asset/codeditor/editor.html",
+  default: "file:///android_asset/codeditor/editor.html",
+  ios: "assets/codeditor/editor.html",
 });
 
 export interface CodeEditorProps {
@@ -140,7 +146,7 @@ const CodeEditor = ({
 
     if (initializedRef.current && currentContentRef.current !== content) {
       currentContentRef.current = content;
-      callEditor(e => e.setValue(content));
+      callEditor((e) => e.setValue(content));
     }
   }, [content]);
 
@@ -154,7 +160,7 @@ const CodeEditor = ({
     if (prevLanguageRef.current === language) return;
     prevLanguageRef.current = language;
 
-    if (language) callEditor(e => e.setLanguage(language));
+    if (language) callEditor((e) => e.setLanguage(language));
   }, [language]);
 
   // Push theme changes to live editor
@@ -167,7 +173,7 @@ const CodeEditor = ({
     if (prevThemeRef.current === theme) return;
     prevThemeRef.current = theme;
 
-    callEditor(e => e.setTheme(theme));
+    callEditor((e) => e.setTheme(theme));
   }, [theme]);
 
   // Push extension changes to live editor
@@ -180,7 +186,7 @@ const CodeEditor = ({
     if (prevExtensionsRef.current === extensions) return;
     prevExtensionsRef.current = extensions;
 
-    callEditor(e => e.setExtensions(extensions));
+    callEditor((e) => e.setExtensions(extensions));
   }, [extensions]);
 
   // Push viewport changes to live editor
@@ -193,7 +199,7 @@ const CodeEditor = ({
     if (prevViewportRef.current === viewport) return;
     prevViewportRef.current = viewport;
 
-    if (viewport) callEditor(e => e.setViewport(viewport));
+    if (viewport) callEditor((e) => e.setViewport(viewport));
   }, [viewport]);
 
   const handleWebViewReference = useCallback((webView: WebView | null) => {
@@ -266,6 +272,7 @@ const CodeEditor = ({
         allowFileAccess={allowFileAccess}
         allowFileAccessFromFileURLs
         allowUniversalAccessFromFileURLs
+        allowingReadAccessToURL={Platform.OS === "ios" ? "file://" : undefined}
         source={{ uri: editorUri }}
         style={styles.webView}
         javaScriptEnabled

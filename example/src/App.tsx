@@ -1,7 +1,15 @@
 import { useCallback, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as FileSystem from 'expo-file-system';
 import CodeEditor from 'react-native-codeditor';
 import type { HistorySize, WebViewAPI } from 'react-native-codeditor';
+
+// On iOS the editor HTML lives in the app bundle. bundleDirectory gives the
+// file:// path to the .app folder; assets/codeditor/ is copied there by the
+// Expo config plugin in copy-assets-plugin.js.
+const IOS_EDITOR_URI = Platform.OS === 'ios'
+  ? (FileSystem.bundleDirectory ?? '') + 'assets/codeditor/editor.html'
+  : undefined;
 
 const LANGUAGES = ['javascript', 'python', 'rust', 'sql', 'markdown', 'json'];
 
@@ -179,6 +187,7 @@ export default function App() {
         language={language}
         theme={theme}
         viewport={VIEWPORT}
+        editorUri={IOS_EDITOR_URI}
         onInitialized={handleInitialized}
         onContentUpdate={handleContentUpdate}
         onHistorySizeUpdate={handleHistorySize}

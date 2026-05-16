@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+    }
+    .cm-editor { height: 100%; }
+    .cm-scroller { overflow: auto; }
+  </style>
+</head>
+<body></body>
+<script>
+  // Renders a fixed banner visible on the physical device — useful when
+  // Chrome remote debugging is unavailable (e.g. emulator + Metro combo).
+  const _showOnScreen = (color, msg) => {
+    try {
+      const div = document.createElement('div');
+      div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:' + color + ';color:#fff;padding:6px 8px;font-size:11px;z-index:9999;word-break:break-all;white-space:pre-wrap;font-family:monospace;';
+      div.textContent = msg;
+      (document.body || document.documentElement).appendChild(div);
+    } catch(e) {}
+  };
+
+  // Out-of-band postMessage used for log/error/ready signals that bypass DDA.
+  // Falls back to window.postMessage when ReactNativeWebView is absent (browser preview).
+  const _rnPost = (type, data) => {
+    const msg = JSON.stringify({ type, data });
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(msg);
+    } else {
+      try { window.top.postMessage(msg, '*'); } catch(e) {}
+      try { window.postMessage(msg, '*'); } catch(e) {}
+    }
+  };
+
+  window.onerror = (message, source, lineno, colno) => {
+    _showOnScreen('#c0392b', 'ERROR: ' + message + '\n' + source + ':' + lineno);
+    _rnPost('__editorError__', { message, source, lineno, colno });
+  };
+
+  window.addEventListener('unhandledrejection', (event) => {
+    const msg = String(event.reason);
+    _showOnScreen('#c0392b', 'UNHANDLED: ' + msg);
+    _rnPost('__editorError__', { message: msg, source: 'unhandledrejection' });
+  });
+
+  window.log = (...args) => _rnPost('__editorLog__', args);
+  window._rnPost = _rnPost;
+  window._showOnScreen = _showOnScreen;
+</script>
+<script src="./webview-interface.umd.js"></script>
+<script src="./codemirror-editor.umd.js"></script>
+<script>
+(async function() {
+  try {
+
+    const { configure, createEditor, requireAsyncModule } = window.CodeMirrorEditor;
+
+    // Each theme lives in its own package (@uiw/codemirror-theme-{name}), not the meta-package
+    // @uiw/codemirror-themes (which only exports createTheme). Most themes export under the
+    // same name as the theme, but github and vscode use "Dark" variants as the primary export.
+    const _themeExportNames = { github: 'githubDark', vscode: 'vscodeDark' };
+    function getThemeSpec(themeName) {
+      const exportName = _themeExportNames[themeName] ?? themeName;
+      return [`@uiw/codemirror-theme-${themeName}`, exportName];
+    }
+
+    // fetch() is blocked for file:// origins even when same-origin in Android WebView.
+    // XHR works; status 0 means success for file:// (no HTTP status in that context).
+    configure({
+      loader: (url) => new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.onload = () => {
+          if (xhr.status === 0 || (xhr.status >= 200 && xhr.status < 300)) {
+            resolve(xhr.responseText);
+          } else {
+            reject(new Error('Failed to load ' + url + ': HTTP ' + xhr.status));
+          }
+        };
+        xhr.onerror = () => reject(new Error('Failed to load ' + url));
+        xhr.send();
+      }),
+    });
+
+    // Assigned to window to prevent Chromium's GC from collecting it.
+    // DDA's ResourcePool holds resources weakly (WeakValueMap + FinalizationRegistry);
+    // without a strong reference from a long-lived scope, the GC would clean up the
+    // resource and all subsequent HOST calls would fail with "Resource does not exist".
+    const editorTarget = window._editorRoot = {};
+
+    const { root: nativeApi } = await WebViewInterface.initializeGuest({
+      root: editorTarget,
+      handshakeTimeout: 30000,
+      handshakeInterval: 200,
+    });
+
+    const config = await nativeApi.getInitialConfig();
+
+    const extensions = config.extensions ?? [];
+
+    const editor = await createEditor({
+      parent: document.body,
+      doc: config.content ?? '',
+      language: config.language,
+      extensions,
+      onChange: (() => {
+        let _timer = null;
+        return () => {
+          clearTimeout(_timer);
+          _timer = setTimeout(() => {
+            const cmds = requireAsyncModule('@codemirror/commands');
+            const state = editor.view.state;
+            _rnPost('__contentChange__', {
+              value: state.doc.toString(),
+              undo: cmds.undoDepth(state),
+              redo: cmds.redoDepth(state),
+            });
+          }, 300);
+        };
+      })(),
+    });
+
+    // Pre-fetch commands from cache (core bundle already loaded by createEditor).
+    const { undo, redo, undoDepth, redoDepth, clearHistory } =
+      await requireAsyncModule('@codemirror/commands');
+    const { EditorView } = await requireAsyncModule('@codemirror/view');
+
+    // Separate compartment for the theme so setTheme and setExtensions never clobber each other.
+    // appendConfig adds it to the live state; themeCompartment.reconfigure() updates it in-place.
+    const { Compartment, StateEffect } = await requireAsyncModule('@codemirror/state');
+    const themeCompartment = new Compartment();
+    editor.view.dispatch({ effects: StateEffect.appendConfig.of(themeCompartment.of([])) });
+
+    // Load and apply a theme by name. Returns the resolved CM6 extension.
+    const _applyTheme = async (themeName) => {
+      if (!themeName) {
+        editor.view.dispatch({ effects: themeCompartment.reconfigure([]) });
+        return;
+      }
+      const exportName = _themeExportNames[themeName] ?? themeName;
+      const mod = await requireAsyncModule(`@uiw/codemirror-theme-${themeName}`);
+      editor.view.dispatch({ effects: themeCompartment.reconfigure(mod[exportName]) });
+    };
+
+    if (config.theme) {
+      await _applyTheme(config.theme);
+    }
+
+    // Spread EditorController methods directly — getValue, setValue, setLanguage,
+    // setExtensions, loadExtension, destroy — then add methods not in EditorController.
+    const { getValue, setValue, setLanguage, setExtensions, loadExtension, destroy } = editor;
+
+    Object.assign(editorTarget, {
+      getValue,
+      setValue: (value) => {
+        const { doc, selection } = editor.view.state;
+        editor.view.dispatch({
+          changes: { from: 0, to: doc.length, insert: value ?? '' },
+          selection: {
+            anchor: Math.min(selection.main.anchor, (value ?? '').length),
+            head: Math.min(selection.main.head, (value ?? '').length),
+          },
+        });
+      },
+      setLanguage,
+      setExtensions,
+      loadExtension,
+      destroy,
+
+      resetValue: (value) => {
+        const view = editor.view;
+        view.dispatch({
+          changes: { from: 0, to: view.state.doc.length, insert: value ?? '' },
+          effects: clearHistory.of(null),
+        });
+      },
+
+      setTheme: (themeName) => _applyTheme(themeName),
+
+      setViewport: (options) => {
+        const {
+          intialScale = 1,
+          maximumScale,
+          minimumScale,
+          userScalable,
+          viewportWidth,
+        } = options ?? {};
+        let content = 'width=' + (viewportWidth ?? 'device-width') + ', initial-scale=' + intialScale;
+        if (maximumScale !== undefined) content += ', maximum-scale=' + maximumScale;
+        if (minimumScale !== undefined) content += ', minimum-scale=' + minimumScale;
+        if (userScalable !== undefined)
+          content += ', user-scalable=' + (userScalable ? 'yes' : 'no');
+        let meta = document.querySelector('meta[name="viewport"]');
+        if (!meta) {
+          meta = document.createElement('meta');
+          meta.setAttribute('name', 'viewport');
+          document.head.appendChild(meta);
+        }
+        meta.setAttribute('content', content);
+      },
+
+      focus: () => editor.view.focus(),
+
+      getCursor: (where) => {
+        const state = editor.view.state;
+        const sel = state.selection.main;
+        const pos =
+          where === 'from' ? sel.from : where === 'to' ? sel.to : sel.head;
+        const line = state.doc.lineAt(pos);
+        return { line: line.number - 1, ch: pos - line.from, index: pos };
+      },
+
+      setCursor: (line, ch) => {
+        const view = editor.view;
+        const lineObj = view.state.doc.line(line + 1);
+        const pos = lineObj.from + (ch ?? 0);
+        view.dispatch({ selection: { anchor: pos } });
+      },
+
+      getSelection: () => {
+        const state = editor.view.state;
+        return state.sliceDoc(state.selection.main.from, state.selection.main.to);
+      },
+
+      setSelection: (anchor, head) => {
+        editor.view.dispatch({ selection: { anchor, head: head ?? anchor } });
+      },
+
+      replaceSelection: (text) => {
+        const view = editor.view;
+        view.dispatch(view.state.replaceSelection(text));
+      },
+
+      cancelSelection: () => {
+        const view = editor.view;
+        const { head } = view.state.selection.main;
+        view.dispatch({ selection: { anchor: head } });
+      },
+
+      historyUndo: () => undo(editor.view),
+
+      historyRedo: () => redo(editor.view),
+
+      historyClear: () => {
+        editor.view.dispatch({ effects: clearHistory.of(null) });
+      },
+
+      historySize: () => {
+        const state = editor.view.state;
+        return { undo: undoDepth(state), redo: redoDepth(state) };
+      },
+
+      scrollToCursor: (margin) => {
+        const view = editor.view;
+        const { head } = view.state.selection.main;
+        view.dispatch({
+          effects: EditorView.scrollIntoView(head, margin !== undefined ? { y: 'center' } : {}),
+        });
+      },
+    });
+
+    if (config.viewport) {
+      editorTarget.setViewport(config.viewport);
+    }
+
+    // Signal HOST that the editor is fully ready (theme and language applied).
+    // WebViewAPI.onMessage intercepts this and fires onInitialized, which removes the BlockingView.
+    _rnPost('__editorReady__', null);
+  } catch (err) {
+    _rnPost('__editorError__', { message: String(err), stack: err?.stack, source: 'bootstrap-catch' });
+    _showOnScreen('#c0392b', 'bootstrap error: ' + String(err));
+  }
+})();
+</script>
+</html>

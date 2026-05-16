@@ -8,28 +8,30 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		2186B8C9EF0769BE31104704 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D88003CAE2774525D87305F6 /* PrivacyInfo.xcprivacy */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		460B022D5C911AAC6F582EF7 /* libPods-CodeditorExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E672C067C482F14A85FA5DD7 /* libPods-CodeditorExample.a */; };
-		AD7E35D3E067E5F9D856CA87 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13ED4CA74D3E154B162A93AB /* ExpoModulesProvider.swift */; };
+		5CF3C42820BDF071B360DF73 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F5371AD5C9524B8BBBA62F8 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		D14759E75AEC1D1222B3AFAA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 505E4B29958A44A573F5EC6F /* PrivacyInfo.xcprivacy */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
+		F2F81592D3A501290E664053 /* libPods-CodeditorExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CAECEE6407338475A4365C6 /* libPods-CodeditorExample.a */; };
+		A848AA45C31E4A90B3653E7B /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 7C3D5FB74E25417483E50113; settings = {}; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		13B07F961A680F5B00A75B9A /* CodeditorExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CodeditorExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = CodeditorExample/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = CodeditorExample/Info.plist; sourceTree = "<group>"; };
-		13ED4CA74D3E154B162A93AB /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-CodeditorExample/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		2CAECEE6407338475A4365C6 /* libPods-CodeditorExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CodeditorExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		37E50EFB27DF791909BC5177 /* Pods-CodeditorExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CodeditorExample.debug.xcconfig"; path = "Target Support Files/Pods-CodeditorExample/Pods-CodeditorExample.debug.xcconfig"; sourceTree = "<group>"; };
+		505E4B29958A44A573F5EC6F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = CodeditorExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		8F5371AD5C9524B8BBBA62F8 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-CodeditorExample/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = CodeditorExample/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		BBA759C6E87EDC2A9E1014A0 /* Pods-CodeditorExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CodeditorExample.debug.xcconfig"; path = "Target Support Files/Pods-CodeditorExample/Pods-CodeditorExample.debug.xcconfig"; sourceTree = "<group>"; };
-		D25E181DACCFB05568B65D53 /* Pods-CodeditorExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CodeditorExample.release.xcconfig"; path = "Target Support Files/Pods-CodeditorExample/Pods-CodeditorExample.release.xcconfig"; sourceTree = "<group>"; };
-		D88003CAE2774525D87305F6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = CodeditorExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		E672C067C482F14A85FA5DD7 /* libPods-CodeditorExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CodeditorExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = CodeditorExample/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* CodeditorExample-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CodeditorExample-Bridging-Header.h"; path = "CodeditorExample/CodeditorExample-Bridging-Header.h"; sourceTree = "<group>"; };
+		F724EBC73B46E94E911C0495 /* Pods-CodeditorExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CodeditorExample.release.xcconfig"; path = "Target Support Files/Pods-CodeditorExample/Pods-CodeditorExample.release.xcconfig"; sourceTree = "<group>"; };
+		7C3D5FB74E25417483E50113 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = assets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +39,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				460B022D5C911AAC6F582EF7 /* libPods-CodeditorExample.a in Frameworks */,
+				F2F81592D3A501290E664053 /* libPods-CodeditorExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,26 +55,45 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				D88003CAE2774525D87305F6 /* PrivacyInfo.xcprivacy */,
+				505E4B29958A44A573F5EC6F /* PrivacyInfo.xcprivacy */,
+				7C3D5FB74E25417483E50113 /* assets */,
 			);
 			name = CodeditorExample;
+			sourceTree = "<group>";
+		};
+		1C972749EB16CBFF818856BE /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				37E50EFB27DF791909BC5177 /* Pods-CodeditorExample.debug.xcconfig */,
+				F724EBC73B46E94E911C0495 /* Pods-CodeditorExample.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		27557DB03F5272B24A2E0ACA /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				53473804E53861072577AE63 /* CodeditorExample */,
+			);
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				E672C067C482F14A85FA5DD7 /* libPods-CodeditorExample.a */,
+				2CAECEE6407338475A4365C6 /* libPods-CodeditorExample.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		5E2B4E0CD38FDCD2F0134C9F /* ExpoModulesProviders */ = {
+		53473804E53861072577AE63 /* CodeditorExample */ = {
 			isa = PBXGroup;
 			children = (
-				B04EDD9E587E9A643003926C /* CodeditorExample */,
+				8F5371AD5C9524B8BBBA62F8 /* ExpoModulesProvider.swift */,
 			);
-			name = ExpoModulesProviders;
+			name = CodeditorExample;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -89,8 +110,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				DED01FD578A6CE2494430CA3 /* Pods */,
-				5E2B4E0CD38FDCD2F0134C9F /* ExpoModulesProviders */,
+				1C972749EB16CBFF818856BE /* Pods */,
+				27557DB03F5272B24A2E0ACA /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -105,14 +126,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		B04EDD9E587E9A643003926C /* CodeditorExample */ = {
-			isa = PBXGroup;
-			children = (
-				13ED4CA74D3E154B162A93AB /* ExpoModulesProvider.swift */,
-			);
-			name = CodeditorExample;
-			sourceTree = "<group>";
-		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -120,16 +133,6 @@
 			);
 			name = Supporting;
 			path = CodeditorExample/Supporting;
-			sourceTree = "<group>";
-		};
-		DED01FD578A6CE2494430CA3 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				BBA759C6E87EDC2A9E1014A0 /* Pods-CodeditorExample.debug.xcconfig */,
-				D25E181DACCFB05568B65D53 /* Pods-CodeditorExample.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +143,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "CodeditorExample" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				A25D85E6C9D559E243624502 /* [Expo] Configure project */,
+				A3A804060EF35685AEBC591E /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				1BA52B20CFD20141D016F460 /* [CP] Embed Pods Frameworks */,
+				C679A2B32FB184CB2F5890E0 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +199,8 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				2186B8C9EF0769BE31104704 /* PrivacyInfo.xcprivacy in Resources */,
+				D14759E75AEC1D1222B3AFAA /* PrivacyInfo.xcprivacy in Resources */,
+				A848AA45C31E4A90B3653E7B /* assets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,28 +246,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		1BA52B20CFD20141D016F460 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CodeditorExample/Pods-CodeditorExample-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermesvm.framework/hermesvm",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermesvm.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CodeditorExample/Pods-CodeditorExample-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -290,7 +272,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CodeditorExample/Pods-CodeditorExample-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		A25D85E6C9D559E243624502 /* [Expo] Configure project */ = {
+		A3A804060EF35685AEBC591E /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -314,6 +296,28 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-CodeditorExample/expo-configure-project.sh\"\n";
 		};
+		C679A2B32FB184CB2F5890E0 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CodeditorExample/Pods-CodeditorExample-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermesvm.framework/hermesvm",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermesvm.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CodeditorExample/Pods-CodeditorExample-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -322,7 +326,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				AD7E35D3E067E5F9D856CA87 /* ExpoModulesProvider.swift in Sources */,
+				5CF3C42820BDF071B360DF73 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -331,7 +335,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BBA759C6E87EDC2A9E1014A0 /* Pods-CodeditorExample.debug.xcconfig */;
+			baseConfigurationReference = 37E50EFB27DF791909BC5177 /* Pods-CodeditorExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -356,7 +360,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = codeditor.example;
-				PRODUCT_NAME = "CodeditorExample";
+				PRODUCT_NAME = CodeditorExample;
 				SWIFT_OBJC_BRIDGING_HEADER = "CodeditorExample/CodeditorExample-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -367,7 +371,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D25E181DACCFB05568B65D53 /* Pods-CodeditorExample.release.xcconfig */;
+			baseConfigurationReference = F724EBC73B46E94E911C0495 /* Pods-CodeditorExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -387,7 +391,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = codeditor.example;
-				PRODUCT_NAME = "CodeditorExample";
+				PRODUCT_NAME = CodeditorExample;
 				SWIFT_OBJC_BRIDGING_HEADER = "CodeditorExample/CodeditorExample-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

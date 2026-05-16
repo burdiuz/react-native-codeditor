@@ -35,7 +35,8 @@
     "example": "yarn workspace react-native-codeditor-example",
     "clean": "del-cli lib",
     "copy-assets": "node scripts/copy-assets.js",
-    "--prepare": "node scripts/copy-assets.js && bob build",
+    "prepare": "node scripts/copy-assets.js && bob build",
+    "postinstall": "patch-package",
     "typecheck": "tsc"
   },
   "keywords": [
@@ -65,6 +66,7 @@
     "@react-native/virtualized-lists": "^0.83.6",
     "@types/react": "^19.2.0",
     "del-cli": "^7.0.0",
+    "patch-package": "^8.0.1",
     "react": "19.2.0",
     "react-native": "0.83.6",
     "react-native-builder-bob": "^0.41.0",
