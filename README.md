@@ -38,11 +38,30 @@ npm install react-native-codeditor react-native-webview
 ### 2. Copy native assets
 
 The library ships CodeMirror 6 as static files that must be copied into your app's
-native asset directories. `expo prebuild` does not process `react-native.config.js`
-asset declarations from npm packages, so this step is manual (or automated via a config
-plugin you write — see the pattern in `example/copy-assets-plugin.js`).
+native asset directories.
 
-#### Android
+#### Expo managed / prebuild (recommended)
+
+The library ships an Expo config plugin. Add it to your `app.json` or `app.config.js`:
+
+```json
+{
+  "expo": {
+    "plugins": ["react-native-codeditor"]
+  }
+}
+```
+
+Then run `expo prebuild` — the plugin handles everything:
+- Copies assets → `android/app/src/main/assets/codeditor/`
+- Copies assets → `ios/<ProjectName>/assets/codeditor/`
+- Adds a folder reference to `project.pbxproj` so Xcode bundles the files (iOS)
+
+The plugin is idempotent — safe to re-run on subsequent prebuilds.
+
+#### Manual copy (bare RN or without expo prebuild)
+
+**Android:**
 
 ```sh
 mkdir -p android/app/src/main/assets/codeditor

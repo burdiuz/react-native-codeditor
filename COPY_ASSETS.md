@@ -4,9 +4,9 @@ The editor requires a set of static files (HTML page, CodeMirror JS modules) to 
 bundled with the app. These files live in `src/assets/` and must be copied into each
 platform's app folder before building.
 
-The Expo config plugin at `example/copy-assets-plugin.js` automates this during
-`expo prebuild`. The sections below explain what it does and what to do if you need
-to set things up manually.
+The library ships an Expo config plugin at `app.plugin.js` (library root) that automates
+all of this during `expo prebuild`. The sections below explain what it does and what to do
+if you need to set things up manually.
 
 ---
 
@@ -54,8 +54,8 @@ Copies `src/assets/` → `ios/<ProjectName>/assets/codeditor/`
 **Step 2 — adds folder reference to Xcode project** (via `withXcodeProject`)
 
 Adds the `assets` folder as a folder reference in `project.pbxproj` so Xcode includes
-it in Copy Bundle Resources. The plugin is idempotent — if a folder reference named
-`assets` with `lastKnownFileType = folder` already exists it does nothing.
+it in Copy Bundle Resources. Idempotent — if a folder reference named `assets` with
+`lastKnownFileType = folder` already exists it does nothing.
 
 The PBXFileReference entry added:
 ```
