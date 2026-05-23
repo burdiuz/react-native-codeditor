@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     html, body {
       margin: 0;
@@ -128,8 +129,12 @@
     });
 
     // Pre-fetch commands from cache (core bundle already loaded by createEditor).
-    const { undo, redo, undoDepth, redoDepth, clearHistory } =
-      await requireAsyncModule('@codemirror/commands');
+    const {
+      undo, redo, undoDepth, redoDepth, clearHistory,
+      indentMore, indentLess,
+      toggleComment, moveLineUp, moveLineDown, deleteLine,
+      selectLine, selectParentSyntax,
+    } = await requireAsyncModule('@codemirror/commands');
     const { EditorView } = await requireAsyncModule('@codemirror/view');
 
     // Separate compartment for the theme so setTheme and setExtensions never clobber each other.
@@ -152,6 +157,31 @@
     if (config.theme) {
       await _applyTheme(config.theme);
     }
+
+    // Autocomplete + bracket closing
+    const {
+      autocompletion, closeBrackets,
+      closeBracketsKeymap, completionKeymap,
+      startCompletion,
+    } = await requireAsyncModule('@codemirror/autocomplete');
+    const { keymap } = await requireAsyncModule('@codemirror/view');
+
+    let _customCompletions = [];
+
+    const _customCompletionSource = (context) => {
+      if (!_customCompletions.length) return null;
+      const word = context.matchBefore(/\w+/);
+      if (!word || (word.from === word.to && !context.explicit)) return null;
+      return { from: word.from, options: _customCompletions, validFor: /^\w*$/ };
+    };
+
+    editor.view.dispatch({
+      effects: StateEffect.appendConfig.of([
+        closeBrackets(),
+        autocompletion({ override: [_customCompletionSource], activateOnTyping: true }),
+        keymap.of([...closeBracketsKeymap, ...completionKeymap]),
+      ]),
+    });
 
     // Spread EditorController methods directly — getValue, setValue, setLanguage,
     // setExtensions, loadExtension, destroy — then add methods not in EditorController.
@@ -244,12 +274,43 @@
         view.dispatch({ selection: { anchor: head } });
       },
 
+      indentMore: () => indentMore(editor.view),
+
+      indentLess: () => indentLess(editor.view),
+
+      toggleComment: () => toggleComment(editor.view),
+
+      moveLineUp: () => moveLineUp(editor.view),
+
+      moveLineDown: () => moveLineDown(editor.view),
+
+      deleteLine: () => deleteLine(editor.view),
+
+      selectLine: () => selectLine(editor.view),
+
+      selectParentSyntax: () => selectParentSyntax(editor.view),
+
       historyUndo: () => undo(editor.view),
 
       historyRedo: () => redo(editor.view),
 
       historyClear: () => {
         editor.view.dispatch({ effects: clearHistory.of(null) });
+      },
+
+      startCompletion: () => startCompletion(editor.view),
+
+      setCompletions: (items) => {
+        _customCompletions = Array.isArray(items) ? items : [];
+      },
+
+      setSoftKeyboard: (enabled) => {
+        const dom = editor.view.contentDOM;
+        if (enabled) {
+          dom.removeAttribute('inputmode');
+        } else {
+          dom.setAttribute('inputmode', 'none');
+        }
       },
 
       historySize: () => {
@@ -269,6 +330,21 @@
     if (config.viewport) {
       editorTarget.setViewport(config.viewport);
     }
+
+    // Fire __selectionChange__ out-of-band whenever the user changes the selection.
+    // React Native stores the last known selection so it can be read synchronously
+    // (getSelection() via DDA fails after WebView loses focus on mobile).
+    editor.view.dispatch({
+      effects: StateEffect.appendConfig.of(
+        EditorView.updateListener.of((update) => {
+          if (update.selectionSet) {
+            const sel = update.state.selection.main;
+            const text = sel.empty ? '' : update.state.sliceDoc(sel.from, sel.to);
+            _rnPost('__selectionChange__', text);
+          }
+        })
+      ),
+    });
 
     // Signal HOST that the editor is fully ready (theme and language applied).
     // WebViewAPI.onMessage intercepts this and fires onInitialized, which removes the BlockingView.

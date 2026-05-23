@@ -5,6 +5,7 @@ export interface WebViewAPIHandlers {
   onInitialized: (api: WebViewAPI) => void;
   onHistorySizeUpdate: (size: HistorySize) => void;
   onContentUpdate: (content: string) => void;
+  onSelectionChange?: (text: string) => void;
   onLog: (...args: unknown[]) => void;
   onError: (error: unknown) => void;
 }
@@ -108,6 +109,10 @@ class WebViewAPI {
           const { value, undo, redo } = parsed.data ?? {};
           this.handlers.onContentUpdate(value ?? '');
           this.handlers.onHistorySizeUpdate({ undo: undo ?? 0, redo: redo ?? 0 });
+          return;
+        }
+        if (parsed?.type === '__selectionChange__') {
+          this.handlers.onSelectionChange?.(typeof parsed.data === 'string' ? parsed.data : '');
           return;
         }
       } catch {

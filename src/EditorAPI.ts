@@ -26,6 +26,13 @@ export interface HistorySize {
  */
 export type ExtensionSpec = string | [string, unknown] | unknown;
 
+export interface CompletionItem {
+  label: string;
+  type?: 'function' | 'class' | 'variable' | 'keyword' | 'namespace' | 'type' | 'text';
+  detail?: string;
+  info?: string;
+}
+
 export interface EditorAPI {
   getValue(): Promise<string>;
   setValue(value: string): Promise<void>;
@@ -41,11 +48,22 @@ export interface EditorAPI {
   setSelection(anchor: number, head?: number): Promise<void>;
   replaceSelection(text: string): Promise<void>;
   cancelSelection(): Promise<void>;
+  indentMore(): Promise<boolean>;
+  indentLess(): Promise<boolean>;
+  toggleComment(): Promise<boolean>;
+  moveLineUp(): Promise<boolean>;
+  moveLineDown(): Promise<boolean>;
+  deleteLine(): Promise<boolean>;
+  selectLine(): Promise<boolean>;
+  selectParentSyntax(): Promise<boolean>;
   historyUndo(): Promise<boolean>;
   historyRedo(): Promise<boolean>;
   historyClear(): Promise<void>;
   historySize(): Promise<HistorySize>;
   scrollToCursor(margin?: number): Promise<void>;
+  startCompletion(): Promise<void>;
+  setCompletions(items: CompletionItem[]): Promise<void>;
+  setSoftKeyboard(enabled: boolean): Promise<void>;
   loadExtension(moduleName: string): Promise<object>;
   destroy(): Promise<void>;
 }

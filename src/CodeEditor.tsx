@@ -37,6 +37,7 @@ export interface CodeEditorProps {
   onLog: (...args: unknown[]) => void;
   onError: (error: unknown) => void;
   onContentUpdate: (content: string) => void;
+  onSelectionChange?: (text: string) => void;
   onWebViewRefUpdated?: (webView: WebView | null) => void;
   onLoad?: (event: unknown) => void;
   onLoadStart?: (event: unknown) => void;
@@ -63,6 +64,7 @@ const CodeEditor = ({
   onLog,
   onError,
   onContentUpdate,
+  onSelectionChange,
   onWebViewRefUpdated,
   onLoad,
   onLoadStart,
@@ -88,6 +90,7 @@ const CodeEditor = ({
   const callbacksRef = useRef({
     onInitialized,
     onContentUpdate,
+    onSelectionChange,
     onHistorySizeUpdate,
     onLog,
     onError,
@@ -96,6 +99,7 @@ const CodeEditor = ({
   callbacksRef.current = {
     onInitialized,
     onContentUpdate,
+    onSelectionChange,
     onHistorySizeUpdate,
     onLog,
     onError,
@@ -115,6 +119,7 @@ const CodeEditor = ({
         currentContentRef.current = value;
         callbacksRef.current.onContentUpdate(value);
       },
+      onSelectionChange: (text) => callbacksRef.current.onSelectionChange?.(text),
       onHistorySizeUpdate: (size) =>
         callbacksRef.current.onHistorySizeUpdate(size),
       onLog: (...args) => callbacksRef.current.onLog(...args),
