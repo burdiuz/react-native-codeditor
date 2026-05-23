@@ -25,7 +25,7 @@ var curPunc,curKeyword,statementIndentUnit=parserConfig.statementIndentUnit,dont
 	      ! | ~ | & | ~& | | | ~| | ^ | ~^ | ^~
 	      binary_module_path_operator ::=
 	      == | != | && | || | & | | | ^ | ^~ | ~^
-	  */// Block openings which are closed by a matching keyword in the form of ("end" + keyword)
+	  */ // Block openings which are closed by a matching keyword in the form of ("end" + keyword)
 // E.g. "task" => "endtask"
 // Opening/closing pairs
 for(var keyword in blockKeywords)openClose[keyword]="end"+keyword;for(var i in openClose.begin="end",openClose.casex="endcase",openClose.casez="endcase",openClose["do"]="while",openClose.fork="join;join_any;join_none",openClose.covergroup="endgroup",noIndentKeywords){var keyword=noIndentKeywords[i];openClose[keyword]&&(openClose[keyword]=void 0)}// Keywords which open statements that are ended with a semi-colon

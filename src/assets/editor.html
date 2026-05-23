@@ -63,14 +63,18 @@
 
     const { configure, createEditor, requireAsyncModule } = window.CodeMirrorEditor;
 
-    // Each theme lives in its own package (@uiw/codemirror-theme-{name}), not the meta-package
-    // @uiw/codemirror-themes (which only exports createTheme). Most themes export under the
-    // same name as the theme, but github and vscode use "Dark" variants as the primary export.
-    const _themeExportNames = { github: 'githubDark', vscode: 'vscodeDark' };
-    function getThemeSpec(themeName) {
-      const exportName = _themeExportNames[themeName] ?? themeName;
-      return [`@uiw/codemirror-theme-${themeName}`, exportName];
-    }
+    // Maps theme name → [packageSuffix, exportName] for themes in multi-export packages.
+    // Single-export packages (darcula, monokai, etc.) export under the same name as the package.
+    const _themePackageMap = {
+      githubDark:    ['github',    'githubDark'],
+      githubLight:   ['github',    'githubLight'],
+      vscodeDark:    ['vscode',    'vscodeDark'],
+      xcodeDark:     ['xcode',     'xcodeDark'],
+      xcodeLight:    ['xcode',     'xcodeLight'],
+      solarizedDark: ['solarized', 'solarizedDark'],
+      solarizedLight:['solarized', 'solarizedLight'],
+      tokyoNight:    ['tokyo-night', 'tokyoNight'],
+    };
 
     // fetch() is blocked for file:// origins even when same-origin in Android WebView.
     // XHR works; status 0 means success for file:// (no HTTP status in that context).
@@ -143,14 +147,16 @@
     const themeCompartment = new Compartment();
     editor.view.dispatch({ effects: StateEffect.appendConfig.of(themeCompartment.of([])) });
 
-    // Load and apply a theme by name. Returns the resolved CM6 extension.
+    // Load and apply a theme by name.
     const _applyTheme = async (themeName) => {
-      if (!themeName) {
+      if (!themeName || themeName === 'default') {
         editor.view.dispatch({ effects: themeCompartment.reconfigure([]) });
         return;
       }
-      const exportName = _themeExportNames[themeName] ?? themeName;
-      const mod = await requireAsyncModule(`@uiw/codemirror-theme-${themeName}`);
+      const spec = _themePackageMap[themeName];
+      const pkgSuffix = spec ? spec[0] : themeName;
+      const exportName = spec ? spec[1] : themeName;
+      const mod = await requireAsyncModule(`@uiw/codemirror-theme-${pkgSuffix}`);
       editor.view.dispatch({ effects: themeCompartment.reconfigure(mod[exportName]) });
     };
 

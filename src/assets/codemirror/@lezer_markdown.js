@@ -25,7 +25,7 @@ function parseRow(cx,line,startI=0,elts,offset=0){let count=0,first=!0,cellStart
 	Extension that implements autolinking for
 	`www.`/`http://`/`https://`/`mailto:`/`xmpp:` URLs and email
 	addresses.
-	*/function parseSubSuper(ch,node,mark){return(cx,next,pos)=>{if(next!=ch||cx.char(pos+1)==ch)return-1;let elts=[cx.elt(mark,pos,pos+1)];for(let next,i=pos+1;i<cx.end;i++){if(next=cx.char(i),next==ch)return cx.addElement(cx.elt(node,pos,i+1,elts.concat(cx.elt(mark,i,i+1))));if(92==next/* '\\' */&&elts.push(cx.elt("Escape",i,i+++2)),space(next))break}return-1}}/**
+	*/function parseSubSuper(ch,node,mark){return(cx,next,pos)=>{if(next!=ch||cx.char(pos+1)==ch)return-1;let elts=[cx.elt(mark,pos,pos+1)];for(let next,i=pos+1;i<cx.end;i++){if(next=cx.char(i),next==ch)return cx.addElement(cx.elt(node,pos,i+1,elts.concat(cx.elt(mark,i,i+1))));if(92==next/* '\\' */&&elts.push(cx.elt("Escape",i,i++ +2)),space(next))break}return-1}}/**
 	Extension providing
 	[Pandoc-style](https://pandoc.org/MANUAL.html#superscripts-and-subscripts)
 	superscript using `^` markers.
@@ -250,7 +250,7 @@ let result=[];for(let part,i=from;i<this.parts.length;i++)part=this.parts[i],par
 // any number of blank lines.
 if(cur.type.is("Block")&&(0>NotLast.indexOf(cur.type.id)?(end=cur.to-off,blockI=cx.block.children.length):(end=prevEnd,blockI=prevI),prevEnd=cur.to-off,prevI=cx.block.children.length),!cur.nextSibling())break}for(;cx.block.children.length>blockI;)cx.block.children.pop(),cx.block.positions.pop();return end-start}}const markdownHighlighting=highlight.styleTags({"Blockquote/...":highlight.tags.quote,HorizontalRule:highlight.tags.contentSeparator,"ATXHeading1/... SetextHeading1/...":highlight.tags.heading1,"ATXHeading2/... SetextHeading2/...":highlight.tags.heading2,"ATXHeading3/...":highlight.tags.heading3,"ATXHeading4/...":highlight.tags.heading4,"ATXHeading5/...":highlight.tags.heading5,"ATXHeading6/...":highlight.tags.heading6,"Comment CommentBlock":highlight.tags.comment,Escape:highlight.tags.escape,Entity:highlight.tags.character,"Emphasis/...":highlight.tags.emphasis,"StrongEmphasis/...":highlight.tags.strong,"Link/... Image/...":highlight.tags.link,"OrderedList/... BulletList/...":highlight.tags.list,"BlockQuote/...":highlight.tags.quote,"InlineCode CodeText":highlight.tags.monospace,"URL Autolink":highlight.tags.url,"HeaderMark HardBreak QuoteMark ListMark LinkMark EmphasisMark CodeMark":highlight.tags.processingInstruction,"CodeInfo LinkLabel":highlight.tags.labelName,LinkTitle:highlight.tags.string,Paragraph:highlight.tags.content}),parser=new MarkdownParser(new common.NodeSet(nodeTypes).extend(markdownHighlighting),Object.keys(DefaultBlockParsers).map(n=>DefaultBlockParsers[n]),Object.keys(DefaultBlockParsers).map(n=>DefaultLeafBlocks[n]),Object.keys(DefaultBlockParsers),DefaultEndLeaf,DefaultSkipMarkup,Object.keys(DefaultInline).map(n=>DefaultInline[n]),Object.keys(DefaultInline),[]),StrikethroughDelim={resolve:"Strikethrough",mark:"StrikethroughMark"},Strikethrough={defineNodes:[{name:"Strikethrough",style:{"Strikethrough/...":highlight.tags.strikethrough}},{name:"StrikethroughMark",style:highlight.tags.processingInstruction}],parseInline:[{name:"Strikethrough",parse(cx,next,pos){if(126!=next/* '~' */||126!=cx.char(pos+1)||126==cx.char(pos+2))return-1;let before=cx.slice(pos-1,pos),after=cx.slice(pos+2,pos+3),sBefore=/\s|^$/.test(before),sAfter=/\s|^$/.test(after),pBefore=Punctuation.test(before),pAfter=Punctuation.test(after);return cx.addDelimiter(StrikethroughDelim,pos,pos+2,!sAfter&&(!pAfter||sBefore||pBefore),!sBefore&&(!pBefore||sAfter||pAfter))},after:"Emphasis"}]},delimiterLine=/^\|?(\s*:?-+:?\s*\|)+(\s*:?-+:?\s*)?$/;/**
 	The default CommonMark parser.
-	*//**
+	*/ /**
 	An extension that implements
 	[GFM-style](https://github.github.com/gfm/#strikethrough-extension-)
 	Strikethrough syntax using `~~` delimiters.
@@ -276,11 +276,11 @@ end=autolinkEmailEnd(cx.text,pos+m[0].length),-1<end&&"xmpp:"==m[0]&&(xmppResour
 	Extension bundle containing [`Table`](#Table),
 	[`TaskList`](#TaskList), [`Strikethrough`](#Strikethrough), and
 	[`Autolink`](#Autolink).
-	*//**
+	*/ /**
 	Extension providing
 	[Pandoc-style](https://pandoc.org/MANUAL.html#superscripts-and-subscripts)
 	subscript using `~` markers.
-	*//**
+	*/ /**
 	Extension that parses two colons with only letters, underscores,
 	and numbers between them as `Emoji` nodes.
 	*/return dist.Autolink=Autolink,dist.BlockContext=BlockContext,dist.Element=Element,dist.Emoji=Emoji,dist.GFM=GFM,dist.InlineContext=InlineContext,dist.LeafBlock=LeafBlock,dist.Line=Line,dist.MarkdownParser=MarkdownParser,dist.Strikethrough=Strikethrough,dist.Subscript=Subscript,dist.Superscript=Superscript,dist.Table=Table,dist.TaskList=TaskList,dist.parseCode=parseCode,dist.parser=parser,dist}const module={exports:exports};var hasRequiredDist,require$$0=await requireAsyncModule("@lezer/common"),require$$1=await requireAsyncModule("@lezer/highlight"),dist={},distExports=requireDist(),index=/*@__PURE__*/function getDefaultExportFromCjs(x){return x}(distExports);return module.exports=index,module.exports}

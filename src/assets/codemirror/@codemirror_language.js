@@ -12,7 +12,7 @@ async function moduleInitFunction(requireAsyncModule,exports={}){const module={e
 	A subclass of [`Language`](https://codemirror.net/6/docs/ref/#language.Language) for use with Lezer
 	[LR parsers](https://lezer.codemirror.net/docs/ref#lr.LRParser)
 	parsers.
-	*//**
+	*/ /**
 	Get the syntax tree for a state, which is the current (possibly
 	incomplete) parse tree of the active
 	[language](https://codemirror.net/6/docs/ref/#language.Language), or the empty tree if there is no
@@ -70,7 +70,7 @@ async function moduleInitFunction(requireAsyncModule,exports={}){const module={e
 	services](https://codemirror.net/6/docs/ref/#language.indentService). They provide helper utilities
 	useful in indentation logic, and can selectively override the
 	indentation reported for some lines.
-	*/// Compute the indentation for a given position from the syntax tree.
+	*/ // Compute the indentation for a given position from the syntax tree.
 function syntaxIndentation(cx,ast,pos){let stack=ast.resolveStack(pos),inner=ast.resolveInner(pos,-1).resolve(pos,0).enterUnfinishedNodesBefore(pos);if(inner!=stack.node){let add=[];for(let cur=inner;cur&&!(cur.from<stack.node.from||cur.to>stack.node.to||cur.from==stack.node.from&&cur.type==stack.node.type);cur=cur.parent)add.push(cur);for(let i=add.length-1;0<=i;i--)stack={node:add[i],next:stack}}return indentFor(stack,cx,pos)}function indentFor(stack,cx,pos){for(let strategy,cur=stack;cur;cur=cur.next)if(strategy=indentStrategy(cur.node),strategy)return strategy(TreeIndentContext.create(cx,pos,cur));return 0}function ignoreClosed(cx){return cx.pos==cx.options.simulateBreak&&cx.options.simulateDoubleBreak}function indentStrategy(tree){let strategy=tree.type.prop(indentNodeProp);if(strategy)return strategy;let close,first=tree.firstChild;if(first&&(close=first.type.prop(common.NodeProp.closedBy))){let last=tree.lastChild,closed=last&&-1<close.indexOf(last.name);return cx=>delimitedStrategy(cx,!0,1,void 0,closed&&!ignoreClosed(cx)?last.from:void 0)}return null==tree.parent?topIndent:null}function topIndent(){return 0}/**
 	Objects of this type provide context information and helper
 	methods to indentation functions registered on syntax nodes.
@@ -90,7 +90,7 @@ function bracketedAligned(context){let tree=context.node,openToken=tree.childAft
 	*/function delimitedIndent({closing,align=!0,units=1}){return context=>delimitedStrategy(context,align,units,closing)}function delimitedStrategy(context,align,units,closing,closedAt){let after=context.textAfter,space=after.match(/^\s*/)[0].length,closed=closing&&after.slice(space,space+closing.length)==closing||closedAt==context.pos+space,aligned=align?bracketedAligned(context):null;return aligned?closed?context.column(aligned.from):context.column(aligned.to):context.baseIndent+(closed?0:context.unit*units)}/**
 	An indentation strategy that aligns a node's content to its base
 	indentation.
-	*//**
+	*/ /**
 	Creates an indentation strategy that, by default, indents
 	continued lines one unit more than the node's base indentation.
 	You can provide `except` to prevent indentation of lines that
@@ -114,7 +114,7 @@ function bracketedAligned(context){let tree=context.node,openToken=tree.childAft
 	the extent of a line, such a function should return a foldable
 	range that starts on that line (but continues beyond it), if one
 	can be found.
-	*//**
+	*/ /**
 	[Fold](https://codemirror.net/6/docs/ref/#language.foldNodeProp) function that folds everything but
 	the first and the last child of a syntax node. Useful for nodes
 	that start and end with delimiters.
@@ -150,14 +150,14 @@ function bracketedAligned(context){let tree=context.node,openToken=tree.childAft
 	because the editor state was only just initialized, or because the
 	document is so big that the parser decided not to parse it
 	entirely).
-	*/// Find the foldable region containing the given line, if one exists
+	*/ // Find the foldable region containing the given line, if one exists
 function foldableContainer(view,lineBlock){// Look backwards through line blocks until we find a foldable region that
 // intersects with the line
 for(let foldableRegion,line=lineBlock;;){if(foldableRegion=foldable(view.state,line.from,line.to),foldableRegion&&foldableRegion.to>lineBlock.from)return foldableRegion;if(!line.from)return null;line=view.lineBlockAt(line.from-1)}}/**
 	Toggle folding at cursors. Unfolds if there is an existing fold
 	starting in that line, tries to find a foldable range around it
 	otherwise.
-	*//**
+	*/ /**
 	Create an extension that configures code folding.
 	*/function codeFolding(config){let result=[foldState,baseTheme$1];return config&&result.push(foldConfig.of(config)),result}function widgetToDOM(view,prepared){let{state}=view,conf=state.facet(foldConfig),onclick=event=>{let line=view.lineBlockAt(view.posAtDOM(event.target)),folded=findFold(view.state,line.from,line.to);folded&&view.dispatch({effects:unfoldEffect.of(folded)}),event.preventDefault()};if(conf.placeholderDOM)return conf.placeholderDOM(view,onclick,prepared);let element=document.createElement("span");return element.textContent=conf.placeholderText,element.setAttribute("aria-label",state.phrase("folded code")),element.title=state.phrase("unfold"),element.className="cm-foldPlaceholder",element.onclick=onclick,element}/**
 	Create an extension that registers a fold gutter, which shows a
@@ -306,7 +306,7 @@ let{state,viewport:{to:vpTo}}=this.view,field=state.field(Language.state);if(fie
 	by `Language` object's `extension` property (so you don't need to
 	manually wrap your languages in this). Can be used to access the
 	current language on a state.
-	*//**
+	*/ /**
 	This class bundles a [language](https://codemirror.net/6/docs/ref/#language.Language) with an
 	optional set of supporting extensions. Language packages are
 	encouraged to export a function that optionally takes a
@@ -431,13 +431,13 @@ return tr.selection&&(folded=clearTouchedFolds(folded,tr.selection.main.head)),f
 	syntax node types. Given a syntax node, it should check whether
 	that tree is foldable and return the range that can be collapsed
 	when it is.
-	*//**
+	*/ /**
 	State effect that unfolds the given range (if it was folded).
-	*//**
+	*/ /**
 	Unfold folded ranges on selected lines.
-	*//**
+	*/ /**
 	Unfold all folded code.
-	*//**
+	*/ /**
 	Default fold-related key bindings.
 
 	 - Ctrl-Shift-[ (Cmd-Alt-[ on macOS): [`foldCode`](https://codemirror.net/6/docs/ref/#language.foldCode).
