@@ -220,6 +220,16 @@
 
       setTheme: (themeName) => _applyTheme(themeName),
 
+      setFontSize: (size) => {
+        editor.view.dom.style.fontSize = size ? size + 'px' : '';
+        requestAnimationFrame(() => {
+          const { head } = editor.view.state.selection.main;
+          editor.view.dispatch({
+            effects: EditorView.scrollIntoView(head, { y: 'center' }),
+          });
+        });
+      },
+
       setViewport: (options) => {
         const {
           intialScale = 1,

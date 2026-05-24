@@ -40,6 +40,7 @@ export interface EditorAPI {
   setLanguage(name: string): Promise<void>;
   setExtensions(specs: ExtensionSpec[]): Promise<void>;
   setTheme(themeName?: string): Promise<void>;
+  setFontSize(size: number): Promise<void>;
   setViewport(options: ViewportSettings): Promise<void>;
   focus(): Promise<void>;
   getCursor(where?: 'from' | 'to' | 'head'): Promise<CursorPosition>;
