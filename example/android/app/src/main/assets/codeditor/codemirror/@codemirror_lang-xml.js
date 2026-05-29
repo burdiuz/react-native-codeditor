@@ -4,7 +4,7 @@ async function moduleInitFunction(requireAsyncModule,exports={}){const module={e
 	A language provider based on the [Lezer XML
 	parser](https://github.com/lezer-parser/xml), extended with
 	highlighting and indentation information.
-	*//**
+	*/ /**
 	XML language support. Includes schema-based autocompletion when
 	configured.
 	*/function xml(conf={}){let support=[xmlLanguage.data.of({autocomplete:completeFromSchema(conf.elements||[],conf.attributes||[])})];return!1!==conf.autoCloseTags&&support.push(autoCloseTags),new language.LanguageSupport(xmlLanguage,support)}function elementName(doc,tree,max=doc.length){if(!tree)return"";let tag=tree.firstChild,name=tag&&tag.getChild("TagName");return name?doc.sliceString(name.from,Math.min(name.to,max)):""}/**

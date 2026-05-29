@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as FileSystem from 'expo-file-system';
-import CodeEditor from 'react-native-codeditor';
-import type { HistorySize, WebViewAPI } from 'react-native-codeditor';
+import CodeEditor from '@actualwave/react-native-codeditor';
+import type { HistorySize, WebViewAPI } from '@actualwave/react-native-codeditor';
 
 // On iOS the editor HTML lives in the app bundle. bundleDirectory gives the
 // file:// path to the .app folder; assets/codeditor/ is copied there by the
@@ -11,7 +11,7 @@ const IOS_EDITOR_URI = Platform.OS === 'ios'
   ? (FileSystem.bundleDirectory ?? '') + 'assets/codeditor/editor.html'
   : undefined;
 
-const LANGUAGES = ['javascript', 'python', 'rust', 'sql', 'markdown', 'json'];
+const LANGUAGES = ['javascript', 'sksl', 'python', 'rust', 'sql', 'markdown', 'json'];
 
 const THEMES = ['darcula', 'monokai', 'github', 'nord', 'dracula', 'vscode'];
 
@@ -22,6 +22,13 @@ function greet(name) {
 }
 
 console.log(greet('World'));
+`,
+  sksl: `// Welcome to CodeEditor
+// Returns a solid red color (RGBA)
+half4 main(vec2 coords) {
+    // coords are in pixel units (0 to width, 0 to height)
+    return half4(1.0, 0.0, 0.0, 1.0);
+}
 `,
   python: `# Welcome to CodeEditor
 def greet(name):

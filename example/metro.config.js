@@ -15,7 +15,7 @@ config.resolver.nodeModulesPaths = [
 
 // ADD THIS PART:
 config.resolver.extraNodeModules = {
-  'react-native-codeditor': workspaceRoot,
+  '@actualwave/react-native-codeditor': workspaceRoot,
 };
 
 config.resolver.disableHierarchicalLookup = true;

@@ -27,7 +27,7 @@ divide(only.children,only.positions,0,only.children.length,positions[groupFrom]+
 		Provides a way to associate values with pieces of trees. As long
 		as that part of the tree is reused, the associated values can be
 		retrieved from an updated tree.
-		*//**
+		*/ /**
 		Create a parse wrapper that, after the inner parse completes,
 		scans its tree for mixed language regions with the `nest`
 		function, runs the resulting [inner parses](#common.NestedParse),
@@ -299,7 +299,7 @@ index,_parent){super(),this._tree=_tree,this.from=from,this.index=index,this._pa
 		    Move to this node's next sibling, if any.
 		    */nextSibling(){return this.sibling(1)}/**
 		    Move to this node's previous sibling, if any.
-		    */prevSibling(){return this.sibling(-1)}atLastNode(dir){let index,parent,{buffer}=this;if(buffer){if(!(0<dir)){for(let i=0;i<this.index;i++)if(buffer.buffer.buffer[i+3]<this.index)return!1;}else if(this.index<buffer.buffer.buffer.length)return!1;({index,parent}=buffer)}else({index,_parent:parent}=this._tree);for(;parent;{index,_parent:parent}=parent)if(-1<index)for(let child,i=index+dir,e=0>dir?-1:parent._tree.children.length;i!=e;i+=dir)if(child=parent._tree.children[i],this.mode&exports.IterMode.IncludeAnonymous||child instanceof TreeBuffer||!child.type.isAnonymous||hasChild(child))return!1;return!0}move(dir,enter){if(enter&&this.enterChild(dir,0,4/* Side.DontCare */))return!0;for(;;){if(this.sibling(dir))return!0;if(this.atLastNode(dir)||!this.parent())return!1}}/**
+		    */prevSibling(){return this.sibling(-1)}atLastNode(dir){let index,parent,{buffer}=this;if(buffer){if(!(0<dir)){for(let i=0;i<this.index;i++)if(buffer.buffer.buffer[i+3]<this.index)return!1;}else if(this.index<buffer.buffer.buffer.length)return!1;({index,parent}=buffer)}else({index,_parent:parent}=this._tree);for(;parent;({index,_parent:parent}=parent))if(-1<index)for(let child,i=index+dir,e=0>dir?-1:parent._tree.children.length;i!=e;i+=dir)if(child=parent._tree.children[i],this.mode&exports.IterMode.IncludeAnonymous||child instanceof TreeBuffer||!child.type.isAnonymous||hasChild(child))return!1;return!0}move(dir,enter){if(enter&&this.enterChild(dir,0,4/* Side.DontCare */))return!0;for(;;){if(this.sibling(dir))return!0;if(this.atLastNode(dir)||!this.parent())return!1}}/**
 		    Move to the next node in a
 		    [pre-order](https://en.wikipedia.org/wiki/Tree_traversal#Pre-order,_NLR)
 		    traversal, going from a node to its first child or, if the

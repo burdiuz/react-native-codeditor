@@ -82,7 +82,7 @@ divide(only.children,only.positions,0,only.children.length,positions[groupFrom]+
 		Provides a way to associate values with pieces of trees. As long
 		as that part of the tree is reused, the associated values can be
 		retrieved from an updated tree.
-		*//**
+		*/ /**
 		Create a parse wrapper that, after the inner parse completes,
 		scans its tree for mixed language regions with the `nest`
 		function, runs the resulting [inner parses](#common.NestedParse),
@@ -354,7 +354,7 @@ index,_parent){super(),this._tree=_tree,this.from=from,this.index=index,this._pa
 		    Move to this node's next sibling, if any.
 		    */nextSibling(){return this.sibling(1)}/**
 		    Move to this node's previous sibling, if any.
-		    */prevSibling(){return this.sibling(-1)}atLastNode(dir){let index,parent,{buffer}=this;if(buffer){if(!(0<dir)){for(let i=0;i<this.index;i++)if(buffer.buffer.buffer[i+3]<this.index)return!1;}else if(this.index<buffer.buffer.buffer.length)return!1;({index,parent}=buffer)}else({index,_parent:parent}=this._tree);for(;parent;{index,_parent:parent}=parent)if(-1<index)for(let child,i=index+dir,e=0>dir?-1:parent._tree.children.length;i!=e;i+=dir)if(child=parent._tree.children[i],this.mode&exports.IterMode.IncludeAnonymous||child instanceof TreeBuffer||!child.type.isAnonymous||hasChild(child))return!1;return!0}move(dir,enter){if(enter&&this.enterChild(dir,0,4/* Side.DontCare */))return!0;for(;;){if(this.sibling(dir))return!0;if(this.atLastNode(dir)||!this.parent())return!1}}/**
+		    */prevSibling(){return this.sibling(-1)}atLastNode(dir){let index,parent,{buffer}=this;if(buffer){if(!(0<dir)){for(let i=0;i<this.index;i++)if(buffer.buffer.buffer[i+3]<this.index)return!1;}else if(this.index<buffer.buffer.buffer.length)return!1;({index,parent}=buffer)}else({index,_parent:parent}=this._tree);for(;parent;({index,_parent:parent}=parent))if(-1<index)for(let child,i=index+dir,e=0>dir?-1:parent._tree.children.length;i!=e;i+=dir)if(child=parent._tree.children[i],this.mode&exports.IterMode.IncludeAnonymous||child instanceof TreeBuffer||!child.type.isAnonymous||hasChild(child))return!1;return!0}move(dir,enter){if(enter&&this.enterChild(dir,0,4/* Side.DontCare */))return!0;for(;;){if(this.sibling(dir))return!0;if(this.atLastNode(dir)||!this.parent())return!1}}/**
 		    Move to the next node in a
 		    [pre-order](https://en.wikipedia.org/wiki/Tree_traversal#Pre-order,_NLR)
 		    traversal, going from a node to its first child or, if the
@@ -992,7 +992,7 @@ for(;parent&&base==parent.bufferBase;)parent=parent.parent;return new Stack(this
 	    Try to scan through the automaton to find some kind of reduction
 	    that can be applied. Used when the regular ForcedReduce field
 	    isn't a valid action. @internal
-	    */findForcedReduction(){let{parser}=this.p,seen=[],explore=(state,depth)=>{if(!seen.includes(state))return seen.push(state),parser.allActions(state,action=>{if(393216/* Action.GotoFlag */&action);else if(65536&action/* Action.ReduceFlag */){let rDepth=(action>>19/* Action.ReduceDepthShift */)-depth;if(1<rDepth){let term=65535&action/* Action.ValueMask */,target=this.stack.length-3*rDepth;if(0<=target&&0<=parser.getGoto(this.stack[target],term,!1))return 65536|rDepth<<19/* Action.ReduceDepthShift *//* Action.ReduceFlag */|term}}else{let found=explore(action,depth+1);if(null!=found)return found}})};return explore(this.state,0)}/**
+	    */findForcedReduction(){let{parser}=this.p,seen=[],explore=(state,depth)=>{if(!seen.includes(state))return seen.push(state),parser.allActions(state,action=>{if(393216/* Action.GotoFlag */&action);else if(65536&action/* Action.ReduceFlag */){let rDepth=(action>>19/* Action.ReduceDepthShift */)-depth;if(1<rDepth){let term=65535&action/* Action.ValueMask */,target=this.stack.length-3*rDepth;if(0<=target&&0<=parser.getGoto(this.stack[target],term,!1))return 65536|rDepth<<19/* Action.ReduceDepthShift */ /* Action.ReduceFlag */|term}}else{let found=explore(action,depth+1);if(null!=found)return found}})};return explore(this.state,0)}/**
 	    @internal
 	    */forceAll(){for(;!this.p.parser.stateFlag(this.state,2/* StateFlag.Accepting */);)if(!this.forceReduce()){this.storeNode(0/* Term.Err */,this.pos,this.pos,4,!0);break}return this}/**
 	    Check whether this state has no further actions (assumed to be a direct descendant of the
@@ -1218,7 +1218,7 @@ let filters=state.facet(transactionFilter);for(let filtered,i=filters.length-1;0
 
 		As such, _never_ mutate properties of a state directly. That'll
 		just break things.
-		*//**
+		*/ /**
 		Utility function for combining behaviors to fill in a config
 		object from an array of provided configs. `defaults` should hold
 		default values for all optional fields in `Config`.
@@ -2254,7 +2254,7 @@ const plugin=ViewPlugin.define(view=>new HoverPlugin(view,source,hoverState,lock
 		Opening a panel is done by providing a constructor function for
 		the panel through this facet. (The panel is closed again when its
 		constructor is no longer provided.) Values of `null` are ignored.
-		*//**
+		*/ /**
 		Show a panel above or below the editor to show the user a message
 		or prompt them for input. Returns an effect that can be dispatched
 		to close the dialog, and a promise that resolves when the dialog
@@ -2271,7 +2271,7 @@ const plugin=ViewPlugin.define(view=>new HoverPlugin(view,source,hoverState,lock
 		A gutter marker represents a bit of information attached to a line
 		in a specific gutter. Your own custom markers have to extend this
 		class.
-		*//**
+		*/ /**
 		Define an editor gutter. The order in which the gutters appear is
 		determined by their extension priority.
 		*/function gutter(config){return[gutters(),activeGutters.of({...defaults,...config})]}/**
@@ -2301,7 +2301,7 @@ const plugin=ViewPlugin.define(view=>new HoverPlugin(view,source,hoverState,lock
 		trailing whitespace.
 		*/function highlightTrailingWhitespace(){return trailingHighlighter}/**
 		@internal
-		*/var state=require$$0,styleMod=require$$1,w3cKeyname=require$$2,elt=require$$3;let nav="undefined"==typeof navigator?{userAgent:"",vendor:"",platform:""}:navigator,doc="undefined"==typeof document?{documentElement:{style:{}}}:document;const ie_edge=/Edge\/(\d+)/.exec(nav.userAgent),ie_upto10=/MSIE \d/.test(nav.userAgent),ie_11up=/Trident\/(?:[7-9]|\d{2,})\..*rv:(\d+)/.exec(nav.userAgent),ie=!!(ie_upto10||ie_11up||ie_edge),gecko=!ie&&/gecko\/(\d+)/i.test(nav.userAgent),chrome=!ie&&/Chrome\/(\d+)/.exec(nav.userAgent),webkit="webkitFontSmoothing"in doc.documentElement.style,safari=!ie&&/Apple Computer/.test(nav.vendor),ios=safari&&(/Mobile\/\w+/.test(nav.userAgent)||2<nav.maxTouchPoints);var browser={mac:ios||/Mac/.test(nav.platform),windows:/Win/.test(nav.platform),linux:/Linux|X11/.test(nav.platform),ie,ie_version:ie_upto10?doc.documentMode||6:ie_11up?+ie_11up[1]:ie_edge?+ie_edge[1]:0,gecko,gecko_version:gecko?+(/Firefox\/(\d+)/.exec(nav.userAgent)||[0,0])[1]:0,chrome:!!chrome,chrome_version:chrome?+chrome[1]:0,ios,android:/Android\b/.test(nav.userAgent),webkit,webkit_version:webkit?+(/\bAppleWebKit\/(\d+)/.exec(nav.userAgent)||[0,0])[1]:0,safari,safari_version:safari?+(/\bVersion\/(\d+(\.\d+)?)/.exec(nav.userAgent)||[0,0])[1]:0,tabSize:null==doc.documentElement.style.tabSize?"-moz-tab-size":"tab-size"};const noAttrs=Object.create(null);class WidgetType{/**
+		*/var state=require$$0,styleMod=require$$1,w3cKeyname=require$$2,elt=require$$3;let nav="undefined"==typeof navigator?{userAgent:"",vendor:"",platform:""}:navigator,doc="undefined"==typeof document?{documentElement:{style:{}}}:document;const ie_edge=/Edge\/(\d+)/.exec(nav.userAgent),ie_upto10=/MSIE \d/.test(nav.userAgent),ie_11up=/Trident\/(?:[7-9]|\d{2,})\..*rv:(\d+)/.exec(nav.userAgent),ie=!!(ie_upto10||ie_11up||ie_edge),gecko=!ie&&/gecko\/(\d+)/i.test(nav.userAgent),chrome=!ie&&/Chrome\/(\d+)/.exec(nav.userAgent),webkit=("webkitFontSmoothing"in doc.documentElement.style),safari=!ie&&/Apple Computer/.test(nav.vendor),ios=safari&&(/Mobile\/\w+/.test(nav.userAgent)||2<nav.maxTouchPoints);var browser={mac:ios||/Mac/.test(nav.platform),windows:/Win/.test(nav.platform),linux:/Linux|X11/.test(nav.platform),ie,ie_version:ie_upto10?doc.documentMode||6:ie_11up?+ie_11up[1]:ie_edge?+ie_edge[1]:0,gecko,gecko_version:gecko?+(/Firefox\/(\d+)/.exec(nav.userAgent)||[0,0])[1]:0,chrome:!!chrome,chrome_version:chrome?+chrome[1]:0,ios,android:/Android\b/.test(nav.userAgent),webkit,webkit_version:webkit?+(/\bAppleWebKit\/(\d+)/.exec(nav.userAgent)||[0,0])[1]:0,safari,safari_version:safari?+(/\bVersion\/(\d+(\.\d+)?)/.exec(nav.userAgent)||[0,0])[1]:0,tabSize:null==doc.documentElement.style.tabSize?"-moz-tab-size":"tab-size"};const noAttrs=Object.create(null);class WidgetType{/**
 		    Compare this instance to another instance of the same type.
 		    (TypeScript can't express this, but only instances of the same
 		    specific class will be passed to this method.) This is used to
@@ -2510,7 +2510,7 @@ class TilePointer{constructor(top){this.index=0,this.beforeBreak=!1,this.parents
 // entering tiles, or skipping zero-length tiles, once the distance
 // has been traversed. When side is 1, leave, enter, or skip
 // everything at the end position.
-advance(dist,side,walker){let{tile,index,beforeBreak,parents}=this;for(;dist||0<side;)if(!tile.isComposite()){if(index==tile.length)beforeBreak=!!tile.breakAfter,{tile,index}=parents.pop(),index++;else if(!dist)break;else{let take=Math.min(dist,tile.length-index);walker&&walker.skip(tile,index,index+take),dist-=take,index+=take}}else if(beforeBreak){if(!dist)break;walker&&walker.break(),dist--,beforeBreak=!1}else if(index==tile.children.length){if(!dist&&!parents.length)break;walker&&walker.leave(tile),beforeBreak=!!tile.breakAfter,{tile,index}=parents.pop(),index++}else{let next=tile.children[index],brk=next.breakAfter;(0<side?!(next.length<=dist):!(next.length<dist))||walker&&!1===walker.skip(next,0,next.length)&&next.isComposite?(parents.push({tile,index}),tile=next,index=0,walker&&next.isComposite()&&walker.enter(next)):(beforeBreak=!!brk,index++,dist-=next.length)}return this.tile=tile,this.index=index,this.beforeBreak=beforeBreak,this}get root(){return this.parents.length?this.parents[0].tile:this.tile}}// Used to track open block wrappers
+advance(dist,side,walker){let{tile,index,beforeBreak,parents}=this;for(;dist||0<side;)if(!tile.isComposite()){if(index==tile.length)beforeBreak=!!tile.breakAfter,({tile,index}=parents.pop()),index++;else if(!dist)break;else{let take=Math.min(dist,tile.length-index);walker&&walker.skip(tile,index,index+take),dist-=take,index+=take}}else if(beforeBreak){if(!dist)break;walker&&walker.break(),dist--,beforeBreak=!1}else if(index==tile.children.length){if(!dist&&!parents.length)break;walker&&walker.leave(tile),beforeBreak=!!tile.breakAfter,({tile,index}=parents.pop()),index++}else{let next=tile.children[index],brk=next.breakAfter;(0<side?!(next.length<=dist):!(next.length<dist))||walker&&!1===walker.skip(next,0,next.length)&&next.isComposite?(parents.push({tile,index}),tile=next,index=0,walker&&next.isComposite()&&walker.enter(next)):(beforeBreak=!!brk,index++,dist-=next.length)}return this.tile=tile,this.index=index,this.beforeBreak=beforeBreak,this}get root(){return this.parents.length?this.parents[0].tile:this.tile}}// Used to track open block wrappers
 class OpenWrapper{constructor(from,to,wrapper,rank){this.from=from,this.to=to,this.wrapper=wrapper,this.rank=rank}}// This class builds up a new document tile using input from either
 // iteration over the old tree or iteration over the document +
 // decorations. The add* methods emit elements into the tile
@@ -2777,7 +2777,7 @@ this.delayedAndroidKey&&"Enter"!=key||(this.delayedAndroidKey={key,keyCode,// On
 // this isn't coming right after another change, in which case
 // it is probably part of a weird chain of updates, and should
 // be ignored if it returns the DOM to its previous state.
-force:this.lastChange<Date.now()-50||null!==(_a=this.delayedAndroidKey)&&void 0!==_a&&_a.force})}clearDelayedAndroidKey(){this.win.cancelAnimationFrame(this.flushingAndroidKey),this.delayedAndroidKey=null,this.flushingAndroidKey=-1}flushSoon(){0>this.delayedFlush&&(this.delayedFlush=this.view.win.requestAnimationFrame(()=>{this.delayedFlush=-1,this.flush()}))}forceFlush(){0<=this.delayedFlush&&(this.view.win.cancelAnimationFrame(this.delayedFlush),this.delayedFlush=-1),this.flush()}pendingRecords(){for(let mut of this.observer.takeRecords())this.queue.push(mut);return this.queue}processRecords(){let records=this.pendingRecords();records.length&&(this.queue=[]);let from=-1,to=-1,typeOver=!1;for(let record of records){let range=this.readMutation(record);range&&(range.typeOver&&(typeOver=!0),-1==from?{from,to}=range:(from=Math.min(range.from,from),to=Math.max(range.to,to)))}return{from,to,typeOver}}readChange(){let{from,to,typeOver}=this.processRecords(),newSel=this.selectionChanged&&hasSelection(this.dom,this.selectionRange);if(0>from&&!newSel)return null;-1<from&&(this.lastChange=Date.now()),this.view.inputState.lastFocusTime=0,this.selectionChanged=!1;let change=new DOMChange(this.view,from,to,typeOver);return this.view.docView.domChanged={newSel:change.newSel?change.newSel.main:null},change}// Apply pending changes, if any
+force:this.lastChange<Date.now()-50||null!==(_a=this.delayedAndroidKey)&&void 0!==_a&&_a.force})}clearDelayedAndroidKey(){this.win.cancelAnimationFrame(this.flushingAndroidKey),this.delayedAndroidKey=null,this.flushingAndroidKey=-1}flushSoon(){0>this.delayedFlush&&(this.delayedFlush=this.view.win.requestAnimationFrame(()=>{this.delayedFlush=-1,this.flush()}))}forceFlush(){0<=this.delayedFlush&&(this.view.win.cancelAnimationFrame(this.delayedFlush),this.delayedFlush=-1),this.flush()}pendingRecords(){for(let mut of this.observer.takeRecords())this.queue.push(mut);return this.queue}processRecords(){let records=this.pendingRecords();records.length&&(this.queue=[]);let from=-1,to=-1,typeOver=!1;for(let record of records){let range=this.readMutation(record);range&&(range.typeOver&&(typeOver=!0),-1==from?({from,to}=range):(from=Math.min(range.from,from),to=Math.max(range.to,to)))}return{from,to,typeOver}}readChange(){let{from,to,typeOver}=this.processRecords(),newSel=this.selectionChanged&&hasSelection(this.dom,this.selectionRange);if(0>from&&!newSel)return null;-1<from&&(this.lastChange=Date.now()),this.view.inputState.lastFocusTime=0,this.selectionChanged=!1;let change=new DOMChange(this.view,from,to,typeOver);return this.view.docView.domChanged={newSel:change.newSel?change.newSel.main:null},change}// Apply pending changes, if any
 flush(readSelection=!0){// Completely hold off flushing when pending keys are set—the code
 // managing those will make sure processRecords is called and the
 // view is resynchronized after
@@ -3099,7 +3099,7 @@ return(this.dom.ownerDocument.hasFocus()||browser.safari&&(null===(_a=this.input
 		an editor view. The view will ensure that the module is
 		mounted in its [document
 		root](https://codemirror.net/6/docs/ref/#view.EditorView.constructor^config.root).
-		*/EditorView.styleModule=styleModule,EditorView.inputHandler=inputHandler,EditorView.clipboardInputFilter=clipboardInputFilter,EditorView.clipboardOutputFilter=clipboardOutputFilter,EditorView.scrollHandler=scrollHandler,EditorView.focusChangeEffect=focusChangeEffect,EditorView.perLineTextDirection=perLineTextDirection,EditorView.exceptionSink=exceptionSink,EditorView.updateListener=updateListener,EditorView.editable=editable,EditorView.mouseSelectionStyle=mouseSelectionStyle,EditorView.dragMovesSelection=dragMovesSelection$1,EditorView.clickAddsSelectionRange=clickAddsSelectionRange,EditorView.decorations=decorations,EditorView.blockWrappers=blockWrappers,EditorView.outerDecorations=outerDecorations,EditorView.atomicRanges=atomicRanges,EditorView.bidiIsolatedRanges=bidiIsolatedRanges,EditorView.cursorScrollMargin=state.Facet.define({combine:inputs=>{let x=5,y=5;for(let i of inputs)"number"==typeof i?x=y=i:{x,y}=i;return{x,y}}}),EditorView.scrollMargins=scrollMargins,EditorView.darkTheme=darkTheme,EditorView.cspNonce=state.Facet.define({combine:values=>values.length?values[0]:""}),EditorView.contentAttributes=contentAttributes,EditorView.editorAttributes=editorAttributes,EditorView.lineWrapping=EditorView.contentAttributes.of({class:"cm-lineWrapping"}),EditorView.announce=state.StateEffect.define();// Maximum line length for which we compute accurate bidi info
+		*/EditorView.styleModule=styleModule,EditorView.inputHandler=inputHandler,EditorView.clipboardInputFilter=clipboardInputFilter,EditorView.clipboardOutputFilter=clipboardOutputFilter,EditorView.scrollHandler=scrollHandler,EditorView.focusChangeEffect=focusChangeEffect,EditorView.perLineTextDirection=perLineTextDirection,EditorView.exceptionSink=exceptionSink,EditorView.updateListener=updateListener,EditorView.editable=editable,EditorView.mouseSelectionStyle=mouseSelectionStyle,EditorView.dragMovesSelection=dragMovesSelection$1,EditorView.clickAddsSelectionRange=clickAddsSelectionRange,EditorView.decorations=decorations,EditorView.blockWrappers=blockWrappers,EditorView.outerDecorations=outerDecorations,EditorView.atomicRanges=atomicRanges,EditorView.bidiIsolatedRanges=bidiIsolatedRanges,EditorView.cursorScrollMargin=state.Facet.define({combine:inputs=>{let x=5,y=5;for(let i of inputs)"number"==typeof i?x=y=i:({x,y}=i);return{x,y}}}),EditorView.scrollMargins=scrollMargins,EditorView.darkTheme=darkTheme,EditorView.cspNonce=state.Facet.define({combine:values=>values.length?values[0]:""}),EditorView.contentAttributes=contentAttributes,EditorView.editorAttributes=editorAttributes,EditorView.lineWrapping=EditorView.contentAttributes.of({class:"cm-lineWrapping"}),EditorView.announce=state.StateEffect.define();// Maximum line length for which we compute accurate bidi info
 const MaxBidiLine=4096,BadMeasure={};class CachedOrder{constructor(from,to,dir,isolates,fresh,order){this.from=from,this.to=to,this.dir=dir,this.isolates=isolates,this.fresh=fresh,this.order=order}static update(cache,changes){if(changes.empty&&!cache.some(c=>c.fresh))return cache;let result=[],lastDir=cache.length?cache[cache.length-1].dir:exports.Direction.LTR;for(let i=Math.max(0,cache.length-10),entry;i<cache.length;i++)entry=cache[i],entry.dir!=lastDir||changes.touchesRange(entry.from,entry.to)||result.push(new CachedOrder(changes.mapPos(entry.from,1),changes.mapPos(entry.to,-1),entry.dir,entry.isolates,!1,entry.order));return result}}const currentPlatform=browser.mac?"mac":browser.windows?"win":browser.linux?"linux":"key",handleKeyEvents=state.Prec.default(EditorView.domEventHandlers({keydown(event,view){return runHandlers(getKeymap(view.state),event,view,"editor")}})),keymap=state.Facet.define({enables:handleKeyEvents}),Keymaps=new WeakMap;/**
 		Facet used for registering keymaps.
 
@@ -3182,7 +3182,7 @@ async function _coreInit__codemirror_language(requireAsyncModule,exports={}){con
 	A subclass of [`Language`](https://codemirror.net/6/docs/ref/#language.Language) for use with Lezer
 	[LR parsers](https://lezer.codemirror.net/docs/ref#lr.LRParser)
 	parsers.
-	*//**
+	*/ /**
 	Get the syntax tree for a state, which is the current (possibly
 	incomplete) parse tree of the active
 	[language](https://codemirror.net/6/docs/ref/#language.Language), or the empty tree if there is no
@@ -3240,7 +3240,7 @@ async function _coreInit__codemirror_language(requireAsyncModule,exports={}){con
 	services](https://codemirror.net/6/docs/ref/#language.indentService). They provide helper utilities
 	useful in indentation logic, and can selectively override the
 	indentation reported for some lines.
-	*/// Compute the indentation for a given position from the syntax tree.
+	*/ // Compute the indentation for a given position from the syntax tree.
 function syntaxIndentation(cx,ast,pos){let stack=ast.resolveStack(pos),inner=ast.resolveInner(pos,-1).resolve(pos,0).enterUnfinishedNodesBefore(pos);if(inner!=stack.node){let add=[];for(let cur=inner;cur&&!(cur.from<stack.node.from||cur.to>stack.node.to||cur.from==stack.node.from&&cur.type==stack.node.type);cur=cur.parent)add.push(cur);for(let i=add.length-1;0<=i;i--)stack={node:add[i],next:stack}}return indentFor(stack,cx,pos)}function indentFor(stack,cx,pos){for(let strategy,cur=stack;cur;cur=cur.next)if(strategy=indentStrategy(cur.node),strategy)return strategy(TreeIndentContext.create(cx,pos,cur));return 0}function ignoreClosed(cx){return cx.pos==cx.options.simulateBreak&&cx.options.simulateDoubleBreak}function indentStrategy(tree){let strategy=tree.type.prop(indentNodeProp);if(strategy)return strategy;let close,first=tree.firstChild;if(first&&(close=first.type.prop(common.NodeProp.closedBy))){let last=tree.lastChild,closed=last&&-1<close.indexOf(last.name);return cx=>delimitedStrategy(cx,!0,1,void 0,closed&&!ignoreClosed(cx)?last.from:void 0)}return null==tree.parent?topIndent:null}function topIndent(){return 0}/**
 	Objects of this type provide context information and helper
 	methods to indentation functions registered on syntax nodes.
@@ -3260,7 +3260,7 @@ function bracketedAligned(context){let tree=context.node,openToken=tree.childAft
 	*/function delimitedIndent({closing,align=!0,units=1}){return context=>delimitedStrategy(context,align,units,closing)}function delimitedStrategy(context,align,units,closing,closedAt){let after=context.textAfter,space=after.match(/^\s*/)[0].length,closed=closing&&after.slice(space,space+closing.length)==closing||closedAt==context.pos+space,aligned=align?bracketedAligned(context):null;return aligned?closed?context.column(aligned.from):context.column(aligned.to):context.baseIndent+(closed?0:context.unit*units)}/**
 	An indentation strategy that aligns a node's content to its base
 	indentation.
-	*//**
+	*/ /**
 	Creates an indentation strategy that, by default, indents
 	continued lines one unit more than the node's base indentation.
 	You can provide `except` to prevent indentation of lines that
@@ -3284,7 +3284,7 @@ function bracketedAligned(context){let tree=context.node,openToken=tree.childAft
 	the extent of a line, such a function should return a foldable
 	range that starts on that line (but continues beyond it), if one
 	can be found.
-	*//**
+	*/ /**
 	[Fold](https://codemirror.net/6/docs/ref/#language.foldNodeProp) function that folds everything but
 	the first and the last child of a syntax node. Useful for nodes
 	that start and end with delimiters.
@@ -3320,14 +3320,14 @@ function bracketedAligned(context){let tree=context.node,openToken=tree.childAft
 	because the editor state was only just initialized, or because the
 	document is so big that the parser decided not to parse it
 	entirely).
-	*/// Find the foldable region containing the given line, if one exists
+	*/ // Find the foldable region containing the given line, if one exists
 function foldableContainer(view,lineBlock){// Look backwards through line blocks until we find a foldable region that
 // intersects with the line
 for(let foldableRegion,line=lineBlock;;){if(foldableRegion=foldable(view.state,line.from,line.to),foldableRegion&&foldableRegion.to>lineBlock.from)return foldableRegion;if(!line.from)return null;line=view.lineBlockAt(line.from-1)}}/**
 	Toggle folding at cursors. Unfolds if there is an existing fold
 	starting in that line, tries to find a foldable range around it
 	otherwise.
-	*//**
+	*/ /**
 	Create an extension that configures code folding.
 	*/function codeFolding(config){let result=[foldState,baseTheme$1];return config&&result.push(foldConfig.of(config)),result}function widgetToDOM(view,prepared){let{state}=view,conf=state.facet(foldConfig),onclick=event=>{let line=view.lineBlockAt(view.posAtDOM(event.target)),folded=findFold(view.state,line.from,line.to);folded&&view.dispatch({effects:unfoldEffect.of(folded)}),event.preventDefault()};if(conf.placeholderDOM)return conf.placeholderDOM(view,onclick,prepared);let element=document.createElement("span");return element.textContent=conf.placeholderText,element.setAttribute("aria-label",state.phrase("folded code")),element.title=state.phrase("unfold"),element.className="cm-foldPlaceholder",element.onclick=onclick,element}/**
 	Create an extension that registers a fold gutter, which shows a
@@ -3476,7 +3476,7 @@ let{state,viewport:{to:vpTo}}=this.view,field=state.field(Language.state);if(fie
 	by `Language` object's `extension` property (so you don't need to
 	manually wrap your languages in this). Can be used to access the
 	current language on a state.
-	*//**
+	*/ /**
 	This class bundles a [language](https://codemirror.net/6/docs/ref/#language.Language) with an
 	optional set of supporting extensions. Language packages are
 	encouraged to export a function that optionally takes a
@@ -3601,13 +3601,13 @@ return tr.selection&&(folded=clearTouchedFolds(folded,tr.selection.main.head)),f
 	syntax node types. Given a syntax node, it should check whether
 	that tree is foldable and return the range that can be collapsed
 	when it is.
-	*//**
+	*/ /**
 	State effect that unfolds the given range (if it was folded).
-	*//**
+	*/ /**
 	Unfold folded ranges on selected lines.
-	*//**
+	*/ /**
 	Unfold all folded code.
-	*//**
+	*/ /**
 	Default fold-related key bindings.
 
 	 - Ctrl-Shift-[ (Cmd-Alt-[ on macOS): [`foldCode`](https://codemirror.net/6/docs/ref/#language.foldCode).
@@ -3775,7 +3775,7 @@ for(let next,at=start.head;;){if(next=forward?pos.childAfter(at):pos.childBefore
 	will also delete that whitespace. When the cursor is between
 	matching brackets, an additional newline will be inserted after
 	the cursor.
-	*/function newlineAndIndent(atEof){return({state:state$1,dispatch})=>{if(state$1.readOnly)return!1;let changes=state$1.changeByRange(range=>{let{from,to}=range,line=state$1.doc.lineAt(from),explode=!atEof&&from==to&&isBetweenBrackets(state$1,from);atEof&&(from=to=(to<=line.to?line:state$1.doc.lineAt(to)).to);let cx=new language.IndentContext(state$1,{simulateBreak:from,simulateDoubleBreak:!!explode}),indent=language.getIndentation(cx,from);for(null==indent&&(indent=state.countColumn(/^\s*/.exec(state$1.doc.lineAt(from).text)[0],state$1.tabSize));to<line.to&&/\s/.test(line.text[to-line.from]);)to++;explode?{from,to}=explode:from>line.from&&from<line.from+100&&!/\S/.test(line.text.slice(0,from))&&(from=line.from);let insert=["",language.indentString(state$1,indent)];return explode&&insert.push(language.indentString(state$1,cx.lineIndent(line.from,-1))),{changes:{from,to,insert:state.Text.of(insert)},range:state.EditorSelection.cursor(from+1+insert[1].length)}});return dispatch(state$1.update(changes,{scrollIntoView:!0,userEvent:"input"})),!0}}function changeBySelectedLine(state$1,f){let atLine=-1;return state$1.changeByRange(range=>{let changes=[];for(let line,pos=range.from;pos<=range.to;)line=state$1.doc.lineAt(pos),line.number>atLine&&(range.empty||range.to>line.from)&&(f(line,changes,range),atLine=line.number),pos=line.to+1;let changeSet=state$1.changes(changes);return{changes,range:state.EditorSelection.range(changeSet.mapPos(range.anchor,1),changeSet.mapPos(range.head,1))}})}/**
+	*/function newlineAndIndent(atEof){return({state:state$1,dispatch})=>{if(state$1.readOnly)return!1;let changes=state$1.changeByRange(range=>{let{from,to}=range,line=state$1.doc.lineAt(from),explode=!atEof&&from==to&&isBetweenBrackets(state$1,from);atEof&&(from=to=(to<=line.to?line:state$1.doc.lineAt(to)).to);let cx=new language.IndentContext(state$1,{simulateBreak:from,simulateDoubleBreak:!!explode}),indent=language.getIndentation(cx,from);for(null==indent&&(indent=state.countColumn(/^\s*/.exec(state$1.doc.lineAt(from).text)[0],state$1.tabSize));to<line.to&&/\s/.test(line.text[to-line.from]);)to++;explode?({from,to}=explode):from>line.from&&from<line.from+100&&!/\S/.test(line.text.slice(0,from))&&(from=line.from);let insert=["",language.indentString(state$1,indent)];return explode&&insert.push(language.indentString(state$1,cx.lineIndent(line.from,-1))),{changes:{from,to,insert:state.Text.of(insert)},range:state.EditorSelection.cursor(from+1+insert[1].length)}});return dispatch(state$1.update(changes,{scrollIntoView:!0,userEvent:"input"})),!0}}function changeBySelectedLine(state$1,f){let atLine=-1;return state$1.changeByRange(range=>{let changes=[];for(let line,pos=range.from;pos<=range.to;)line=state$1.doc.lineAt(pos),line.number>atLine&&(range.empty||range.to>line.from)&&(f(line,changes,range),atLine=line.number),pos=line.to+1;let changeSet=state$1.changes(changes);return{changes,range:state.EditorSelection.range(changeSet.mapPos(range.anchor,1),changeSet.mapPos(range.head,1))}})}/**
 	Auto-indent the selected lines. This uses the [indentation service
 	facet](https://codemirror.net/6/docs/ref/#language.indentService) as source for auto-indent
 	information.
@@ -3784,42 +3784,42 @@ for(let next,at=start.head;;){if(next=forward?pos.childAfter(at):pos.childBefore
 	if available, otherwise falling back to block comments.
 	*/const toggleComment=target=>{let{state}=target,line=state.doc.lineAt(state.selection.main.from),config=getConfig(target.state,line.from);return config.line?toggleLineComment(target):!!config.block&&toggleBlockCommentByLine(target)},toggleLineComment=command(changeLineComment,0/* CommentOption.Toggle */),lineComment=command(changeLineComment,1/* CommentOption.Comment */),lineUncomment=command(changeLineComment,2/* CommentOption.Uncomment */),toggleBlockComment=command(changeBlockComment,0/* CommentOption.Toggle */),blockComment=command(changeBlockComment,1/* CommentOption.Comment */),blockUncomment=command(changeBlockComment,2/* CommentOption.Uncomment */),toggleBlockCommentByLine=command((o,s)=>changeBlockComment(o,s,selectedLineRanges(s)),0/* CommentOption.Toggle */),SearchMargin=50,fromHistory=state.Annotation.define(),isolateHistory=state.Annotation.define(),invertedEffects=state.Facet.define(),historyConfig=state.Facet.define({combine(configs){return state.combineConfig(configs,{minDepth:100,newGroupDelay:500,joinToEvent:(_t,isAdjacent)=>isAdjacent},{minDepth:Math.max,newGroupDelay:Math.min,joinToEvent:(a,b)=>(tr,adj)=>a(tr,adj)||b(tr,adj)})}}),historyField_=state.StateField.define({create(){return HistoryState.empty},update(state$1,tr){let config=tr.state.facet(historyConfig),fromHist=tr.annotation(fromHistory);if(fromHist){let item=HistEvent.fromTransaction(tr,fromHist.selection),from=fromHist.side,other=0==from/* BranchName.Done */?state$1.undone:state$1.done;return other=item?updateBranch(other,other.length,config.minDepth,item):addSelection(other,tr.startState.selection),new HistoryState(0==from/* BranchName.Done */?fromHist.rest:other,0==from/* BranchName.Done */?other:fromHist.rest)}let isolate=tr.annotation(isolateHistory);if(("full"==isolate||"before"==isolate)&&(state$1=state$1.isolate()),!1===tr.annotation(state.Transaction.addToHistory))return tr.changes.empty?state$1:state$1.addMapping(tr.changes.desc);let event=HistEvent.fromTransaction(tr),time=tr.annotation(state.Transaction.time),userEvent=tr.annotation(state.Transaction.userEvent);return event?state$1=state$1.addChanges(event,time,userEvent,config,tr):tr.selection&&(state$1=state$1.addSelection(tr.startState.selection,time,userEvent,config.newGroupDelay)),("full"==isolate||"after"==isolate)&&(state$1=state$1.isolate()),state$1},toJSON(value){return{done:value.done.map(e=>e.toJSON()),undone:value.undone.map(e=>e.toJSON())}},fromJSON(json){return new HistoryState(json.done.map(HistEvent.fromJSON),json.undone.map(HistEvent.fromJSON))}}),historyField=historyField_,undo=cmd(0/* BranchName.Done */,!1),redo=cmd(1/* BranchName.Undone */,!1),undoSelection=cmd(0/* BranchName.Done */,!0),redoSelection=cmd(1/* BranchName.Undone */,!0),undoDepth=depth(0/* BranchName.Done */),redoDepth=depth(1/* BranchName.Undone */);/**
 	Comment the current selection using line comments.
-	*//**
+	*/ /**
 	Uncomment the current selection using line comments.
-	*//**
+	*/ /**
 	Comment or uncomment the current selection using block comments.
 	The block comment syntax is taken from the
 	[`commentTokens`](https://codemirror.net/6/docs/ref/#commands.CommentTokens) [language
 	data](https://codemirror.net/6/docs/ref/#state.EditorState.languageDataAt).
-	*//**
+	*/ /**
 	Comment the current selection using block comments.
-	*//**
+	*/ /**
 	Uncomment the current selection using block comments.
-	*//**
+	*/ /**
 	Comment or uncomment the lines around the current selection using
 	block comments.
-	*//**
+	*/ /**
 	Transaction annotation that will prevent that transaction from
 	being combined with other transactions in the undo history. Given
 	`"before"`, it'll prevent merging with previous transactions. With
 	`"after"`, subsequent transactions won't be combined with this
 	one. With `"full"`, the transaction is isolated on both sides.
-	*//**
+	*/ /**
 	This facet provides a way to register functions that, given a
 	transaction, provide a set of effects that the history should
 	store when inverting the transaction. This can be used to
 	integrate some kinds of effects in the history, so that they can
 	be undone (and redone again).
-	*//**
+	*/ /**
 	Redo a group of history events. Returns false if no group was
 	available.
-	*//**
+	*/ /**
 	Undo a change or selection change.
-	*//**
+	*/ /**
 	Redo a change or selection change.
-	*//**
+	*/ /**
 	The amount of redoable change events available in a given state.
-	*/// History events store groups of changes or effects that need to be
+	*/ // History events store groups of changes or effects that need to be
 // undone/redone together.
 class HistEvent{constructor(// The changes in this event. Normal events hold at least one
 // change or effect. But it may be necessary to store selection
@@ -3845,185 +3845,185 @@ static fromTransaction(tr,selection){let effects=none;for(let invert of tr.start
 	- Alt-u (Mod-Shift-u on macOS): [`redoSelection`](https://codemirror.net/6/docs/ref/#commands.redoSelection).
 	*/const historyKeymap=[{key:"Mod-z",run:undo,preventDefault:!0},{key:"Mod-y",mac:"Mod-Shift-z",run:redo,preventDefault:!0},{linux:"Ctrl-Shift-z",run:redo,preventDefault:!0},{key:"Mod-u",run:undoSelection,preventDefault:!0},{key:"Alt-u",mac:"Mod-Shift-u",run:redoSelection,preventDefault:!0}],cursorCharLeft=view=>cursorByChar(view,!ltrAtCursor(view)),cursorCharRight=view=>cursorByChar(view,ltrAtCursor(view)),cursorCharForward=view=>cursorByChar(view,!0),cursorCharBackward=view=>cursorByChar(view,!1),cursorCharForwardLogical=target=>moveByCharLogical(target,!0),cursorCharBackwardLogical=target=>moveByCharLogical(target,!1),cursorGroupLeft=view=>cursorByGroup(view,!ltrAtCursor(view)),cursorGroupRight=view=>cursorByGroup(view,ltrAtCursor(view)),cursorGroupForward=view=>cursorByGroup(view,!0),cursorGroupBackward=view=>cursorByGroup(view,!1),cursorGroupForwardWin=view=>moveSel(view,range=>range.empty?view.moveByChar(range,!0,start=>toGroupStart(view,range.head,start)):rangeEnd(range,!0)),segmenter="undefined"!=typeof Intl&&Intl.Segmenter?new Intl.Segmenter(void 0,{granularity:"word"}):null,cursorSubwordForward=view=>cursorBySubword(view,!0),cursorSubwordBackward=view=>cursorBySubword(view,!1),cursorSyntaxLeft=view=>moveSel(view,range=>moveBySyntax(view.state,range,!ltrAtCursor(view))),cursorSyntaxRight=view=>moveSel(view,range=>moveBySyntax(view.state,range,ltrAtCursor(view))),cursorLineUp=view=>cursorByLine(view,!1),cursorLineDown=view=>cursorByLine(view,!0),cursorPageUp=view=>cursorByPage(view,!1),cursorPageDown=view=>cursorByPage(view,!0),cursorLineBoundaryForward=view=>moveSel(view,range=>moveByLineBoundary(view,range,!0)),cursorLineBoundaryBackward=view=>moveSel(view,range=>moveByLineBoundary(view,range,!1)),cursorLineBoundaryLeft=view=>moveSel(view,range=>moveByLineBoundary(view,range,!ltrAtCursor(view))),cursorLineBoundaryRight=view=>moveSel(view,range=>moveByLineBoundary(view,range,ltrAtCursor(view))),cursorLineStart=view=>moveSel(view,range=>state.EditorSelection.cursor(view.lineBlockAt(range.head).from,1)),cursorLineEnd=view=>moveSel(view,range=>state.EditorSelection.cursor(view.lineBlockAt(range.head).to,-1)),cursorMatchingBracket=({state,dispatch})=>toMatchingBracket(state,dispatch,!1),selectMatchingBracket=({state,dispatch})=>toMatchingBracket(state,dispatch,!0),selectCharLeft=view=>selectByChar(view,!ltrAtCursor(view)),selectCharRight=view=>selectByChar(view,ltrAtCursor(view)),selectCharForward=view=>selectByChar(view,!0),selectCharBackward=view=>selectByChar(view,!1),selectCharForwardLogical=target=>extendSel(target,range=>byCharLogical(target.state,range,!0)),selectCharBackwardLogical=target=>extendSel(target,range=>byCharLogical(target.state,range,!1)),selectGroupLeft=view=>selectByGroup(view,!ltrAtCursor(view)),selectGroupRight=view=>selectByGroup(view,ltrAtCursor(view)),selectGroupForward=view=>selectByGroup(view,!0),selectGroupBackward=view=>selectByGroup(view,!1),selectGroupForwardWin=view=>extendSel(view,range=>view.moveByChar(range,!0,start=>toGroupStart(view,range.head,start))),selectSubwordForward=view=>selectBySubword(view,!0),selectSubwordBackward=view=>selectBySubword(view,!1),selectSyntaxLeft=view=>extendSel(view,range=>moveBySyntax(view.state,range,!ltrAtCursor(view))),selectSyntaxRight=view=>extendSel(view,range=>moveBySyntax(view.state,range,ltrAtCursor(view))),selectLineUp=view=>selectByLine(view,!1),selectLineDown=view=>selectByLine(view,!0),selectPageUp=view=>selectByPage(view,!1),selectPageDown=view=>selectByPage(view,!0),selectLineBoundaryForward=view=>extendSel(view,range=>moveByLineBoundary(view,range,!0)),selectLineBoundaryBackward=view=>extendSel(view,range=>moveByLineBoundary(view,range,!1)),selectLineBoundaryLeft=view=>extendSel(view,range=>moveByLineBoundary(view,range,!ltrAtCursor(view))),selectLineBoundaryRight=view=>extendSel(view,range=>moveByLineBoundary(view,range,ltrAtCursor(view))),selectLineStart=view=>extendSel(view,range=>state.EditorSelection.cursor(view.lineBlockAt(range.head).from)),selectLineEnd=view=>extendSel(view,range=>state.EditorSelection.cursor(view.lineBlockAt(range.head).to)),cursorDocStart=({state,dispatch})=>(dispatch(setSel(state,{anchor:0})),!0),cursorDocEnd=({state,dispatch})=>(dispatch(setSel(state,{anchor:state.doc.length})),!0),selectDocStart=({state,dispatch})=>(dispatch(setSel(state,{anchor:state.selection.main.anchor,head:0})),!0),selectDocEnd=({state,dispatch})=>(dispatch(setSel(state,{anchor:state.selection.main.anchor,head:state.doc.length})),!0),selectAll=({state,dispatch})=>(dispatch(state.update({selection:{anchor:0,head:state.doc.length},userEvent:"select"})),!0),selectLine=({state:state$1,dispatch})=>{let ranges=selectedLineBlocks(state$1).map(({from,to})=>state.EditorSelection.range(from,Math.min(to+1,state$1.doc.length)));return dispatch(state$1.update({selection:state.EditorSelection.create(ranges),userEvent:"select"})),!0},selectParentSyntax=({state:state$1,dispatch})=>{let selection=updateSel(state$1.selection,range=>{let tree=language.syntaxTree(state$1),stack=tree.resolveStack(range.from,1);if(range.empty){let stackBefore=tree.resolveStack(range.from,-1);stackBefore.node.from>=stack.node.from&&stackBefore.node.to<=stack.node.to&&(stack=stackBefore)}for(let cur=stack;cur;cur=cur.next){let{node}=cur;if((node.from<range.from&&node.to>=range.to||node.to>range.to&&node.from<=range.from)&&cur.next)return state.EditorSelection.range(node.to,node.from)}return range});return!selection.eq(state$1.selection)&&(dispatch(setSel(state$1,selection)),!0)},addCursorAbove=view=>addCursorVertically(view,!1),addCursorBelow=view=>addCursorVertically(view,!0),simplifySelection=({state:state$1,dispatch})=>{let cur=state$1.selection,selection=null;return(1<cur.ranges.length?selection=state.EditorSelection.create([cur.main]):!cur.main.empty&&(selection=state.EditorSelection.create([state.EditorSelection.cursor(cur.main.head)])),!!selection)&&(dispatch(setSel(state$1,selection)),!0)},deleteByChar=(target,forward,byIndentUnit)=>deleteBy(target,range=>{let before,targetPos,pos=range.from,{state:state$1}=target,line=state$1.doc.lineAt(pos);if(byIndentUnit&&!forward&&pos>line.from&&pos<line.from+200&&!/[^ \t]/.test(before=line.text.slice(0,pos-line.from))){if("\t"==before[before.length-1])return pos-1;let col=state.countColumn(before,state$1.tabSize),drop=col%language.getIndentUnit(state$1)||language.getIndentUnit(state$1);for(let i=0;i<drop&&" "==before[before.length-1-i];i++)pos--;targetPos=pos}else targetPos=state.findClusterBreak(line.text,pos-line.from,forward,forward)+line.from,targetPos==pos&&line.number!=(forward?state$1.doc.lines:1)?targetPos+=forward?1:-1:!forward&&/[\ufe00-\ufe0f]/.test(line.text.slice(targetPos-line.from,pos-line.from))&&(targetPos=state.findClusterBreak(line.text,targetPos-line.from,!1,!1)+line.from);return targetPos}),deleteCharBackward=view=>deleteByChar(view,!1,!0),deleteCharBackwardStrict=view=>deleteByChar(view,!1,!1),deleteCharForward=view=>deleteByChar(view,!0,!1),deleteByGroup=(target,forward)=>deleteBy(target,range=>{let pos=range.head,{state:state$1}=target,line=state$1.doc.lineAt(pos),categorize=state$1.charCategorizer(pos);for(let cat=null;;){if(pos==(forward?line.to:line.from)){pos==range.head&&line.number!=(forward?state$1.doc.lines:1)&&(pos+=forward?1:-1);break}let next=state.findClusterBreak(line.text,pos-line.from,forward)+line.from,nextChar=line.text.slice(Math.min(pos,next)-line.from,Math.max(pos,next)-line.from),nextCat=categorize(nextChar);if(null!=cat&&nextCat!=cat)break;(" "!=nextChar||pos!=range.head)&&(cat=nextCat),pos=next}return pos}),deleteGroupBackward=target=>deleteByGroup(target,!1),deleteGroupForward=target=>deleteByGroup(target,!0),deleteGroupForwardWin=view=>deleteBy(view,range=>view.moveByChar(range,!0,start=>toGroupStart(view,range.head,start)).head),deleteToLineEnd=view=>deleteBy(view,range=>{let lineEnd=view.lineBlockAt(range.head).to;return range.head<lineEnd?lineEnd:Math.min(view.state.doc.length,range.head+1)}),deleteToLineStart=view=>deleteBy(view,range=>{let lineStart=view.lineBlockAt(range.head).from;return range.head>lineStart?lineStart:Math.max(0,range.head-1)}),deleteLineBoundaryBackward=view=>deleteBy(view,range=>{let lineStart=view.moveToLineBoundary(range,!1).head;return range.head>lineStart?lineStart:Math.max(0,range.head-1)}),deleteLineBoundaryForward=view=>deleteBy(view,range=>{let lineStart=view.moveToLineBoundary(range,!0).head;return range.head<lineStart?lineStart:Math.min(view.state.doc.length,range.head+1)}),deleteTrailingWhitespace=({state,dispatch})=>{if(state.readOnly)return!1;let changes=[];for(let pos=0,prev="",iter=state.doc.iter();;){if(iter.next(),iter.lineBreak||iter.done){let trailing=prev.search(/\s+$/);if(-1<trailing&&changes.push({from:pos-(prev.length-trailing),to:pos}),iter.done)break;prev=""}else prev=iter.value;pos+=iter.value.length}return!!changes.length&&(dispatch(state.update({changes,userEvent:"delete"})),!0)},splitLine=({state:state$1,dispatch})=>{if(state$1.readOnly)return!1;let changes=state$1.changeByRange(range=>({changes:{from:range.from,to:range.to,insert:state.Text.of(["",""])},range:state.EditorSelection.cursor(range.from)}));return dispatch(state$1.update(changes,{scrollIntoView:!0,userEvent:"input"})),!0},transposeChars=({state:state$1,dispatch})=>{if(state$1.readOnly)return!1;let changes=state$1.changeByRange(range=>{if(!range.empty||0==range.from||range.from==state$1.doc.length)return{range};let pos=range.from,line=state$1.doc.lineAt(pos),from=pos==line.from?pos-1:state.findClusterBreak(line.text,pos-line.from,!1)+line.from,to=pos==line.to?pos+1:state.findClusterBreak(line.text,pos-line.from,!0)+line.from;return{changes:{from,to,insert:state$1.doc.slice(pos,to).append(state$1.doc.slice(from,pos))},range:state.EditorSelection.cursor(to)}});return!changes.changes.empty&&(dispatch(state$1.update(changes,{scrollIntoView:!0,userEvent:"move.character"})),!0)},moveLineUp=({state,dispatch})=>moveLine(state,dispatch,!1),moveLineDown=({state,dispatch})=>moveLine(state,dispatch,!0),copyLineUp=({state,dispatch})=>copyLine(state,dispatch,!1),copyLineDown=({state,dispatch})=>copyLine(state,dispatch,!0),deleteLine=view=>{if(view.state.readOnly)return!1;let{state}=view,changes=state.changes(selectedLineBlocks(state).map(({from,to})=>(0<from?from--:to<state.doc.length&&to++,{from,to}))),selection=updateSel(state.selection,range=>{let dist;if(view.lineWrapping){let block=view.lineBlockAt(range.head),pos=view.coordsAtPos(range.head,range.assoc||1);pos&&(dist=block.bottom+view.documentTop-pos.bottom+view.defaultLineHeight/2)}return view.moveVertically(range,!0,dist)}).map(changes);return view.dispatch({changes,selection,scrollIntoView:!0,userEvent:"delete.line"}),!0},insertNewline=({state,dispatch})=>(dispatch(state.update(state.replaceSelection(state.lineBreak),{scrollIntoView:!0,userEvent:"input"})),!0),insertNewlineKeepIndent=({state:state$1,dispatch})=>(dispatch(state$1.update(state$1.changeByRange(range=>{let indent=/^\s*/.exec(state$1.doc.lineAt(range.from).text)[0];return{changes:{from:range.from,to:range.to,insert:state$1.lineBreak+indent},range:state.EditorSelection.cursor(range.from+indent.length+1)}}),{scrollIntoView:!0,userEvent:"input"})),!0),insertNewlineAndIndent=newlineAndIndent(!1),insertBlankLine=newlineAndIndent(!0),indentSelection=({state,dispatch})=>{if(state.readOnly)return!1;let updated=Object.create(null),context=new language.IndentContext(state,{overrideIndentation:start=>{let found=updated[start];return null==found?-1:found}}),changes=changeBySelectedLine(state,(line,changes,range)=>{let indent=language.getIndentation(context,line.from);if(null==indent)return;/\S/.test(line.text)||(indent=0);let cur=/^\s*/.exec(line.text)[0],norm=language.indentString(state,indent);(cur!=norm||range.from<line.from+cur.length)&&(updated[line.from]=indent,changes.push({from:line.from,to:line.from+cur.length,insert:norm}))});return changes.changes.empty||dispatch(state.update(changes,{userEvent:"indent"})),!0},indentMore=({state,dispatch})=>!state.readOnly&&(dispatch(state.update(changeBySelectedLine(state,(line,changes)=>{changes.push({from:line.from,insert:state.facet(language.indentUnit)})}),{userEvent:"input.indent"})),!0),indentLess=({state:state$1,dispatch})=>!state$1.readOnly&&(dispatch(state$1.update(changeBySelectedLine(state$1,(line,changes)=>{let space=/^\s*/.exec(line.text)[0];if(!space)return;let col=state.countColumn(space,state$1.tabSize),keep=0,insert=language.indentString(state$1,Math.max(0,col-language.getIndentUnit(state$1)));for(;keep<space.length&&keep<insert.length&&space.charCodeAt(keep)==insert.charCodeAt(keep);)keep++;changes.push({from:line.from+keep,to:line.from+space.length,insert:insert.slice(keep)})}),{userEvent:"delete.dedent"})),!0),toggleTabFocusMode=view=>(view.setTabFocusMode(),!0),temporarilySetTabFocusMode=view=>(view.setTabFocusMode(2e3),!0),insertTab=({state,dispatch})=>state.selection.ranges.some(r=>!r.empty)?indentMore({state,dispatch}):(dispatch(state.update(state.replaceSelection("\t"),{scrollIntoView:!0,userEvent:"input"})),!0),emacsStyleKeymap=[{key:"Ctrl-b",run:cursorCharLeft,shift:selectCharLeft,preventDefault:!0},{key:"Ctrl-f",run:cursorCharRight,shift:selectCharRight},{key:"Ctrl-p",run:cursorLineUp,shift:selectLineUp},{key:"Ctrl-n",run:cursorLineDown,shift:selectLineDown},{key:"Ctrl-a",run:cursorLineStart,shift:selectLineStart},{key:"Ctrl-e",run:cursorLineEnd,shift:selectLineEnd},{key:"Ctrl-d",run:deleteCharForward},{key:"Ctrl-h",run:deleteCharBackward},{key:"Ctrl-k",run:deleteToLineEnd},{key:"Ctrl-Alt-h",run:deleteGroupBackward},{key:"Ctrl-o",run:splitLine},{key:"Ctrl-t",run:transposeChars},{key:"Ctrl-v",run:cursorPageDown}],standardKeymap=[{key:"ArrowLeft",run:cursorCharLeft,shift:selectCharLeft,preventDefault:!0},{key:"Mod-ArrowLeft",mac:"Alt-ArrowLeft",run:cursorGroupLeft,shift:selectGroupLeft,preventDefault:!0},{mac:"Cmd-ArrowLeft",run:cursorLineBoundaryLeft,shift:selectLineBoundaryLeft,preventDefault:!0},{key:"ArrowRight",run:cursorCharRight,shift:selectCharRight,preventDefault:!0},{key:"Mod-ArrowRight",mac:"Alt-ArrowRight",run:cursorGroupRight,shift:selectGroupRight,preventDefault:!0},{mac:"Cmd-ArrowRight",run:cursorLineBoundaryRight,shift:selectLineBoundaryRight,preventDefault:!0},{key:"ArrowUp",run:cursorLineUp,shift:selectLineUp,preventDefault:!0},{mac:"Cmd-ArrowUp",run:cursorDocStart,shift:selectDocStart},{mac:"Ctrl-ArrowUp",run:cursorPageUp,shift:selectPageUp},{key:"ArrowDown",run:cursorLineDown,shift:selectLineDown,preventDefault:!0},{mac:"Cmd-ArrowDown",run:cursorDocEnd,shift:selectDocEnd},{mac:"Ctrl-ArrowDown",run:cursorPageDown,shift:selectPageDown},{key:"PageUp",run:cursorPageUp,shift:selectPageUp},{key:"PageDown",run:cursorPageDown,shift:selectPageDown},{key:"Home",run:cursorLineBoundaryBackward,shift:selectLineBoundaryBackward,preventDefault:!0},{key:"Mod-Home",run:cursorDocStart,shift:selectDocStart},{key:"End",run:cursorLineBoundaryForward,shift:selectLineBoundaryForward,preventDefault:!0},{key:"Mod-End",run:cursorDocEnd,shift:selectDocEnd},{key:"Enter",run:insertNewlineAndIndent,shift:insertNewlineAndIndent},{key:"Mod-a",run:selectAll},{key:"Backspace",run:deleteCharBackward,shift:deleteCharBackward,preventDefault:!0},{key:"Delete",run:deleteCharForward,preventDefault:!0},{key:"Mod-Backspace",mac:"Alt-Backspace",run:deleteGroupBackward,preventDefault:!0},{key:"Mod-Delete",mac:"Alt-Delete",run:deleteGroupForward,preventDefault:!0},{mac:"Mod-Backspace",run:deleteLineBoundaryBackward,preventDefault:!0},{mac:"Mod-Delete",run:deleteLineBoundaryForward,preventDefault:!0}].concat(emacsStyleKeymap.map(b=>({mac:b.key,run:b.run,shift:b.shift}))),defaultKeymap=[{key:"Alt-ArrowLeft",mac:"Ctrl-ArrowLeft",run:cursorSyntaxLeft,shift:selectSyntaxLeft},{key:"Alt-ArrowRight",mac:"Ctrl-ArrowRight",run:cursorSyntaxRight,shift:selectSyntaxRight},{key:"Alt-ArrowUp",run:moveLineUp},{key:"Shift-Alt-ArrowUp",run:copyLineUp},{key:"Alt-ArrowDown",run:moveLineDown},{key:"Shift-Alt-ArrowDown",run:copyLineDown},{key:"Mod-Alt-ArrowUp",run:addCursorAbove},{key:"Mod-Alt-ArrowDown",run:addCursorBelow},{key:"Escape",run:simplifySelection},{key:"Mod-Enter",run:insertBlankLine},{key:"Alt-l",mac:"Ctrl-l",run:selectLine},{key:"Mod-i",run:selectParentSyntax,preventDefault:!0},{key:"Mod-[",run:indentLess},{key:"Mod-]",run:indentMore},{key:"Mod-Alt-\\",run:indentSelection},{key:"Shift-Mod-k",run:deleteLine},{key:"Shift-Mod-\\",run:cursorMatchingBracket},{key:"Mod-/",run:toggleComment},{key:"Alt-A",run:toggleBlockComment},{key:"Ctrl-m",mac:"Shift-Alt-m",run:toggleTabFocusMode}].concat(standardKeymap),indentWithTab={key:"Tab",run:indentMore,shift:indentLess};/**
 	Move the selection one character to the right.
-	*//**
+	*/ /**
 	Move the selection one character forward.
-	*//**
+	*/ /**
 	Move the selection one character backward.
-	*//**
+	*/ /**
 	Move the selection one character backward, in logical string index
 	order.
-	*//**
+	*/ /**
 	Move the selection one group to the right.
-	*//**
+	*/ /**
 	Move the selection one group forward.
-	*//**
+	*/ /**
 	Move the selection one group backward.
-	*//**
+	*/ /**
 	Move the selection one group or camel-case subword backward.
-	*//**
+	*/ /**
 	Move the cursor over the next syntactic element to the right.
-	*//**
+	*/ /**
 	Move the selection one line down.
-	*//**
+	*/ /**
 	Move the selection one page down.
-	*//**
+	*/ /**
 	Move the selection to previous line wrap point, or failing that to
 	the start of the line. If the line is indented, and the cursor
 	isn't already at the end of the indentation, this will move to the
 	end of the indentation instead of the start of the line.
-	*//**
+	*/ /**
 	Move the selection one line wrap point to the left.
-	*//**
+	*/ /**
 	Move the selection one line wrap point to the right.
-	*//**
+	*/ /**
 	Move the selection to the start of the line.
-	*//**
+	*/ /**
 	Move the selection to the end of the line.
-	*//**
+	*/ /**
 	Extend the selection to the bracket matching the one the selection
 	head is currently on, if any.
-	*//**
+	*/ /**
 	Move the selection head one character to the right.
-	*//**
+	*/ /**
 	Move the selection head one character forward.
-	*//**
+	*/ /**
 	Move the selection head one character backward.
-	*//**
+	*/ /**
 	Move the selection head one character forward by logical
 	(non-direction aware) string index order.
-	*//**
+	*/ /**
 	Move the selection head one character backward by logical string
 	index order.
-	*//**
+	*/ /**
 	Move the selection head one group to the right.
-	*//**
+	*/ /**
 	Move the selection head one group forward.
-	*//**
+	*/ /**
 	Move the selection head one group backward.
-	*//**
+	*/ /**
 	Move the selection head one group forward in the default Windows
 	style, skipping to the start of the next group.
-	*//**
+	*/ /**
 	Move the selection head one group or subword backward.
-	*//**
+	*/ /**
 	Move the selection head over the next syntactic element to the left.
-	*//**
+	*/ /**
 	Move the selection head over the next syntactic element to the right.
-	*//**
+	*/ /**
 	Move the selection head one line down.
-	*//**
+	*/ /**
 	Move the selection head one page down.
-	*//**
+	*/ /**
 	Move the selection head to the next line boundary.
-	*//**
+	*/ /**
 	Move the selection head to the previous line boundary.
-	*//**
+	*/ /**
 	Move the selection head one line boundary to the left.
-	*//**
+	*/ /**
 	Move the selection head one line boundary to the right.
-	*//**
+	*/ /**
 	Move the selection head to the start of the line.
-	*//**
+	*/ /**
 	Move the selection head to the end of the line.
-	*//**
+	*/ /**
 	Move the selection to the start of the document.
-	*//**
+	*/ /**
 	Move the selection to the end of the document.
-	*//**
+	*/ /**
 	Move the selection head to the start of the document.
-	*//**
+	*/ /**
 	Move the selection head to the end of the document.
-	*//**
+	*/ /**
 	Select the entire document.
-	*//**
+	*/ /**
 	Expand the selection to cover entire lines.
-	*//**
+	*/ /**
 	Select the next syntactic construct that is larger than the
 	selection. Note that this will only work insofar as the language
 	[provider](https://codemirror.net/6/docs/ref/#language.language) you use builds up a full
 	syntax tree.
-	*//**
+	*/ /**
 	Expand the selection by adding a cursor below the heads of
 	currently selected ranges.
-	*//**
+	*/ /**
 	Simplify the current selection. When multiple ranges are selected,
 	reduce it to its main range. Otherwise, if the selection is
 	non-empty, convert it to a cursor selection.
-	*//**
+	*/ /**
 	Delete the selection, or, for cursor selections, the character or
 	indentation unit before the cursor.
-	*//**
+	*/ /**
 	Delete the selection or the character before the cursor. Does not
 	implement any extended behavior like deleting whole indentation
 	units in one go.
-	*//**
+	*/ /**
 	Delete the selection or the character after the cursor.
-	*//**
+	*/ /**
 	Delete the selection or backward until the end of the next
 	[group](https://codemirror.net/6/docs/ref/#view.EditorView.moveByGroup), only skipping groups of
 	whitespace when they consist of a single space.
-	*//**
+	*/ /**
 	Delete the selection or forward until the end of the next group.
-	*//**
+	*/ /**
 	Variant of [`deleteGroupForward`](https://codemirror.net/6/docs/ref/#commands.deleteGroupForward)
 	that uses the Windows convention of also deleting the whitespace
 	after a word.
-	*//**
+	*/ /**
 	Delete the selection, or, if it is a cursor selection, delete to
 	the end of the line. If the cursor is directly at the end of the
 	line, delete the line break after it.
-	*//**
+	*/ /**
 	Delete the selection, or, if it is a cursor selection, delete to
 	the start of the line. If the cursor is directly at the start of the
 	line, delete the line break before it.
-	*//**
+	*/ /**
 	Delete the selection, or, if it is a cursor selection, delete to
 	the start of the line or the next line wrap before the cursor.
-	*//**
+	*/ /**
 	Delete the selection, or, if it is a cursor selection, delete to
 	the end of the line or the next line wrap after the cursor.
-	*//**
+	*/ /**
 	Delete all whitespace directly before a line end from the
 	document.
-	*//**
+	*/ /**
 	Replace each selection range with a line break, leaving the cursor
 	on the line before the break.
-	*//**
+	*/ /**
 	Flip the characters before and after the cursor(s).
-	*//**
+	*/ /**
 	Move the selected lines down one line.
-	*//**
+	*/ /**
 	Create a copy of the selected lines. Keep the selection in the bottom copy.
-	*//**
+	*/ /**
 	Delete selected lines.
-	*//**
+	*/ /**
 	Replace the selection with a newline.
-	*//**
+	*/ /**
 	Replace the selection with a newline and the same amount of
 	indentation as the line above.
-	*//**
+	*/ /**
 	Create a blank, indented line below the current line.
-	*//**
+	*/ /**
 	Add a [unit](https://codemirror.net/6/docs/ref/#language.indentUnit) of indentation to all selected
 	lines.
-	*//**
+	*/ /**
 	Remove a [unit](https://codemirror.net/6/docs/ref/#language.indentUnit) of indentation from all
 	selected lines.
-	*//**
+	*/ /**
 	Enables or disables
 	[tab-focus mode](https://codemirror.net/6/docs/ref/#view.EditorView.setTabFocusMode). While on, this
 	prevents the editor's key bindings from capturing Tab or
 	Shift-Tab, making it possible for the user to move focus out of
 	the editor with the keyboard.
-	*//**
+	*/ /**
 	Temporarily enables [tab-focus
 	mode](https://codemirror.net/6/docs/ref/#view.EditorView.setTabFocusMode) for two seconds or until
 	another key is pressed.
-	*//**
+	*/ /**
 	Insert a tab character at the cursor or, if something is selected,
 	use [`indentMore`](https://codemirror.net/6/docs/ref/#commands.indentMore) to indent the entire
 	selection.
-	*//**
+	*/ /**
 	Array of key bindings containing the Emacs-style bindings that are
 	available on macOS by default.
 
@@ -4041,7 +4041,7 @@ static fromTransaction(tr,selection){let effects=none;for(let invert of tr.start
 	 - Ctrl-t: [`transposeChars`](https://codemirror.net/6/docs/ref/#commands.transposeChars)
 	 - Ctrl-v: [`cursorPageDown`](https://codemirror.net/6/docs/ref/#commands.cursorPageDown)
 	 - Alt-v: [`cursorPageUp`](https://codemirror.net/6/docs/ref/#commands.cursorPageUp)
-	*//**
+	*/ /**
 	An array of key bindings closely sticking to platform-standard or
 	widely used bindings. (This includes the bindings from
 	[`emacsStyleKeymap`](https://codemirror.net/6/docs/ref/#commands.emacsStyleKeymap), with their `key`
@@ -4073,7 +4073,7 @@ static fromTransaction(tr,selection){let effects=none;for(let invert of tr.start
 	 - Ctrl-Delete (Alt-Delete on macOS): [`deleteGroupForward`](https://codemirror.net/6/docs/ref/#commands.deleteGroupForward)
 	 - Cmd-Backspace (macOS): [`deleteLineBoundaryBackward`](https://codemirror.net/6/docs/ref/#commands.deleteLineBoundaryBackward).
 	 - Cmd-Delete (macOS): [`deleteLineBoundaryForward`](https://codemirror.net/6/docs/ref/#commands.deleteLineBoundaryForward).
-	*//**
+	*/ /**
 	The default keymap. Includes all bindings from
 	[`standardKeymap`](https://codemirror.net/6/docs/ref/#commands.standardKeymap) plus the following:
 
@@ -4097,7 +4097,7 @@ static fromTransaction(tr,selection){let effects=none;for(let invert of tr.start
 	- Ctrl-/ (Cmd-/ on macOS): [`toggleComment`](https://codemirror.net/6/docs/ref/#commands.toggleComment).
 	- Shift-Alt-a: [`toggleBlockComment`](https://codemirror.net/6/docs/ref/#commands.toggleBlockComment).
 	- Ctrl-m (Alt-Shift-m on macOS): [`toggleTabFocusMode`](https://codemirror.net/6/docs/ref/#commands.toggleTabFocusMode).
-	*//**
+	*/ /**
 	A binding that binds Tab to [`indentMore`](https://codemirror.net/6/docs/ref/#commands.indentMore) and
 	Shift-Tab to [`indentLess`](https://codemirror.net/6/docs/ref/#commands.indentLess).
 	Please see the [Tab example](../../examples/tab/) before using
@@ -4117,7 +4117,7 @@ async function _coreInit__codemirror_autocomplete(requireAsyncModule,exports={})
 function ensureAnchor(expr,start){var _a;let{source}=expr,addStart=start&&"^"!=source[0],addEnd="$"!=source[source.length-1];return addStart||addEnd?new RegExp(`${addStart?"^":""}(?:${source})${addEnd?"$":""}`,null!==(_a=expr.flags)&&void 0!==_a?_a:expr.ignoreCase?"i":""):expr}/**
 	This annotation is added to transactions that are produced by
 	picking a completion.
-	*//**
+	*/ /**
 	Helper function that returns a transaction spec which inserts a
 	completion's text in the main selection range, and any other
 	selection range that has the same text in front of it.
@@ -4159,7 +4159,7 @@ function score(option){return 100*(option.boost||0)+(option.apply?10:0)+(option.
 	interpreted as indicating a placeholder.
 	*/function snippet(template){let snippet=Snippet.parse(template);return(editor,completion,from,to)=>{let{text,ranges}=snippet.instantiate(editor.state,from),{main}=editor.state.selection,spec={changes:{from,to:to==main.from?main.to:to,insert:state.Text.of(text)},scrollIntoView:!0,annotations:completion?[pickedCompletion.of(completion),state.Transaction.userEvent.of("input.complete")]:void 0};if(ranges.length&&(spec.selection=fieldSelection(ranges,0)),ranges.some(r=>0<r.field)){let active=new ActiveSnippet(ranges,0),effects=spec.effects=[setActive.of(active)];void 0===editor.state.field(snippetState,!1)&&effects.push(state.StateEffect.appendConfig.of([snippetState,addSnippetKeymap,snippetPointerHandler,baseTheme]))}editor.dispatch(editor.state.update(spec))}}function moveField(dir){return({state,dispatch})=>{let active=state.field(snippetState,!1);if(!active||0>dir&&0==active.active)return!1;let next=active.active+dir,last=0<dir&&!active.ranges.some(r=>r.field==next+dir);return dispatch(state.update({selection:fieldSelection(active.ranges,next),effects:setActive.of(last?null:new ActiveSnippet(active.ranges,next)),scrollIntoView:!0})),!0}}/**
 	A command that clears the active snippet, if any.
-	*//**
+	*/ /**
 	Check if there is an active snippet with a next field for
 	`nextSnippetField` to move to.
 	*/function hasNextSnippetField(state){let active=state.field(snippetState,!1);return!!(active&&active.ranges.some(r=>r.field==active.active+1))}/**
@@ -4173,7 +4173,7 @@ function score(option){return 100*(option.boost||0)+(option.apply?10:0)+(option.
 	A completion source that will scan the document for words (using a
 	[character categorizer](https://codemirror.net/6/docs/ref/#state.EditorState.charCategorizer)), and
 	return those as completions.
-	*//**
+	*/ /**
 	Extension to enable bracket-closing behavior. When a closeable
 	bracket is typed, its closing bracket is immediately inserted
 	after the cursor. When closing a bracket directly in front of a
@@ -4203,7 +4203,7 @@ function handleSame(state$1,token,allowTriple,config){let stringPrefixes=config.
 	 - PageDown: [`moveCompletionSelection`](https://codemirror.net/6/docs/ref/#autocomplete.moveCompletionSelection)`(true, "page")`
 	 - PageUp: [`moveCompletionSelection`](https://codemirror.net/6/docs/ref/#autocomplete.moveCompletionSelection)`(false, "page")`
 	 - Enter: [`acceptCompletion`](https://codemirror.net/6/docs/ref/#autocomplete.acceptCompletion)
-	*//**
+	*/ /**
 	Get the current completion status. When completions are available,
 	this will return `"active"`. When completions are pending (in the
 	process of being queried), this returns `"pending"`. Otherwise, it
@@ -4280,9 +4280,9 @@ let preciseTo=0,byWordTo=0,byWordFolded=!1,adjacentTo=0,adjacentStart=-1,adjacen
 // a case folded character is encountered in such a match
 // If we've found a partial adjacent match, these track its state
 // Go over the option's text, scanning for the various kinds of matches
-for(let next,i=0,e=Math.min(word.length,200),prevType=0/* Tp.NonWord */;i<e&&byWordTo<len;){next=state.codePointAt(word,i),0>direct&&(preciseTo<len&&next==chars[preciseTo]&&(precise[preciseTo++]=i),adjacentTo<len&&(next==chars[adjacentTo]||next==folded[adjacentTo]?(0==adjacentTo&&(adjacentStart=i),adjacentEnd=i+1,adjacentTo++):adjacentTo=0));let ch,type=255>next?48<=next&&57>=next||97<=next&&122>=next?2/* Tp.Lower */:65<=next&&90>=next?1/* Tp.Upper */:0/* Tp.NonWord */:(ch=state.fromCodePoint(next))==ch.toLowerCase()?ch==ch.toUpperCase()?0:2/* Tp.Lower */:1/* Tp.Upper *//* Tp.NonWord */;(!i||1==type/* Tp.Upper */&&hasLower||0==prevType/* Tp.NonWord */&&0!=type/* Tp.NonWord */)&&(chars[byWordTo]==next||folded[byWordTo]==next&&(byWordFolded=!0)?byWord[byWordTo++]=i:byWord.length&&(wordAdjacent=!1)),prevType=type,i+=state.codePointSize(next)}return byWordTo==len&&0==byWord[0]&&wordAdjacent?this.result(-100/* Penalty.ByWord */+(byWordFolded?-200/* Penalty.CaseFold */:0),byWord,word):adjacentTo==len&&0==adjacentStart?this.ret(-200/* Penalty.CaseFold */-word.length+(adjacentEnd==word.length?0:-100/* Penalty.NotFull */),[0,adjacentEnd]):-1<direct?this.ret(-700/* Penalty.NotStart */-word.length,[direct,direct+this.pattern.length]):adjacentTo==len?this.ret(-900/* Penalty.NotStart */-word.length,[adjacentStart,adjacentEnd]):byWordTo==len?this.result(-100/* Penalty.ByWord */+(byWordFolded?-200/* Penalty.CaseFold */:0)+-700/* Penalty.NotStart */+(wordAdjacent?0:-1100/* Penalty.Gap */),byWord,word):2==chars.length?null:this.result((any[0]?-700/* Penalty.NotStart */:0)+-200/* Penalty.CaseFold */+-1100/* Penalty.Gap */,any,word)}result(score,positions,word){let result=[],i=0;for(let pos of positions){let to=pos+(this.astral?state.codePointSize(state.codePointAt(word,pos)):1);i&&result[i-1]==pos?result[i-1]=to:(result[i++]=pos,result[i++]=to)}return this.ret(score-word.length,result)}}class StrictMatcher{constructor(pattern){this.pattern=pattern,this.matched=[],this.score=0,this.folded=pattern.toLowerCase()}match(word){if(word.length<this.pattern.length)return null;let start=word.slice(0,this.pattern.length),match=start==this.pattern?0:start.toLowerCase()==this.folded?-200/* Penalty.CaseFold */:null;return null==match?null:(this.matched=[0,start.length],this.score=match+(word.length==this.pattern.length?0:-100/* Penalty.NotFull */),this)}}const completionConfig=state.Facet.define({combine(configs){return state.combineConfig(configs,{activateOnTyping:!0,activateOnCompletion:()=>!1,activateOnTypingDelay:100,selectOnOpen:!0,override:null,closeOnBlur:!0,maxRenderedOptions:100,defaultKeymap:!0,tooltipClass:()=>"",optionClass:()=>"",aboveCursor:!1,icons:!0,addToOptions:[],positionInfo:defaultPositionInfo,filterStrict:!1,compareCompletions:(a,b)=>(a.sortText||a.label).localeCompare(b.sortText||b.label),interactionDelay:75,updateSyncTime:100},{defaultKeymap:(a,b)=>a&&b,closeOnBlur:(a,b)=>a&&b,icons:(a,b)=>a&&b,tooltipClass:(a,b)=>c=>joinClass(a(c),b(c)),optionClass:(a,b)=>c=>joinClass(a(c),b(c)),addToOptions:(a,b)=>a.concat(b),filterStrict:(a,b)=>a||b})}}),setSelectedEffect=state.StateEffect.define();class CompletionTooltip{constructor(view,stateField,applyCompletion){this.view=view,this.stateField=stateField,this.applyCompletion=applyCompletion,this.info=null,this.infoDestroy=null,this.placeInfoReq={read:()=>this.measureInfo(),write:pos=>this.placeInfo(pos),key:this},this.space=null,this.currentClass="";let cState=view.state.field(stateField),{options,selected}=cState.open,config=view.state.facet(completionConfig);this.optionContent=optionContent(config),this.optionClass=config.optionClass,this.tooltipClass=config.tooltipClass,this.range=rangeAroundSelected(options.length,selected,config.maxRenderedOptions),this.dom=document.createElement("div"),this.dom.className="cm-tooltip-autocomplete",this.updateTooltipClass(view.state),this.dom.addEventListener("mousedown",e=>{let{options}=view.state.field(stateField).open;for(let match,dom=e.target;dom&&dom!=this.dom;dom=dom.parentNode)if("LI"==dom.nodeName&&(match=/-(\d+)$/.exec(dom.id))&&+match[1]<options.length)return this.applyCompletion(view,options[+match[1]]),void e.preventDefault();if(e.target==this.list){let move=this.list.classList.contains("cm-completionListIncompleteTop")&&e.clientY<this.list.firstChild.getBoundingClientRect().top?this.range.from-1:this.list.classList.contains("cm-completionListIncompleteBottom")&&e.clientY>this.list.lastChild.getBoundingClientRect().bottom?this.range.to:null;null!=move&&(view.dispatch({effects:setSelectedEffect.of(move)}),e.preventDefault())}}),this.dom.addEventListener("focusout",e=>{let state=view.state.field(this.stateField,!1);state&&state.tooltip&&view.state.facet(completionConfig).closeOnBlur&&e.relatedTarget!=view.contentDOM&&view.dispatch({effects:closeCompletionEffect.of(null)})}),this.showOptions(options,cState.id)}mount(){this.updateSel()}showOptions(options,id){this.list&&this.list.remove(),this.list=this.dom.appendChild(this.createListBox(options,id,this.range)),this.list.addEventListener("scroll",()=>{this.info&&this.view.requestMeasure(this.placeInfoReq)})}update(update){var _a;let cState=update.state.field(this.stateField),prevState=update.startState.field(this.stateField);if(this.updateTooltipClass(update.state),cState!=prevState){let{options,selected,disabled}=cState.open;prevState.open&&prevState.open.options==options||(this.range=rangeAroundSelected(options.length,selected,update.state.facet(completionConfig).maxRenderedOptions),this.showOptions(options,cState.id)),this.updateSel(),disabled!=(null===(_a=prevState.open)||void 0===_a?void 0:_a.disabled)&&this.dom.classList.toggle("cm-tooltip-autocomplete-disabled",!!disabled)}}updateTooltipClass(state){let cls=this.tooltipClass(state);if(cls!=this.currentClass){for(let c of this.currentClass.split(" "))c&&this.dom.classList.remove(c);for(let c of cls.split(" "))c&&this.dom.classList.add(c);this.currentClass=cls}}positioned(space){this.space=space,this.info&&this.view.requestMeasure(this.placeInfoReq)}updateSel(){let cState=this.view.state.field(this.stateField),open=cState.open;(-1<open.selected&&open.selected<this.range.from||open.selected>=this.range.to)&&(this.range=rangeAroundSelected(open.options.length,open.selected,this.view.state.facet(completionConfig).maxRenderedOptions),this.showOptions(open.options,cState.id));let newSel=this.updateSelectedOption(open.selected);if(newSel){this.destroyInfo();let{completion}=open.options[open.selected],{info}=completion;if(!info)return;let infoResult="string"==typeof info?document.createTextNode(info):info(completion);if(!infoResult)return;"then"in infoResult?infoResult.then(obj=>{obj&&this.view.state.field(this.stateField,!1)==cState&&this.addInfoPane(obj,completion)}).catch(e=>view.logException(this.view.state,e,"completion info")):(this.addInfoPane(infoResult,completion),newSel.setAttribute("aria-describedby",this.info.id))}}addInfoPane(content,completion){this.destroyInfo();let wrap=this.info=document.createElement("div");if(wrap.className="cm-tooltip cm-completionInfo",wrap.id="cm-completionInfo-"+Math.floor(65535*Math.random()).toString(16),null!=content.nodeType)wrap.appendChild(content),this.infoDestroy=null;else{let{dom,destroy}=content;wrap.appendChild(dom),this.infoDestroy=destroy||null}this.dom.appendChild(wrap),this.view.requestMeasure(this.placeInfoReq)}updateSelectedOption(selected){let set=null;for(let opt=this.list.firstChild,i=this.range.from;opt;opt=opt.nextSibling,i++)"LI"==opt.nodeName&&opt.id?i==selected?opt.hasAttribute("aria-selected")||(opt.setAttribute("aria-selected","true"),set=opt):opt.hasAttribute("aria-selected")&&(opt.removeAttribute("aria-selected"),opt.removeAttribute("aria-describedby")):i--;return set&&scrollIntoView(this.list,set),set}measureInfo(){let sel=this.dom.querySelector("[aria-selected]");if(!sel||!this.info)return null;let listRect=this.dom.getBoundingClientRect(),infoRect=this.info.getBoundingClientRect(),selRect=sel.getBoundingClientRect(),space=this.space;if(!space){let docElt=this.dom.ownerDocument.documentElement;space={left:0,top:0,right:docElt.clientWidth,bottom:docElt.clientHeight}}return selRect.top>Math.min(space.bottom,listRect.bottom)-10||selRect.bottom<Math.max(space.top,listRect.top)+10?null:this.view.state.facet(completionConfig).positionInfo(this.view,listRect,selRect,infoRect,space,this.dom)}placeInfo(pos){this.info&&(pos?(pos.style&&(this.info.style.cssText=pos.style),this.info.className="cm-tooltip cm-completionInfo "+(pos.class||"")):this.info.style.cssText="top: -1e6px")}createListBox(options,id,range){const ul=document.createElement("ul");ul.id=id,ul.setAttribute("role","listbox"),ul.setAttribute("aria-expanded","true"),ul.setAttribute("aria-label",this.view.state.phrase("Completions")),ul.addEventListener("mousedown",e=>{e.target==ul&&e.preventDefault()});let curSection=null;for(let i=range.from;i<range.to;i++){let{completion,match}=options[i],{section}=completion;if(section){let name="string"==typeof section?section:section.name;if(name!=curSection&&(i>range.from||0==range.from))if(curSection=name,"string"!=typeof section&&section.header)ul.appendChild(section.header(section));else{let header=ul.appendChild(document.createElement("completion-section"));header.textContent=name}}const li=ul.appendChild(document.createElement("li"));li.id=id+"-"+i,li.setAttribute("role","option");let cls=this.optionClass(completion);cls&&(li.className=cls);for(let source of this.optionContent){let node=source(completion,this.view.state,this.view,match);node&&li.appendChild(node)}}return range.from&&ul.classList.add("cm-completionListIncompleteTop"),range.to<options.length&&ul.classList.add("cm-completionListIncompleteBottom"),ul}destroyInfo(){this.info&&(this.infoDestroy&&this.infoDestroy(),this.info.remove(),this.info=null)}destroy(){this.destroyInfo()}}class CompletionDialog{constructor(options,attrs,tooltip,timestamp,selected,disabled){this.options=options,this.attrs=attrs,this.tooltip=tooltip,this.timestamp=timestamp,this.selected=selected,this.disabled=disabled}setSelected(selected,id){return selected==this.selected||selected>=this.options.length?this:new CompletionDialog(this.options,makeAttrs(id,selected),this.tooltip,this.timestamp,selected,this.disabled)}static build(active,state,id,prev,conf,didSetActive){if(prev&&!didSetActive&&active.some(s=>s.isPending))return prev.setDisabled();let options=sortOptions(active,state);if(!options.length)return prev&&active.some(a=>a.isPending)?prev.setDisabled():null;let selected=state.facet(completionConfig).selectOnOpen?0:-1;if(prev&&prev.selected!=selected&&-1!=prev.selected){let selectedValue=prev.options[prev.selected].completion;for(let i=0;i<options.length;i++)if(options[i].completion==selectedValue){selected=i;break}}return new CompletionDialog(options,makeAttrs(id,selected),{pos:active.reduce((a,b)=>b.hasResult()?Math.min(a,b.from):a,1e8),create:createTooltip,above:conf.aboveCursor},prev?prev.timestamp:Date.now(),selected,!1)}map(changes){return new CompletionDialog(this.options,this.attrs,{...this.tooltip,pos:changes.mapPos(this.tooltip.pos)},this.timestamp,this.selected,this.disabled)}setDisabled(){return new CompletionDialog(this.options,this.attrs,this.tooltip,this.timestamp,this.selected,!0)}}class CompletionState{constructor(active,id,open){this.active=active,this.id=id,this.open=open}static start(){return new CompletionState(none,"cm-ac-"+Math.floor(2e6*Math.random()).toString(36),null)}update(tr){let{state}=tr,conf=state.facet(completionConfig),sources=conf.override||state.languageDataAt("autocomplete",cur(state)).map(asSource),active=sources.map(source=>{let value=this.active.find(s=>s.source==source)||new ActiveSource(source,this.active.some(a=>0!=a.state/* State.Inactive */)?1/* State.Pending */:0/* State.Inactive */);return value.update(tr,conf)});active.length==this.active.length&&active.every((a,i)=>a==this.active[i])&&(active=this.active);let open=this.open,didSet=tr.effects.some(e=>e.is(setActiveEffect));open&&tr.docChanged&&(open=open.map(tr.changes)),tr.selection||active.some(a=>a.hasResult()&&tr.changes.touchesRange(a.from,a.to))||!sameResults(active,this.active)||didSet?open=CompletionDialog.build(active,state,this.id,open,conf,didSet):open&&open.disabled&&!active.some(a=>a.isPending)&&(open=null),!open&&active.every(a=>!a.isPending)&&active.some(a=>a.hasResult())&&(active=active.map(a=>a.hasResult()?new ActiveSource(a.source,0/* State.Inactive */):a));for(let effect of tr.effects)effect.is(setSelectedEffect)&&(open=open&&open.setSelected(effect.value,this.id));return active==this.active&&open==this.open?this:new CompletionState(active,this.id,open)}get tooltip(){return this.open?this.open.tooltip:null}get attrs(){return this.open?this.open.attrs:this.active.length?baseAttrs:noAttrs}}const baseAttrs={"aria-autocomplete":"list"},noAttrs={},none=[];class ActiveSource{constructor(source,state,explicit=!1){this.source=source,this.state=state,this.explicit=explicit}hasResult(){return!1}get isPending(){return 1==this.state/* State.Pending */}update(tr,conf){let type=getUpdateType(tr,conf),value=this;(8&type/* UpdateType.Reset */||16&type/* UpdateType.ResetIfTouching */&&this.touches(tr))&&(value=new ActiveSource(value.source,0/* State.Inactive */)),4&type/* UpdateType.Activate */&&0==value.state/* State.Inactive */&&(value=new ActiveSource(this.source,1/* State.Pending */)),value=value.updateFor(tr,type);for(let effect of tr.effects)if(effect.is(startCompletionEffect))value=new ActiveSource(value.source,1/* State.Pending */,effect.value);else if(effect.is(closeCompletionEffect))value=new ActiveSource(value.source,0/* State.Inactive */);else if(effect.is(setActiveEffect))for(let active of effect.value)active.source==value.source&&(value=active);return value}updateFor(tr,type){return this.map(tr.changes)}map(changes){return this}touches(tr){return tr.changes.touchesRange(cur(tr.state))}}class ActiveResult extends ActiveSource{constructor(source,explicit,limit,result,from,to){super(source,3/* State.Result */,explicit),this.limit=limit,this.result=result,this.from=from,this.to=to}hasResult(){return!0}updateFor(tr,type){var _a;if(!(3&type/* UpdateType.SimpleInteraction */))return this.map(tr.changes);let result=this.result;result.map&&!tr.changes.empty&&(result=result.map(result,tr.changes));let from=tr.changes.mapPos(this.from),to=tr.changes.mapPos(this.to,1),pos=cur(tr.state);if(pos>to||!result||2&type/* UpdateType.Backspacing */&&(cur(tr.startState)==this.from||pos<this.limit))return new ActiveSource(this.source,4&type/* UpdateType.Activate */?1/* State.Pending */:0/* State.Inactive */);let limit=tr.changes.mapPos(this.limit);return checkValid(result.validFor,tr.state,from,to)?new ActiveResult(this.source,this.explicit,limit,result,from,to):result.update&&(result=result.update(result,from,to,new CompletionContext(tr.state,pos,!1)))?new ActiveResult(this.source,this.explicit,limit,result,result.from,null!==(_a=result.to)&&void 0!==_a?_a:cur(tr.state)):new ActiveSource(this.source,1/* State.Pending */,this.explicit)}map(mapping){if(mapping.empty)return this;let result=this.result.map?this.result.map(this.result,mapping):this.result;return result?new ActiveResult(this.source,this.explicit,mapping.mapPos(this.limit),this.result,mapping.mapPos(this.from),mapping.mapPos(this.to,1)):new ActiveSource(this.source,0/* State.Inactive */)}touches(tr){return tr.changes.touchesRange(this.from,this.to)}}const setActiveEffect=state.StateEffect.define({map(sources,mapping){return sources.map(s=>s.map(mapping))}}),completionState=state.StateField.define({create(){return CompletionState.start()},update(value,tr){return value.update(tr)},provide:f=>[view.showTooltip.from(f,val=>val.tooltip),view.EditorView.contentAttributes.from(f,state=>state.attrs)]}),createTooltip=completionTooltip(completionState,applyCompletion),acceptCompletion=view=>{let cState=view.state.field(completionState,!1);return!(view.state.readOnly||!cState||!cState.open||0>cState.open.selected||cState.open.disabled||Date.now()-cState.open.timestamp<view.state.facet(completionConfig).interactionDelay)&&applyCompletion(view,cState.open.options[cState.open.selected])},startCompletion=view=>{let cState=view.state.field(completionState,!1);return!!cState&&(view.dispatch({effects:startCompletionEffect.of(!0)}),!0)},closeCompletion=view=>{let cState=view.state.field(completionState,!1);return!!(cState&&cState.active.some(a=>0!=a.state/* State.Inactive */))&&(view.dispatch({effects:closeCompletionEffect.of(null)}),!0)};/**
+for(let next,i=0,e=Math.min(word.length,200),prevType=0/* Tp.NonWord */;i<e&&byWordTo<len;){next=state.codePointAt(word,i),0>direct&&(preciseTo<len&&next==chars[preciseTo]&&(precise[preciseTo++]=i),adjacentTo<len&&(next==chars[adjacentTo]||next==folded[adjacentTo]?(0==adjacentTo&&(adjacentStart=i),adjacentEnd=i+1,adjacentTo++):adjacentTo=0));let ch,type=255>next?48<=next&&57>=next||97<=next&&122>=next?2/* Tp.Lower */:65<=next&&90>=next?1/* Tp.Upper */:0/* Tp.NonWord */:(ch=state.fromCodePoint(next))==ch.toLowerCase()?ch==ch.toUpperCase()?0:2/* Tp.Lower */:1/* Tp.Upper */ /* Tp.NonWord */;(!i||1==type/* Tp.Upper */&&hasLower||0==prevType/* Tp.NonWord */&&0!=type/* Tp.NonWord */)&&(chars[byWordTo]==next||folded[byWordTo]==next&&(byWordFolded=!0)?byWord[byWordTo++]=i:byWord.length&&(wordAdjacent=!1)),prevType=type,i+=state.codePointSize(next)}return byWordTo==len&&0==byWord[0]&&wordAdjacent?this.result(-100/* Penalty.ByWord */+(byWordFolded?-200/* Penalty.CaseFold */:0),byWord,word):adjacentTo==len&&0==adjacentStart?this.ret(-200/* Penalty.CaseFold */-word.length+(adjacentEnd==word.length?0:-100/* Penalty.NotFull */),[0,adjacentEnd]):-1<direct?this.ret(-700/* Penalty.NotStart */-word.length,[direct,direct+this.pattern.length]):adjacentTo==len?this.ret(-900/* Penalty.NotStart */-word.length,[adjacentStart,adjacentEnd]):byWordTo==len?this.result(-100/* Penalty.ByWord */+(byWordFolded?-200/* Penalty.CaseFold */:0)+-700/* Penalty.NotStart */+(wordAdjacent?0:-1100/* Penalty.Gap */),byWord,word):2==chars.length?null:this.result((any[0]?-700/* Penalty.NotStart */:0)+-200/* Penalty.CaseFold */+-1100/* Penalty.Gap */,any,word)}result(score,positions,word){let result=[],i=0;for(let pos of positions){let to=pos+(this.astral?state.codePointSize(state.codePointAt(word,pos)):1);i&&result[i-1]==pos?result[i-1]=to:(result[i++]=pos,result[i++]=to)}return this.ret(score-word.length,result)}}class StrictMatcher{constructor(pattern){this.pattern=pattern,this.matched=[],this.score=0,this.folded=pattern.toLowerCase()}match(word){if(word.length<this.pattern.length)return null;let start=word.slice(0,this.pattern.length),match=start==this.pattern?0:start.toLowerCase()==this.folded?-200/* Penalty.CaseFold */:null;return null==match?null:(this.matched=[0,start.length],this.score=match+(word.length==this.pattern.length?0:-100/* Penalty.NotFull */),this)}}const completionConfig=state.Facet.define({combine(configs){return state.combineConfig(configs,{activateOnTyping:!0,activateOnCompletion:()=>!1,activateOnTypingDelay:100,selectOnOpen:!0,override:null,closeOnBlur:!0,maxRenderedOptions:100,defaultKeymap:!0,tooltipClass:()=>"",optionClass:()=>"",aboveCursor:!1,icons:!0,addToOptions:[],positionInfo:defaultPositionInfo,filterStrict:!1,compareCompletions:(a,b)=>(a.sortText||a.label).localeCompare(b.sortText||b.label),interactionDelay:75,updateSyncTime:100},{defaultKeymap:(a,b)=>a&&b,closeOnBlur:(a,b)=>a&&b,icons:(a,b)=>a&&b,tooltipClass:(a,b)=>c=>joinClass(a(c),b(c)),optionClass:(a,b)=>c=>joinClass(a(c),b(c)),addToOptions:(a,b)=>a.concat(b),filterStrict:(a,b)=>a||b})}}),setSelectedEffect=state.StateEffect.define();class CompletionTooltip{constructor(view,stateField,applyCompletion){this.view=view,this.stateField=stateField,this.applyCompletion=applyCompletion,this.info=null,this.infoDestroy=null,this.placeInfoReq={read:()=>this.measureInfo(),write:pos=>this.placeInfo(pos),key:this},this.space=null,this.currentClass="";let cState=view.state.field(stateField),{options,selected}=cState.open,config=view.state.facet(completionConfig);this.optionContent=optionContent(config),this.optionClass=config.optionClass,this.tooltipClass=config.tooltipClass,this.range=rangeAroundSelected(options.length,selected,config.maxRenderedOptions),this.dom=document.createElement("div"),this.dom.className="cm-tooltip-autocomplete",this.updateTooltipClass(view.state),this.dom.addEventListener("mousedown",e=>{let{options}=view.state.field(stateField).open;for(let match,dom=e.target;dom&&dom!=this.dom;dom=dom.parentNode)if("LI"==dom.nodeName&&(match=/-(\d+)$/.exec(dom.id))&&+match[1]<options.length)return this.applyCompletion(view,options[+match[1]]),void e.preventDefault();if(e.target==this.list){let move=this.list.classList.contains("cm-completionListIncompleteTop")&&e.clientY<this.list.firstChild.getBoundingClientRect().top?this.range.from-1:this.list.classList.contains("cm-completionListIncompleteBottom")&&e.clientY>this.list.lastChild.getBoundingClientRect().bottom?this.range.to:null;null!=move&&(view.dispatch({effects:setSelectedEffect.of(move)}),e.preventDefault())}}),this.dom.addEventListener("focusout",e=>{let state=view.state.field(this.stateField,!1);state&&state.tooltip&&view.state.facet(completionConfig).closeOnBlur&&e.relatedTarget!=view.contentDOM&&view.dispatch({effects:closeCompletionEffect.of(null)})}),this.showOptions(options,cState.id)}mount(){this.updateSel()}showOptions(options,id){this.list&&this.list.remove(),this.list=this.dom.appendChild(this.createListBox(options,id,this.range)),this.list.addEventListener("scroll",()=>{this.info&&this.view.requestMeasure(this.placeInfoReq)})}update(update){var _a;let cState=update.state.field(this.stateField),prevState=update.startState.field(this.stateField);if(this.updateTooltipClass(update.state),cState!=prevState){let{options,selected,disabled}=cState.open;prevState.open&&prevState.open.options==options||(this.range=rangeAroundSelected(options.length,selected,update.state.facet(completionConfig).maxRenderedOptions),this.showOptions(options,cState.id)),this.updateSel(),disabled!=(null===(_a=prevState.open)||void 0===_a?void 0:_a.disabled)&&this.dom.classList.toggle("cm-tooltip-autocomplete-disabled",!!disabled)}}updateTooltipClass(state){let cls=this.tooltipClass(state);if(cls!=this.currentClass){for(let c of this.currentClass.split(" "))c&&this.dom.classList.remove(c);for(let c of cls.split(" "))c&&this.dom.classList.add(c);this.currentClass=cls}}positioned(space){this.space=space,this.info&&this.view.requestMeasure(this.placeInfoReq)}updateSel(){let cState=this.view.state.field(this.stateField),open=cState.open;(-1<open.selected&&open.selected<this.range.from||open.selected>=this.range.to)&&(this.range=rangeAroundSelected(open.options.length,open.selected,this.view.state.facet(completionConfig).maxRenderedOptions),this.showOptions(open.options,cState.id));let newSel=this.updateSelectedOption(open.selected);if(newSel){this.destroyInfo();let{completion}=open.options[open.selected],{info}=completion;if(!info)return;let infoResult="string"==typeof info?document.createTextNode(info):info(completion);if(!infoResult)return;"then"in infoResult?infoResult.then(obj=>{obj&&this.view.state.field(this.stateField,!1)==cState&&this.addInfoPane(obj,completion)}).catch(e=>view.logException(this.view.state,e,"completion info")):(this.addInfoPane(infoResult,completion),newSel.setAttribute("aria-describedby",this.info.id))}}addInfoPane(content,completion){this.destroyInfo();let wrap=this.info=document.createElement("div");if(wrap.className="cm-tooltip cm-completionInfo",wrap.id="cm-completionInfo-"+Math.floor(65535*Math.random()).toString(16),null!=content.nodeType)wrap.appendChild(content),this.infoDestroy=null;else{let{dom,destroy}=content;wrap.appendChild(dom),this.infoDestroy=destroy||null}this.dom.appendChild(wrap),this.view.requestMeasure(this.placeInfoReq)}updateSelectedOption(selected){let set=null;for(let opt=this.list.firstChild,i=this.range.from;opt;opt=opt.nextSibling,i++)"LI"==opt.nodeName&&opt.id?i==selected?opt.hasAttribute("aria-selected")||(opt.setAttribute("aria-selected","true"),set=opt):opt.hasAttribute("aria-selected")&&(opt.removeAttribute("aria-selected"),opt.removeAttribute("aria-describedby")):i--;return set&&scrollIntoView(this.list,set),set}measureInfo(){let sel=this.dom.querySelector("[aria-selected]");if(!sel||!this.info)return null;let listRect=this.dom.getBoundingClientRect(),infoRect=this.info.getBoundingClientRect(),selRect=sel.getBoundingClientRect(),space=this.space;if(!space){let docElt=this.dom.ownerDocument.documentElement;space={left:0,top:0,right:docElt.clientWidth,bottom:docElt.clientHeight}}return selRect.top>Math.min(space.bottom,listRect.bottom)-10||selRect.bottom<Math.max(space.top,listRect.top)+10?null:this.view.state.facet(completionConfig).positionInfo(this.view,listRect,selRect,infoRect,space,this.dom)}placeInfo(pos){this.info&&(pos?(pos.style&&(this.info.style.cssText=pos.style),this.info.className="cm-tooltip cm-completionInfo "+(pos.class||"")):this.info.style.cssText="top: -1e6px")}createListBox(options,id,range){const ul=document.createElement("ul");ul.id=id,ul.setAttribute("role","listbox"),ul.setAttribute("aria-expanded","true"),ul.setAttribute("aria-label",this.view.state.phrase("Completions")),ul.addEventListener("mousedown",e=>{e.target==ul&&e.preventDefault()});let curSection=null;for(let i=range.from;i<range.to;i++){let{completion,match}=options[i],{section}=completion;if(section){let name="string"==typeof section?section:section.name;if(name!=curSection&&(i>range.from||0==range.from))if(curSection=name,"string"!=typeof section&&section.header)ul.appendChild(section.header(section));else{let header=ul.appendChild(document.createElement("completion-section"));header.textContent=name}}const li=ul.appendChild(document.createElement("li"));li.id=id+"-"+i,li.setAttribute("role","option");let cls=this.optionClass(completion);cls&&(li.className=cls);for(let source of this.optionContent){let node=source(completion,this.view.state,this.view,match);node&&li.appendChild(node)}}return range.from&&ul.classList.add("cm-completionListIncompleteTop"),range.to<options.length&&ul.classList.add("cm-completionListIncompleteBottom"),ul}destroyInfo(){this.info&&(this.infoDestroy&&this.infoDestroy(),this.info.remove(),this.info=null)}destroy(){this.destroyInfo()}}class CompletionDialog{constructor(options,attrs,tooltip,timestamp,selected,disabled){this.options=options,this.attrs=attrs,this.tooltip=tooltip,this.timestamp=timestamp,this.selected=selected,this.disabled=disabled}setSelected(selected,id){return selected==this.selected||selected>=this.options.length?this:new CompletionDialog(this.options,makeAttrs(id,selected),this.tooltip,this.timestamp,selected,this.disabled)}static build(active,state,id,prev,conf,didSetActive){if(prev&&!didSetActive&&active.some(s=>s.isPending))return prev.setDisabled();let options=sortOptions(active,state);if(!options.length)return prev&&active.some(a=>a.isPending)?prev.setDisabled():null;let selected=state.facet(completionConfig).selectOnOpen?0:-1;if(prev&&prev.selected!=selected&&-1!=prev.selected){let selectedValue=prev.options[prev.selected].completion;for(let i=0;i<options.length;i++)if(options[i].completion==selectedValue){selected=i;break}}return new CompletionDialog(options,makeAttrs(id,selected),{pos:active.reduce((a,b)=>b.hasResult()?Math.min(a,b.from):a,1e8),create:createTooltip,above:conf.aboveCursor},prev?prev.timestamp:Date.now(),selected,!1)}map(changes){return new CompletionDialog(this.options,this.attrs,{...this.tooltip,pos:changes.mapPos(this.tooltip.pos)},this.timestamp,this.selected,this.disabled)}setDisabled(){return new CompletionDialog(this.options,this.attrs,this.tooltip,this.timestamp,this.selected,!0)}}class CompletionState{constructor(active,id,open){this.active=active,this.id=id,this.open=open}static start(){return new CompletionState(none,"cm-ac-"+Math.floor(2e6*Math.random()).toString(36),null)}update(tr){let{state}=tr,conf=state.facet(completionConfig),sources=conf.override||state.languageDataAt("autocomplete",cur(state)).map(asSource),active=sources.map(source=>{let value=this.active.find(s=>s.source==source)||new ActiveSource(source,this.active.some(a=>0!=a.state/* State.Inactive */)?1/* State.Pending */:0/* State.Inactive */);return value.update(tr,conf)});active.length==this.active.length&&active.every((a,i)=>a==this.active[i])&&(active=this.active);let open=this.open,didSet=tr.effects.some(e=>e.is(setActiveEffect));open&&tr.docChanged&&(open=open.map(tr.changes)),tr.selection||active.some(a=>a.hasResult()&&tr.changes.touchesRange(a.from,a.to))||!sameResults(active,this.active)||didSet?open=CompletionDialog.build(active,state,this.id,open,conf,didSet):open&&open.disabled&&!active.some(a=>a.isPending)&&(open=null),!open&&active.every(a=>!a.isPending)&&active.some(a=>a.hasResult())&&(active=active.map(a=>a.hasResult()?new ActiveSource(a.source,0/* State.Inactive */):a));for(let effect of tr.effects)effect.is(setSelectedEffect)&&(open=open&&open.setSelected(effect.value,this.id));return active==this.active&&open==this.open?this:new CompletionState(active,this.id,open)}get tooltip(){return this.open?this.open.tooltip:null}get attrs(){return this.open?this.open.attrs:this.active.length?baseAttrs:noAttrs}}const baseAttrs={"aria-autocomplete":"list"},noAttrs={},none=[];class ActiveSource{constructor(source,state,explicit=!1){this.source=source,this.state=state,this.explicit=explicit}hasResult(){return!1}get isPending(){return 1==this.state/* State.Pending */}update(tr,conf){let type=getUpdateType(tr,conf),value=this;(8&type/* UpdateType.Reset */||16&type/* UpdateType.ResetIfTouching */&&this.touches(tr))&&(value=new ActiveSource(value.source,0/* State.Inactive */)),4&type/* UpdateType.Activate */&&0==value.state/* State.Inactive */&&(value=new ActiveSource(this.source,1/* State.Pending */)),value=value.updateFor(tr,type);for(let effect of tr.effects)if(effect.is(startCompletionEffect))value=new ActiveSource(value.source,1/* State.Pending */,effect.value);else if(effect.is(closeCompletionEffect))value=new ActiveSource(value.source,0/* State.Inactive */);else if(effect.is(setActiveEffect))for(let active of effect.value)active.source==value.source&&(value=active);return value}updateFor(tr,type){return this.map(tr.changes)}map(changes){return this}touches(tr){return tr.changes.touchesRange(cur(tr.state))}}class ActiveResult extends ActiveSource{constructor(source,explicit,limit,result,from,to){super(source,3/* State.Result */,explicit),this.limit=limit,this.result=result,this.from=from,this.to=to}hasResult(){return!0}updateFor(tr,type){var _a;if(!(3&type/* UpdateType.SimpleInteraction */))return this.map(tr.changes);let result=this.result;result.map&&!tr.changes.empty&&(result=result.map(result,tr.changes));let from=tr.changes.mapPos(this.from),to=tr.changes.mapPos(this.to,1),pos=cur(tr.state);if(pos>to||!result||2&type/* UpdateType.Backspacing */&&(cur(tr.startState)==this.from||pos<this.limit))return new ActiveSource(this.source,4&type/* UpdateType.Activate */?1/* State.Pending */:0/* State.Inactive */);let limit=tr.changes.mapPos(this.limit);return checkValid(result.validFor,tr.state,from,to)?new ActiveResult(this.source,this.explicit,limit,result,from,to):result.update&&(result=result.update(result,from,to,new CompletionContext(tr.state,pos,!1)))?new ActiveResult(this.source,this.explicit,limit,result,result.from,null!==(_a=result.to)&&void 0!==_a?_a:cur(tr.state)):new ActiveSource(this.source,1/* State.Pending */,this.explicit)}map(mapping){if(mapping.empty)return this;let result=this.result.map?this.result.map(this.result,mapping):this.result;return result?new ActiveResult(this.source,this.explicit,mapping.mapPos(this.limit),this.result,mapping.mapPos(this.from),mapping.mapPos(this.to,1)):new ActiveSource(this.source,0/* State.Inactive */)}touches(tr){return tr.changes.touchesRange(this.from,this.to)}}const setActiveEffect=state.StateEffect.define({map(sources,mapping){return sources.map(s=>s.map(mapping))}}),completionState=state.StateField.define({create(){return CompletionState.start()},update(value,tr){return value.update(tr)},provide:f=>[view.showTooltip.from(f,val=>val.tooltip),view.EditorView.contentAttributes.from(f,state=>state.attrs)]}),createTooltip=completionTooltip(completionState,applyCompletion),acceptCompletion=view=>{let cState=view.state.field(completionState,!1);return!(view.state.readOnly||!cState||!cState.open||0>cState.open.selected||cState.open.disabled||Date.now()-cState.open.timestamp<view.state.facet(completionConfig).interactionDelay)&&applyCompletion(view,cState.open.options[cState.open.selected])},startCompletion=view=>{let cState=view.state.field(completionState,!1);return!!cState&&(view.dispatch({effects:startCompletionEffect.of(!0)}),!0)},closeCompletion=view=>{let cState=view.state.field(completionState,!1);return!!(cState&&cState.active.some(a=>0!=a.state/* State.Inactive */))&&(view.dispatch({effects:closeCompletionEffect.of(null)}),!0)};/**
 	Explicitly start autocompletion.
-	*//**
+	*/ /**
 	Close the currently active completion.
 	*/class RunningQuery{constructor(active,context){this.active=active,this.context=context,this.time=Date.now(),this.updates=[],this.done=void 0}}const MaxUpdateCount=50,MinAbortTime=1e3,completionPlugin=view.ViewPlugin.fromClass(class{constructor(view){this.view=view,this.debounceUpdate=-1,this.running=[],this.debounceAccept=-1,this.pendingStart=!1,this.composing=0/* CompositionState.None */;for(let active of view.state.field(completionState).active)active.isPending&&this.startQuery(active)}update(update){let cState=update.state.field(completionState),conf=update.state.facet(completionConfig);if(update.selectionSet||update.docChanged||update.startState.field(completionState)!=cState){let doesReset=update.transactions.some(tr=>{let type=getUpdateType(tr,conf);return 8&type/* UpdateType.Reset */||(tr.selection||tr.docChanged)&&!(3&type/* UpdateType.SimpleInteraction */)});for(let query,i=0;i<this.running.length;i++)if(query=this.running[i],doesReset||query.context.abortOnDocChange&&update.docChanged||query.updates.length+update.transactions.length>MaxUpdateCount&&Date.now()-query.time>MinAbortTime){for(let handler of query.context.abortListeners)try{handler()}catch(e){view.logException(this.view.state,e)}query.context.abortListeners=null,this.running.splice(i--,1)}else query.updates.push(...update.transactions);-1<this.debounceUpdate&&clearTimeout(this.debounceUpdate),update.transactions.some(tr=>tr.effects.some(e=>e.is(startCompletionEffect)))&&(this.pendingStart=!0);let delay=this.pendingStart?50:conf.activateOnTypingDelay;if(this.debounceUpdate=cState.active.some(a=>a.isPending&&!this.running.some(q=>q.active.source==a.source))?setTimeout(()=>this.startUpdate(),delay):-1,0!=this.composing/* CompositionState.None */)for(let tr of update.transactions)tr.isUserEvent("input.type")?this.composing=2/* CompositionState.Changed */:2==this.composing/* CompositionState.Changed */&&tr.selection&&(this.composing=3/* CompositionState.ChangedAndMoved */)}}startUpdate(){this.debounceUpdate=-1,this.pendingStart=!1;let{state}=this.view,cState=state.field(completionState);for(let active of cState.active)active.isPending&&!this.running.some(r=>r.active.source==active.source)&&this.startQuery(active);this.running.length&&cState.open&&cState.open.disabled&&(this.debounceAccept=setTimeout(()=>this.accept(),this.view.state.facet(completionConfig).updateSyncTime))}startQuery(active){let{state}=this.view,pos=cur(state),context=new CompletionContext(state,pos,active.explicit,this.view),pending=new RunningQuery(active,context);this.running.push(pending),Promise.resolve(active.source(context)).then(result=>{pending.context.aborted||(pending.done=result||null,this.scheduleAccept())},err=>{this.view.dispatch({effects:closeCompletionEffect.of(null)}),view.logException(this.view.state,err)})}scheduleAccept(){this.running.every(q=>void 0!==q.done)?this.accept():0>this.debounceAccept&&(this.debounceAccept=setTimeout(()=>this.accept(),this.view.state.facet(completionConfig).updateSyncTime))}// For each finished query in this.running, try to create a result
 // or, if appropriate, restart the query.
@@ -4294,9 +4294,9 @@ let active=new ActiveSource(query.active.source,0/* State.Inactive */);for(let t
 this.startQuery(current)}(updated.length||cState.open&&cState.open.disabled)&&this.view.dispatch({effects:setActiveEffect.of(updated)})}},{eventHandlers:{blur(event){let state=this.view.state.field(completionState,!1);if(state&&state.tooltip&&this.view.state.facet(completionConfig).closeOnBlur){let dialog=state.open&&view.getTooltip(this.view,state.open.tooltip);dialog&&dialog.dom.contains(event.relatedTarget)||setTimeout(()=>this.view.dispatch({effects:closeCompletionEffect.of(null)}),10)}},compositionstart(){this.composing=1/* CompositionState.Started */},compositionend(){3==this.composing/* CompositionState.ChangedAndMoved */&&setTimeout(()=>this.view.dispatch({effects:startCompletionEffect.of(!1)}),20),this.composing=0/* CompositionState.None */}}}),windows="object"==typeof navigator&&/Win/.test(navigator.platform),commitCharacters=state.Prec.highest(view.EditorView.domEventHandlers({keydown(event,view){let field=view.state.field(completionState,!1);if(!field||!field.open||field.open.disabled||0>field.open.selected||1<event.key.length||event.ctrlKey&&!(windows&&event.altKey)||event.metaKey)return!1;let option=field.open.options[field.open.selected],result=field.active.find(a=>a.source==option.source),commitChars=option.completion.commitCharacters||result.result.commitCharacters;return commitChars&&-1<commitChars.indexOf(event.key)&&applyCompletion(view,option),!1}})),baseTheme=view.EditorView.baseTheme({".cm-tooltip.cm-tooltip-autocomplete":{"& > ul":{fontFamily:"monospace",whiteSpace:"nowrap",overflow:"hidden auto",maxWidth_fallback:"700px",maxWidth:"min(700px, 95vw)",minWidth:"250px",maxHeight:"10em",height:"100%",listStyle:"none",margin:0,padding:0,"& > li, & > completion-section":{padding:"1px 3px",lineHeight:1.2},"& > li":{overflowX:"hidden",textOverflow:"ellipsis",cursor:"pointer"},"& > completion-section":{display:"list-item",borderBottom:"1px solid silver",paddingLeft:"0.5em",opacity:.7}}},"&light .cm-tooltip-autocomplete ul li[aria-selected]":{background:"#17c",color:"white"},"&light .cm-tooltip-autocomplete-disabled ul li[aria-selected]":{background:"#777"},"&dark .cm-tooltip-autocomplete ul li[aria-selected]":{background:"#347",color:"white"},"&dark .cm-tooltip-autocomplete-disabled ul li[aria-selected]":{background:"#444"},".cm-completionListIncompleteTop:before, .cm-completionListIncompleteBottom:after":{content:"\"\xB7\xB7\xB7\"",opacity:.5,display:"block",textAlign:"center",cursor:"pointer"},".cm-tooltip.cm-completionInfo":{position:"absolute",padding:"3px 9px",width:"max-content",maxWidth:`${400/* Info.Width */}px`,boxSizing:"border-box",whiteSpace:"pre-line"},".cm-completionInfo.cm-completionInfo-left":{right:"100%"},".cm-completionInfo.cm-completionInfo-right":{left:"100%"},".cm-completionInfo.cm-completionInfo-left-narrow":{right:`${30/* Info.Margin */}px`},".cm-completionInfo.cm-completionInfo-right-narrow":{left:`${30/* Info.Margin */}px`},"&light .cm-snippetField":{backgroundColor:"#00000022"},"&dark .cm-snippetField":{backgroundColor:"#ffffff22"},".cm-snippetFieldPosition":{verticalAlign:"text-top",width:0,height:"1.15em",display:"inline-block",margin:"0 -0.7px -.7em",borderLeft:"1.4px dotted #888"},".cm-completionMatchedText":{textDecoration:"underline"},".cm-completionDetail":{marginLeft:"0.5em",fontStyle:"italic"},".cm-completionIcon":{fontSize:"90%",width:".8em",display:"inline-block",textAlign:"center",paddingRight:".6em",opacity:"0.6",boxSizing:"content-box"},".cm-completionIcon-function, .cm-completionIcon-method":{"&:after":{content:"'\u0192'"}},".cm-completionIcon-class":{"&:after":{content:"'\u25CB'"}},".cm-completionIcon-interface":{"&:after":{content:"'\u25CC'"}},".cm-completionIcon-variable":{"&:after":{content:"'\uD835\uDC65'"}},".cm-completionIcon-constant":{"&:after":{content:"'\uD835\uDC36'"}},".cm-completionIcon-type":{"&:after":{content:"'\uD835\uDC61'"}},".cm-completionIcon-enum":{"&:after":{content:"'\u222A'"}},".cm-completionIcon-property":{"&:after":{content:"'\u25A1'"}},".cm-completionIcon-keyword":{"&:after":{content:"'\uD83D\uDD11\uFE0E'"}// Disable emoji rendering
 },".cm-completionIcon-namespace":{"&:after":{content:"'\u25A2'"}},".cm-completionIcon-text":{"&:after":{content:"'abc'",fontSize:"50%",verticalAlign:"middle"}}});class FieldPos{constructor(field,line,from,to){this.field=field,this.line=line,this.from=from,this.to=to}}class FieldRange{constructor(field,from,to){this.field=field,this.from=from,this.to=to}map(changes){let from=changes.mapPos(this.from,-1,state.MapMode.TrackDel),to=changes.mapPos(this.to,1,state.MapMode.TrackDel);return null==from||null==to?null:new FieldRange(this.field,from,to)}}class Snippet{constructor(lines,fieldPositions){this.lines=lines,this.fieldPositions=fieldPositions}instantiate(state,pos){let text=[],lineStart=[pos],lineObj=state.doc.lineAt(pos),baseIndent=/^\s*/.exec(lineObj.text)[0];for(let line of this.lines){if(text.length){let indent=baseIndent,tabs=/^\t*/.exec(line)[0].length;for(let i=0;i<tabs;i++)indent+=state.facet(language.indentUnit);lineStart.push(pos+indent.length-tabs),line=indent+line.slice(tabs)}text.push(line),pos+=line.length+1}let ranges=this.fieldPositions.map(pos=>new FieldRange(pos.field,lineStart[pos.line]+pos.from,lineStart[pos.line]+pos.to));return{text,ranges}}static parse(template){let m,fields=[],lines=[],positions=[];for(let line of template.split(/\r\n?|\n/)){for(;m=/[#$]\{(?:(\d+)(?::([^{}]*))?|((?:\\[{}]|[^{}])*))\}/.exec(line);){let seq=m[1]?+m[1]:null,rawName=m[2]||m[3]||"",found=-1,name=rawName.replace(/\\[{}]/g,m=>m[1]);for(let i=0;i<fields.length;i++)(null==seq?!!name&&fields[i].name==name:fields[i].seq==seq)&&(found=i);if(0>found){let i=0;for(;i<fields.length&&(null==seq||null!=fields[i].seq&&fields[i].seq<seq);)i++;fields.splice(i,0,{seq,name}),found=i;for(let pos of positions)pos.field>=found&&pos.field++}for(let pos of positions)if(pos.line==lines.length&&pos.from>m.index){let snip=m[2]?3+(m[1]||"").length:2;pos.from-=snip,pos.to-=snip}positions.push(new FieldPos(found,lines.length,m.index,m.index+name.length)),line=line.slice(0,m.index)+rawName+line.slice(m.index+m[0].length)}line=line.replace(/\\([{}])/g,(_,brace,index)=>{for(let pos of positions)pos.line==lines.length&&pos.from>index&&(pos.from--,pos.to--);return brace}),lines.push(line)}return new Snippet(lines,positions)}}let fieldMarker=view.Decoration.widget({widget:new class extends view.WidgetType{toDOM(){let span=document.createElement("span");return span.className="cm-snippetFieldPosition",span}ignoreEvent(){return!1}}}),fieldRange=view.Decoration.mark({class:"cm-snippetField"});class ActiveSnippet{constructor(ranges,active){this.ranges=ranges,this.active=active,this.deco=view.Decoration.set(ranges.map(r=>(r.from==r.to?fieldMarker:fieldRange).range(r.from,r.to)),!0)}map(changes){let ranges=[];for(let r of this.ranges){let mapped=r.map(changes);if(!mapped)return null;ranges.push(mapped)}return new ActiveSnippet(ranges,this.active)}selectionInsideField(sel){return sel.ranges.every(range=>this.ranges.some(r=>r.field==this.active&&r.from<=range.from&&r.to>=range.to))}}const setActive=state.StateEffect.define({map(value,changes){return value&&value.map(changes)}}),moveToField=state.StateEffect.define(),snippetState=state.StateField.define({create(){return null},update(value,tr){for(let effect of tr.effects){if(effect.is(setActive))return effect.value;if(effect.is(moveToField)&&value)return new ActiveSnippet(value.ranges,effect.value)}return value&&tr.docChanged&&(value=value.map(tr.changes)),value&&tr.selection&&!value.selectionInsideField(tr.selection)&&(value=null),value},provide:f=>view.EditorView.decorations.from(f,val=>val?val.deco:view.Decoration.none)}),clearSnippet=({state,dispatch})=>{let active=state.field(snippetState,!1);return!!active&&(dispatch(state.update({effects:setActive.of(null)})),!0)},nextSnippetField=moveField(1),prevSnippetField=moveField(-1),defaultSnippetKeymap=[{key:"Tab",run:nextSnippetField,shift:prevSnippetField},{key:"Escape",run:clearSnippet}],snippetKeymap=state.Facet.define({combine(maps){return maps.length?maps[0]:defaultSnippetKeymap}}),addSnippetKeymap=state.Prec.highest(view.keymap.compute([snippetKeymap],state=>state.facet(snippetKeymap))),snippetPointerHandler=view.EditorView.domEventHandlers({mousedown(event,view){let pos,active=view.state.field(snippetState,!1);if(!active||null==(pos=view.posAtCoords({x:event.clientX,y:event.clientY})))return!1;let match=active.ranges.find(r=>r.from<=pos&&r.to>=pos);return!!(match&&match.field!=active.active)&&(view.dispatch({selection:fieldSelection(active.ranges,match.field),effects:setActive.of(active.ranges.some(r=>r.field>match.field)?new ActiveSnippet(active.ranges,match.field):null),scrollIntoView:!0}),!0)}}),wordCaches=Object.create(null),completeAnyWord=context=>{var _a;let wordChars=null!==(_a=context.state.languageDataAt("wordChars",context.pos)[0])&&void 0!==_a?_a:"",re=wordRE(wordChars),token=context.matchBefore(mapRE(re,s=>s+"$"));if(!token&&!context.explicit)return null;let from=token?token.from:context.pos,options=collectWords(context.state.doc,wordCache(wordChars),re,5e4/* C.Range */,from);return{from,options,validFor:mapRE(re,s=>"^"+s)}},defaults={brackets:["(","[","{","'","\""],before:")]}:;>",stringPrefixes:[]},closeBracketEffect=state.StateEffect.define({map(value,mapping){let mapped=mapping.mapPos(value,-1,state.MapMode.TrackAfter);return null==mapped?void 0:mapped}}),closedBracket=new class extends state.RangeValue{};/**
 	Move to the next snippet field, if available.
-	*//**
+	*/ /**
 	Move to the previous snippet field, if available.
-	*//**
+	*/ /**
 	A facet that can be used to configure the key bindings used by
 	snippets. The default binds Tab to
 	[`nextSnippetField`](https://codemirror.net/6/docs/ref/#autocomplete.nextSnippetField), Shift-Tab to
@@ -4305,7 +4305,7 @@ this.startQuery(current)}(updated.length||cState.open&&cState.open.disabled)&&th
 	*/closedBracket.startSide=1,closedBracket.endSide=-1;const bracketState=state.StateField.define({create(){return state.RangeSet.empty},update(value,tr){if(value=value.map(tr.changes),tr.selection){let line=tr.state.doc.lineAt(tr.selection.main.head);value=value.update({filter:from=>from>=line.from&&from<=line.to})}for(let effect of tr.effects)effect.is(closeBracketEffect)&&(value=value.update({add:[closedBracket.range(effect.value,effect.value+1)]}));return value}}),definedClosing="()[]{}<>\xAB\xBB\xBB\xAB\uFF3B\uFF3D\uFF5B\uFF5D",android="object"==typeof navigator&&/Android\b/.test(navigator.userAgent),inputHandler=view.EditorView.inputHandler.of((view,from,to,insert)=>{if((android?view.composing:view.compositionStarted)||view.state.readOnly)return!1;let sel=view.state.selection.main;if(2<insert.length||2==insert.length&&1==state.codePointSize(state.codePointAt(insert,0))||from!=sel.from||to!=sel.to)return!1;let tr=insertBracket(view.state,insert);return!!tr&&(view.dispatch(tr),!0)}),deleteBracketPair=({state:state$1,dispatch})=>{if(state$1.readOnly)return!1;let conf=config(state$1,state$1.selection.main.head),tokens=conf.brackets||defaults.brackets,dont=null,changes=state$1.changeByRange(range=>{if(range.empty){let before=prevChar(state$1.doc,range.head);for(let token of tokens)if(token==before&&nextChar(state$1.doc,range.head)==closing(state.codePointAt(token,0)))return{changes:{from:range.head-token.length,to:range.head+token.length},range:state.EditorSelection.cursor(range.head-token.length)}}return{range:dont=range}});return dont||dispatch(state$1.update(changes,{scrollIntoView:!0,userEvent:"delete.backward"})),!dont},closeBracketsKeymap=[{key:"Backspace",run:deleteBracketPair}],completionKeymap=[{key:"Ctrl-Space",run:startCompletion},{mac:"Alt-`",run:startCompletion},{mac:"Alt-i",run:startCompletion},{key:"Escape",run:closeCompletion},{key:"ArrowDown",run:moveCompletionSelection(!0)},{key:"ArrowUp",run:moveCompletionSelection(!1)},{key:"PageDown",run:moveCompletionSelection(!0,"page")},{key:"PageUp",run:moveCompletionSelection(!1,"page")},{key:"Enter",run:acceptCompletion}],completionKeymapExt=state.Prec.highest(view.keymap.computeN([completionConfig],state=>state.facet(completionConfig).defaultKeymap?[completionKeymap]:[])),completionArrayCache=new WeakMap;/**
 	Command that implements deleting a pair of matching brackets when
 	the cursor is between them.
-	*//**
+	*/ /**
 	Close-brackets related key bindings. Binds Backspace to
 	[`deleteBracketPair`](https://codemirror.net/6/docs/ref/#autocomplete.deleteBracketPair).
 	*/return dist.CompletionContext=CompletionContext,dist.acceptCompletion=acceptCompletion,dist.autocompletion=autocompletion,dist.clearSnippet=clearSnippet,dist.closeBrackets=closeBrackets,dist.closeBracketsKeymap=closeBracketsKeymap,dist.closeCompletion=closeCompletion,dist.completeAnyWord=completeAnyWord,dist.completeFromList=completeFromList,dist.completionKeymap=completionKeymap,dist.completionStatus=completionStatus,dist.currentCompletions=currentCompletions,dist.deleteBracketPair=deleteBracketPair,dist.hasNextSnippetField=hasNextSnippetField,dist.hasPrevSnippetField=hasPrevSnippetField,dist.ifIn=ifIn,dist.ifNotIn=ifNotIn,dist.insertBracket=insertBracket,dist.insertCompletionText=insertCompletionText,dist.moveCompletionSelection=moveCompletionSelection,dist.nextSnippetField=nextSnippetField,dist.pickedCompletion=pickedCompletion,dist.prevSnippetField=prevSnippetField,dist.selectedCompletion=selectedCompletion,dist.selectedCompletionIndex=selectedCompletionIndex,dist.setSelectedCompletion=setSelectedCompletion,dist.snippet=snippet,dist.snippetCompletion=snippetCompletion,dist.snippetKeymap=snippetKeymap,dist.startCompletion=startCompletion,dist}(),index=/*@__PURE__*/function getDefaultExportFromCjs(x){return x}(distExports);return module.exports=index,module.exports}
@@ -4317,7 +4317,7 @@ async function _coreInit__codemirror_search(requireAsyncModule,exports={}){const
 	`-`, document percentages suffixed with `%`, and an optional
 	column position by adding `:` and a second number after the line
 	number.
-	*//**
+	*/ /**
 	This extension highlights text that matches the selection. It uses
 	the `"cm-selectionMatch"` class for the highlighting. When
 	`highlightWordAroundCursor` is enabled, the word at the cursor
@@ -4329,7 +4329,7 @@ function insideWord(check,state$1,from,to){return check(state$1.sliceDoc(from,fr
 function findNextOccurrence(state,query){let{main,ranges}=state.selection,word=state.wordAt(main.head),fullWord=word&&word.from==main.from&&word.to==main.to;for(let cycled=!1,cursor=new SearchCursor(state.doc,query,ranges[ranges.length-1].to);;)if(cursor.next(),cursor.done){if(cycled)return null;cursor=new SearchCursor(state.doc,query,0,Math.max(0,ranges[ranges.length-1].from-1)),cycled=!0}else{if(cycled&&ranges.some(r=>r.from==cursor.value.from))continue;if(fullWord){let word=state.wordAt(cursor.value.from);if(!word||word.from!=cursor.value.from||word.to!=cursor.value.to)continue}return cursor.value}}/**
 	Select next occurrence of the current selection. Expand selection
 	to the surrounding word when the selection is empty.
-	*//**
+	*/ /**
 	Add search state to the editor configuration, and optionally
 	configure the search extension.
 	([`openSearchPanel`](https://codemirror.net/6/docs/ref/#search.openSearchPanel) will automatically
@@ -4410,18 +4410,18 @@ prevMatchInRange(state,from,to){for(let pos=to;;){let start=Math.max(from,pos-1e
 	Move the selection to the previous instance of the search query,
 	before the current main selection. Will wrap past the start
 	of the document to start searching at the end again.
-	*//**
+	*/ /**
 	Select all instances of the search query.
-	*//**
+	*/ /**
 	Select all instances of the currently selected text.
-	*//**
+	*/ /**
 	Replace the current match of the search query.
-	*//**
+	*/ /**
 	Replace all instances of the search query with the given
 	replacement.
-	*//**
+	*/ /**
 	Close the search panel.
-	*//**
+	*/ /**
 	Default search-related key bindings.
 
 	 - Mod-f: [`openSearchPanel`](https://codemirror.net/6/docs/ref/#search.openSearchPanel)
@@ -4437,7 +4437,7 @@ async function _coreInit__codemirror_lint(requireAsyncModule,exports={}){const m
 	*/function setDiagnostics(state,diagnostics){return{effects:maybeEnableLint(state,[setDiagnosticsEffect.of(diagnostics)])}}/**
 	The state effect that updates the set of active diagnostics. Can
 	be useful when writing an extension that needs to track these.
-	*//**
+	*/ /**
 	Returns the number of active lint diagnostics in the given state.
 	*/function diagnosticCount(state){let lint=state.field(lintState,!1);return lint?lint.diagnostics.size:0}function lintTooltip(view,pos,side){let found,{diagnostics}=view.state.field(lintState),start=-1,end=-1;diagnostics.between(pos-(0>side?1:0),pos+(0<side?1:0),(from,to,{spec})=>{if(pos>=from&&pos<=to&&(from==to||(pos>from||0<side)&&(pos<to||0>side)))return found=spec.diagnostics,start=from,end=to,!1});let diagnosticFilter=view.state.facet(lintConfig).tooltipFilter;return found&&diagnosticFilter&&(found=diagnosticFilter(found,view.state)),found?{pos:start,end:end,above:view.state.doc.lineAt(start).to<end,create(){return{dom:diagnosticsTooltip(view,found)}}}:null}function diagnosticsTooltip(view,diagnostics){return elt("ul",{class:"cm-tooltip-lint"},diagnostics.map(d=>renderDiagnostic(view,d,!1)))}/**
 	Command to open and focus the lint panel.
@@ -4465,11 +4465,11 @@ async function _coreInit__codemirror_lint(requireAsyncModule,exports={}){const m
 	*/function forEachDiagnostic(state$1,f){let lState=state$1.field(lintState,!1);if(lState&&lState.diagnostics.size){let pending=[],pendingStart=[],lastEnd=-1;for(let iter=state.RangeSet.iter([lState.diagnostics]);;iter.next()){for(let i=0;i<pending.length;i++)(!iter.value||0>iter.value.spec.diagnostics.indexOf(pending[i]))&&(f(pending[i],pendingStart[i],lastEnd),pending.splice(i,1),pendingStart.splice(i--,1));if(!iter.value)break;for(let d of iter.value.spec.diagnostics)0>pending.indexOf(d)&&(pending.push(d),pendingStart.push(iter.from));lastEnd=iter.to}}}if(hasRequiredDist)return dist;hasRequiredDist=1;var view=require$$0,state=require$$1,elt=require$$2;class SelectedDiagnostic{constructor(from,to,diagnostic){this.from=from,this.to=to,this.diagnostic=diagnostic}}class LintState{constructor(diagnostics,panel,selected){this.diagnostics=diagnostics,this.panel=panel,this.selected=selected}static init(diagnostics,panel,state$1){// Filter the list of diagnostics for which to create markers
 let diagnosticFilter=state$1.facet(lintConfig).markerFilter;diagnosticFilter&&(diagnostics=diagnosticFilter(diagnostics,state$1));let sorted=diagnostics.slice().sort((a,b)=>a.from-b.from||a.to-b.to),deco=new state.RangeSetBuilder,active=[],pos=0,scan=state$1.doc.iter(),scanPos=0,docLen=state$1.doc.length;for(let next,i=0;;){if(next=i==sorted.length?null:sorted[i],!next&&!active.length)break;let from,to;if(active.length)from=pos,to=active.reduce((p,d)=>Math.min(p,d.to),next&&next.from>from?next.from:1e8);else{if(from=next.from,from>docLen)break;to=next.to,active.push(next),i++}for(;i<sorted.length;){let next=sorted[i];if(next.from==from&&(next.to>next.from||next.to==from))active.push(next),i++,to=Math.min(next.to,to);else{to=Math.min(next.from,to);break}}to=Math.min(to,docLen);let widget=!1;if(active.some(d=>d.from==from&&(d.to==to||to==docLen))&&(widget=from==to,!widget&&10>to-from)){let behind=from-(scanPos+scan.value.length);0<behind&&(scan.next(behind),scanPos=from);for(let check=from;;){if(check>=to){widget=!0;break}if(!scan.lineBreak&&scanPos+scan.value.length>check)break;check=scanPos+scan.value.length,scanPos+=scan.value.length,scan.next()}}let sev=maxSeverity(active);if(widget)deco.add(from,from,view.Decoration.widget({widget:new DiagnosticWidget(sev),diagnostics:active.slice()}));else{let markClass=active.reduce((c,d)=>d.markClass?c+" "+d.markClass:c,"");deco.add(from,to,view.Decoration.mark({class:"cm-lintRange cm-lintRange-"+sev+markClass,diagnostics:active.slice(),inclusiveEnd:active.some(a=>a.to>to)}))}if(pos=to,pos==docLen)break;for(let i=0;i<active.length;i++)active[i].to<=pos&&active.splice(i--,1)}let set=deco.finish();return new LintState(set,panel,findDiagnostic(set))}}const setDiagnosticsEffect=state.StateEffect.define(),togglePanel=state.StateEffect.define(),movePanelSelection=state.StateEffect.define(),lintState=state.StateField.define({create(){return new LintState(view.Decoration.none,null,null)},update(value,tr){if(tr.docChanged&&value.diagnostics.size){let mapped=value.diagnostics.map(tr.changes),selected=null,panel=value.panel;if(value.selected){let selPos=tr.changes.mapPos(value.selected.from,1);selected=findDiagnostic(mapped,value.selected.diagnostic,selPos)||findDiagnostic(mapped,null,selPos)}!mapped.size&&panel&&tr.state.facet(lintConfig).autoPanel&&(panel=null),value=new LintState(mapped,panel,selected)}for(let effect of tr.effects)if(effect.is(setDiagnosticsEffect)){let panel=tr.state.facet(lintConfig).autoPanel?effect.value.length?LintPanel.open:null:value.panel;value=LintState.init(effect.value,panel,tr.state)}else effect.is(togglePanel)?value=new LintState(value.diagnostics,effect.value?LintPanel.open:null,value.selected):effect.is(movePanelSelection)&&(value=new LintState(value.diagnostics,value.panel,effect.value));return value},provide:f=>[view.showPanel.from(f,val=>val.panel),view.EditorView.decorations.from(f,s=>s.diagnostics)]}),activeMark=view.Decoration.mark({class:"cm-lintRange cm-lintRange-active"}),openLintPanel=view$1=>{let field=view$1.state.field(lintState,!1);field&&field.panel||view$1.dispatch({effects:maybeEnableLint(view$1.state,[togglePanel.of(!0)])});let panel=view.getPanel(view$1,LintPanel.open);return panel&&panel.dom.querySelector(".cm-panel-lint ul").focus(),!0},closeLintPanel=view=>{let field=view.state.field(lintState,!1);return!!(field&&field.panel)&&(view.dispatch({effects:togglePanel.of(!1)}),!0)},nextDiagnostic=view$1=>{let field=view$1.state.field(lintState,!1);if(!field)return!1;let sel=view$1.state.selection.main,next=findDiagnostic(field.diagnostics,null,sel.to+1);return(next||(next=findDiagnostic(field.diagnostics,null,0),next&&(next.from!=sel.from||next.to!=sel.to)))&&(view$1.dispatch({selection:{anchor:next.from,head:next.to},scrollIntoView:!0}),view.activateHover(view$1,next.from,1,{tooltip:lintHover,until:tr=>tr.docChanged||tr.newSelection.main.head<next.from||tr.newSelection.main.head>next.to}),!0)},previousDiagnostic=view$1=>{var _a;let{state}=view$1,field=state.field(lintState,!1);if(!field)return!1;let prevFrom,prevTo,lastFrom,lastTo,sel=state.selection.main;if(field.diagnostics.between(0,state.doc.length,(from,to)=>{to<sel.to&&(null==prevFrom||prevFrom<from)&&(prevFrom=from,prevTo=to),(null==lastFrom||from>lastFrom)&&(lastFrom=from,lastTo=to)}),null==lastFrom||null==prevFrom&&lastFrom==sel.from)return!1;let from=null!==prevFrom&&void 0!==prevFrom?prevFrom:lastFrom,to=null!==(_a=null!==prevTo&&void 0!==prevTo?prevTo:lastTo)&&void 0!==_a?_a:from;return view$1.dispatch({selection:{anchor:from,head:to},scrollIntoView:!0}),view.activateHover(view$1,from,1,{tooltip:lintHover,until:tr=>tr.docChanged||tr.newSelection.main.head<from||tr.newSelection.main.head>to}),!0},lintKeymap=[{key:"Mod-Shift-m",run:openLintPanel,preventDefault:!0},{key:"F8",run:nextDiagnostic}],lintPlugin=view.ViewPlugin.fromClass(class{constructor(view){this.view=view,this.timeout=-1,this.set=!0;let{delay}=view.state.facet(lintConfig);this.lintTime=Date.now()+delay,this.run=this.run.bind(this),this.timeout=setTimeout(this.run,delay)}run(){clearTimeout(this.timeout);let now=Date.now();if(now<this.lintTime-10)this.timeout=setTimeout(this.run,this.lintTime-now);else{this.set=!1;let{state}=this.view,{sources}=state.facet(lintConfig);sources.length&&batchResults(sources.map(s=>Promise.resolve(s(this.view))),annotations=>{this.view.state.doc==state.doc&&this.view.dispatch(setDiagnostics(this.view.state,annotations.reduce((a,b)=>a.concat(b))))},error=>{view.logException(this.view.state,error)})}}update(update){let config=update.state.facet(lintConfig);(update.docChanged||config!=update.startState.facet(lintConfig)||config.needsRefresh&&config.needsRefresh(update))&&(this.lintTime=Date.now()+config.delay,!this.set&&(this.set=!0,this.timeout=setTimeout(this.run,config.delay)))}force(){this.set&&(this.lintTime=Date.now(),this.run())}destroy(){clearTimeout(this.timeout)}}),lintConfig=state.Facet.define({combine(input){return{sources:input.map(i=>i.source).filter(x=>null!=x),...state.combineConfig(input.map(i=>i.config),{delay:750,markerFilter:null,tooltipFilter:null,needsRefresh:null,hideOn:()=>null},{delay:Math.max,markerFilter:combineFilter,tooltipFilter:combineFilter,needsRefresh:(a,b)=>a?b?u=>a(u)||b(u):a:b,hideOn:(a,b)=>a?b?(t,x,y)=>a(t,x,y)||b(t,x,y):a:b,autoPanel:(a,b)=>a||b})}}});/**
 	Command to close the lint panel, when open.
-	*//**
+	*/ /**
 	Move the selection to the next diagnostic.
-	*//**
+	*/ /**
 	Move the selection to the previous diagnostic.
-	*//**
+	*/ /**
 	A set of default key bindings for the lint functionality.
 
 	- Ctrl-Shift-m (Cmd-Shift-m on macOS): [`openLintPanel`](https://codemirror.net/6/docs/ref/#lint.openLintPanel)

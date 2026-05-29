@@ -29,11 +29,11 @@ function withCodeditorAssets(config) {
         "android/app/src/main/assets/codeditor"
       );
       if (!fs.existsSync(ASSETS_SRC)) {
-        console.warn("[react-native-codeditor] ⚠️  src/assets not found — run `npm run prepare` in the library first");
+        console.warn("[@actualwave/react-native-codeditor] ⚠️  src/assets not found — run `npm run prepare` in the library first");
         return modConfig;
       }
       copyDirSync(ASSETS_SRC, destDir);
-      console.log("[react-native-codeditor] ✅ Android assets copied to android/app/src/main/assets/codeditor");
+      console.log("[@actualwave/react-native-codeditor] ✅ Android assets copied to android/app/src/main/assets/codeditor");
       return modConfig;
     },
   ]);
@@ -45,11 +45,11 @@ function withCodeditorAssets(config) {
       const { projectRoot, projectName } = modConfig.modRequest;
       const destDir = path.resolve(projectRoot, `ios/${projectName}/assets/codeditor`);
       if (!fs.existsSync(ASSETS_SRC)) {
-        console.warn("[react-native-codeditor] ⚠️  src/assets not found — run `npm run prepare` in the library first");
+        console.warn("[@actualwave/react-native-codeditor] ⚠️  src/assets not found — run `npm run prepare` in the library first");
         return modConfig;
       }
       copyDirSync(ASSETS_SRC, destDir);
-      console.log(`[react-native-codeditor] ✅ iOS assets copied to ios/${projectName}/assets/codeditor`);
+      console.log(`[@actualwave/react-native-codeditor] ✅ iOS assets copied to ios/${projectName}/assets/codeditor`);
       return modConfig;
     },
   ]);
@@ -80,7 +80,7 @@ function withCodeditorAssets(config) {
     );
     if (!mainGroupEntry) {
       console.warn(
-        `[react-native-codeditor] ⚠️  Xcode group "${projectName}" not found — add the assets folder reference manually`
+        `[@actualwave/react-native-codeditor] ⚠️  Xcode group "${projectName}" not found — add the assets folder reference manually`
       );
       return modConfig;
     }
@@ -123,7 +123,7 @@ function withCodeditorAssets(config) {
       }
     }
 
-    console.log("[react-native-codeditor] ✅ Xcode folder reference added to project.pbxproj");
+    console.log("[@actualwave/react-native-codeditor] ✅ Xcode folder reference added to project.pbxproj");
     return modConfig;
   });
 

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "react-native-codeditor": [
+      "@actualwave/react-native-codeditor": [
         "./src/index"
       ]
     },

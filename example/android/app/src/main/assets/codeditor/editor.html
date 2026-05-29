@@ -63,14 +63,18 @@
 
     const { configure, createEditor, requireAsyncModule } = window.CodeMirrorEditor;
 
-    // Each theme lives in its own package (@uiw/codemirror-theme-{name}), not the meta-package
-    // @uiw/codemirror-themes (which only exports createTheme). Most themes export under the
-    // same name as the theme, but github and vscode use "Dark" variants as the primary export.
-    const _themeExportNames = { github: 'githubDark', vscode: 'vscodeDark' };
-    function getThemeSpec(themeName) {
-      const exportName = _themeExportNames[themeName] ?? themeName;
-      return [`@uiw/codemirror-theme-${themeName}`, exportName];
-    }
+    // Maps theme name → [packageSuffix, exportName] for themes in multi-export packages.
+    // Single-export packages (darcula, monokai, etc.) export under the same name as the package.
+    const _themePackageMap = {
+      githubDark:    ['github',    'githubDark'],
+      githubLight:   ['github',    'githubLight'],
+      vscodeDark:    ['vscode',    'vscodeDark'],
+      xcodeDark:     ['xcode',     'xcodeDark'],
+      xcodeLight:    ['xcode',     'xcodeLight'],
+      solarizedDark: ['solarized', 'solarizedDark'],
+      solarizedLight:['solarized', 'solarizedLight'],
+      tokyoNight:    ['tokyo-night', 'tokyoNight'],
+    };
 
     // fetch() is blocked for file:// origins even when same-origin in Android WebView.
     // XHR works; status 0 means success for file:// (no HTTP status in that context).
@@ -129,30 +133,61 @@
     });
 
     // Pre-fetch commands from cache (core bundle already loaded by createEditor).
-    const { undo, redo, undoDepth, redoDepth, clearHistory } =
-      await requireAsyncModule('@codemirror/commands');
+    const {
+      undo, redo, undoDepth, redoDepth,
+      indentMore, indentLess,
+      toggleComment, moveLineUp, moveLineDown, deleteLine,
+      selectLine, selectParentSyntax,
+    } = await requireAsyncModule('@codemirror/commands');
     const { EditorView } = await requireAsyncModule('@codemirror/view');
 
     // Separate compartment for the theme so setTheme and setExtensions never clobber each other.
     // appendConfig adds it to the live state; themeCompartment.reconfigure() updates it in-place.
-    const { Compartment, StateEffect } = await requireAsyncModule('@codemirror/state');
+    const { Compartment, StateEffect, Transaction } = await requireAsyncModule('@codemirror/state');
     const themeCompartment = new Compartment();
     editor.view.dispatch({ effects: StateEffect.appendConfig.of(themeCompartment.of([])) });
 
-    // Load and apply a theme by name. Returns the resolved CM6 extension.
+    // Load and apply a theme by name.
     const _applyTheme = async (themeName) => {
-      if (!themeName) {
+      if (!themeName || themeName === 'default') {
         editor.view.dispatch({ effects: themeCompartment.reconfigure([]) });
         return;
       }
-      const exportName = _themeExportNames[themeName] ?? themeName;
-      const mod = await requireAsyncModule(`@uiw/codemirror-theme-${themeName}`);
+      const spec = _themePackageMap[themeName];
+      const pkgSuffix = spec ? spec[0] : themeName;
+      const exportName = spec ? spec[1] : themeName;
+      const mod = await requireAsyncModule(`@uiw/codemirror-theme-${pkgSuffix}`);
       editor.view.dispatch({ effects: themeCompartment.reconfigure(mod[exportName]) });
     };
 
     if (config.theme) {
       await _applyTheme(config.theme);
     }
+
+    // Autocomplete + bracket closing
+    const {
+      autocompletion, closeBrackets,
+      closeBracketsKeymap, completionKeymap,
+      startCompletion,
+    } = await requireAsyncModule('@codemirror/autocomplete');
+    const { keymap } = await requireAsyncModule('@codemirror/view');
+
+    let _customCompletions = [];
+
+    const _customCompletionSource = (context) => {
+      if (!_customCompletions.length) return null;
+      const word = context.matchBefore(/\w+/);
+      if (!word || (word.from === word.to && !context.explicit)) return null;
+      return { from: word.from, options: _customCompletions, validFor: /^\w*$/ };
+    };
+
+    editor.view.dispatch({
+      effects: StateEffect.appendConfig.of([
+        closeBrackets(),
+        autocompletion({ override: [_customCompletionSource], activateOnTyping: true }),
+        keymap.of([...closeBracketsKeymap, ...completionKeymap]),
+      ]),
+    });
 
     // Spread EditorController methods directly — getValue, setValue, setLanguage,
     // setExtensions, loadExtension, destroy — then add methods not in EditorController.
@@ -179,11 +214,21 @@
         const view = editor.view;
         view.dispatch({
           changes: { from: 0, to: view.state.doc.length, insert: value ?? '' },
-          effects: clearHistory.of(null),
+          annotations: Transaction.addToHistory.of(false),
         });
       },
 
       setTheme: (themeName) => _applyTheme(themeName),
+
+      setFontSize: (size) => {
+        editor.view.dom.style.fontSize = size ? size + 'px' : '';
+        requestAnimationFrame(() => {
+          const { head } = editor.view.state.selection.main;
+          editor.view.dispatch({
+            effects: EditorView.scrollIntoView(head, { y: 'center' }),
+          });
+        });
+      },
 
       setViewport: (options) => {
         const {
@@ -245,12 +290,46 @@
         view.dispatch({ selection: { anchor: head } });
       },
 
+      indentMore: () => indentMore(editor.view),
+
+      indentLess: () => indentLess(editor.view),
+
+      toggleComment: () => toggleComment(editor.view),
+
+      moveLineUp: () => moveLineUp(editor.view),
+
+      moveLineDown: () => moveLineDown(editor.view),
+
+      deleteLine: () => deleteLine(editor.view),
+
+      selectLine: () => selectLine(editor.view),
+
+      selectParentSyntax: () => selectParentSyntax(editor.view),
+
       historyUndo: () => undo(editor.view),
 
       historyRedo: () => redo(editor.view),
 
       historyClear: () => {
-        editor.view.dispatch({ effects: clearHistory.of(null) });
+        // clearHistory StateEffect was removed from @codemirror/commands 6.7+.
+        // Dispatch a no-doc-change transaction marked as not-in-history so
+        // callers don't crash, though the undo stack is not actually emptied.
+        editor.view.dispatch({ annotations: Transaction.addToHistory.of(false) });
+      },
+
+      startCompletion: () => startCompletion(editor.view),
+
+      setCompletions: (items) => {
+        _customCompletions = Array.isArray(items) ? items : [];
+      },
+
+      setSoftKeyboard: (enabled) => {
+        const dom = editor.view.contentDOM;
+        if (enabled) {
+          dom.removeAttribute('inputmode');
+        } else {
+          dom.setAttribute('inputmode', 'none');
+        }
       },
 
       historySize: () => {
@@ -270,6 +349,21 @@
     if (config.viewport) {
       editorTarget.setViewport(config.viewport);
     }
+
+    // Fire __selectionChange__ out-of-band whenever the user changes the selection.
+    // React Native stores the last known selection so it can be read synchronously
+    // (getSelection() via DDA fails after WebView loses focus on mobile).
+    editor.view.dispatch({
+      effects: StateEffect.appendConfig.of(
+        EditorView.updateListener.of((update) => {
+          if (update.selectionSet) {
+            const sel = update.state.selection.main;
+            const text = sel.empty ? '' : update.state.sliceDoc(sel.from, sel.to);
+            _rnPost('__selectionChange__', text);
+          }
+        })
+      ),
+    });
 
     // Signal HOST that the editor is fully ready (theme and language applied).
     // WebViewAPI.onMessage intercepts this and fires onInitialized, which removes the BlockingView.

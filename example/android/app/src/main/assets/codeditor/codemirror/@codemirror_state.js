@@ -51,7 +51,7 @@ let filters=state.facet(transactionFilter);for(let filtered,i=filters.length-1;0
 
 		As such, _never_ mutate properties of a state directly. That'll
 		just break things.
-		*//**
+		*/ /**
 		Utility function for combining behaviors to fill in a config
 		object from an array of provided configs. `defaults` should hold
 		default values for all optional fields in `Config`.

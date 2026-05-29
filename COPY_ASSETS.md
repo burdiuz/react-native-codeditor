@@ -146,7 +146,7 @@ In this project it is already linked — `ExpoFileSystem` is present in `Podfile
 
 ---
 
-## Updating assets (when js-codemirror-package changes)
+## Updating assets (when codemirror-package changes)
 
 ```bash
 # Regenerate src/assets/ from node_modules

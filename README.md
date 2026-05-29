@@ -1,4 +1,4 @@
-# react-native-codeditor
+# @actualwave/react-native-codeditor
 
 A React Native code editor component powered by [CodeMirror 6](https://codemirror.net/), embedded inside a `<WebView>`
 with full bidirectional RPC. Syntax highlighting, themes, history, cursor/selection control —
@@ -32,7 +32,7 @@ all offline, no CDN required.
 ### 1. Install the packages
 
 ```sh
-npm install react-native-codeditor react-native-webview
+npm install @actualwave/react-native-codeditor react-native-webview
 ```
 
 ### 2. Copy native assets
@@ -47,7 +47,7 @@ The library ships an Expo config plugin. Add it to your `app.json` or `app.confi
 ```json
 {
   "expo": {
-    "plugins": ["react-native-codeditor"]
+    "plugins": ["@actualwave/react-native-codeditor"]
   }
 }
 ```
@@ -65,10 +65,10 @@ The plugin is idempotent — safe to re-run on subsequent prebuilds.
 
 ```sh
 mkdir -p android/app/src/main/assets/codeditor
-cp -r node_modules/react-native-codeditor/src/assets/* android/app/src/main/assets/codeditor/
+cp -r node_modules/@actualwave/react-native-codeditor/src/assets/* android/app/src/main/assets/codeditor/
 ```
 
-Re-run after every `react-native-codeditor` upgrade.
+Re-run after every `@actualwave/react-native-codeditor` upgrade.
 
 #### iOS
 
@@ -76,7 +76,7 @@ Re-run after every `react-native-codeditor` upgrade.
 
 ```sh
 mkdir -p ios/<YourProject>/assets/codeditor
-cp -r node_modules/react-native-codeditor/src/assets/* ios/<YourProject>/assets/codeditor/
+cp -r node_modules/@actualwave/react-native-codeditor/src/assets/* ios/<YourProject>/assets/codeditor/
 ```
 
 **Step 2 — add a folder reference in Xcode**
@@ -93,8 +93,32 @@ Copied files are not bundled automatically — Xcode must know about the folder:
 The folder appears with a blue icon. A yellow group would break when new language or
 theme files are added; a blue folder reference copies the whole tree automatically.
 
-> Re-run the file copy after every `react-native-codeditor` upgrade. The Xcode folder
+> Re-run the file copy after every `@actualwave/react-native-codeditor` upgrade. The Xcode folder
 > reference only needs to be added once.
+
+#### After upgrading `@actualwave/react-native-codeditor`
+
+Re-run the asset copy after every upgrade — the bundled CodeMirror files may change
+between versions:
+
+**Expo (recommended):**
+```sh
+npx expo prebuild
+```
+
+**Manual — Android:**
+```sh
+cp -r node_modules/@actualwave/react-native-codeditor/src/assets/* android/app/src/main/assets/codeditor/
+```
+
+**Manual — iOS:**
+```sh
+cp -r node_modules/@actualwave/react-native-codeditor/src/assets/* ios/<YourProject>/assets/codeditor/
+```
+
+The Xcode folder reference only needs to be added once (see iOS steps above).
+
+---
 
 ### 3. Android: keyboard resize mode
 
@@ -146,8 +170,8 @@ cd ios && pod install
 ```tsx
 import { useCallback, useRef } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
-import CodeEditor from 'react-native-codeditor';
-import type { WebViewAPI, HistorySize } from 'react-native-codeditor';
+import CodeEditor from '@actualwave/react-native-codeditor';
+import type { WebViewAPI, HistorySize } from '@actualwave/react-native-codeditor';
 
 export default function EditorScreen() {
   const apiRef = useRef<WebViewAPI | null>(null);
@@ -191,6 +215,7 @@ export default function EditorScreen() {
 | `onHistorySizeUpdate` | `(size: HistorySize) => void` | Called on every keystroke with `{ undo: number, redo: number }`. |
 | `onLog` | `(...args: unknown[]) => void` | Receives `window.log(...)` calls from inside the WebView. |
 | `onError` | `(error: unknown) => void` | Receives `window.onerror` events from inside the WebView. |
+| `onSelectionChange` | `(text: string) => void` | Optional. Called when the user changes the selection; receives the selected text (empty string when selection collapses). |
 
 ### Editor configuration
 
@@ -206,7 +231,7 @@ export default function EditorScreen() {
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `editorUri` | `string` | `'file:///android_asset/editor.html'` | URI of the editor HTML page. Override for iOS — see [iOS: provide the editor URI](#4-ios-provide-the-editor-uri). |
+| `editorUri` | `string` | `'file:///android_asset/codeditor/editor.html'` | URI of the editor HTML page. Override for iOS — see [iOS: provide the editor URI](#4-ios-provide-the-editor-uri). |
 | `allowFileAccess` | `boolean` | `true` | Passed to `<WebView>`. Required for `file://` asset loading. |
 | `renderBlockingView` | `() => ReactNode` | `() => <BlockingView />` | Overlay rendered while the editor is initialising. Replace with your own loading UI. |
 | `onWebViewRefUpdated` | `(ref) => void` | — | Called when the internal WebView ref changes. |
@@ -352,6 +377,55 @@ api.editor.scrollToCursor(margin?: number): Promise<void>
 // Scrolls the editor so the cursor is visible.
 ```
 
+### Editing commands
+
+```ts
+api.editor.indentMore(): Promise<boolean>
+api.editor.indentLess(): Promise<boolean>
+// Indent / unindent the current line or selection.
+
+api.editor.toggleComment(): Promise<boolean>
+// Toggle line comments on the current selection.
+
+api.editor.moveLineUp(): Promise<boolean>
+api.editor.moveLineDown(): Promise<boolean>
+// Move the current line (or selected lines) up or down.
+
+api.editor.deleteLine(): Promise<boolean>
+// Delete the current line.
+
+api.editor.selectLine(): Promise<boolean>
+// Select the entire current line.
+
+api.editor.selectParentSyntax(): Promise<boolean>
+// Expand the selection to the enclosing syntax node.
+```
+
+### Autocomplete
+
+```ts
+api.editor.startCompletion(): Promise<void>
+// Explicitly trigger the autocomplete popup.
+
+api.editor.setCompletions(items: CompletionItem[]): Promise<void>
+// Replace the static completions list used by the built-in completion source.
+// Each item: { label, type?, detail?, info? }
+```
+
+### Font size
+
+```ts
+api.editor.setFontSize(size: number): Promise<void>
+// Sets the editor font size in pixels.
+```
+
+### Soft keyboard
+
+```ts
+api.editor.setSoftKeyboard(enabled: boolean): Promise<void>
+// Enable or disable the soft keyboard for the WebView editor area.
+```
+
 ### Advanced
 
 ```ts
@@ -373,7 +447,7 @@ api.requestFocus(): void
 
 ## Extension specs
 
-The `extensions` prop and `api.setExtensions()` accept an array of **extension specs**.
+The `extensions` prop and `api.editor.setExtensions()` accept an array of **extension specs**.
 Each item can be:
 
 | Form | Example | Behaviour |
@@ -454,10 +528,10 @@ Pass any of these to the `language` prop or `api.editor.setLanguage()`:
 `vue` `wast` `xml` `yaml`
 
 Legacy modes (100+ additional languages via `@codemirror/legacy-modes`) can be loaded
-manually with `api.loadExtension()`:
+manually with `api.editor.loadExtension()`:
 
 ```ts
-const { swift } = await api.loadExtension('@codemirror/legacy-modes/mode/swift');
+const { swift } = await api.editor.loadExtension('@codemirror/legacy-modes/mode/swift');
 ```
 
 ---
@@ -494,8 +568,8 @@ interface ViewportSettings {
 ```tsx
 import { useCallback, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import CodeEditor from 'react-native-codeditor';
-import type { WebViewAPI, HistorySize } from 'react-native-codeditor';
+import CodeEditor from '@actualwave/react-native-codeditor';
+import type { WebViewAPI, HistorySize } from '@actualwave/react-native-codeditor';
 
 const INITIAL_CODE = `function greet(name) {
   return 'Hello, ' + name + '!';
@@ -595,41 +669,42 @@ const styles = StyleSheet.create({
 ```bash
 git clone https://github.com/burdiuz/react-native-codeditor.git
 cd react-native-codeditor
-
-# Install dependencies.
-# --ignore-scripts prevents broken postinstall scripts in transitive git deps,
-# but @actualwave/js-codemirror-package needs its postinstall to build dist/.
-# Run it explicitly once after install:
-npm install --ignore-scripts
-node node_modules/@actualwave/js-codemirror-package/start.js
+npm install
 ```
 
-### Prepare the library
+### Regenerate WebView assets
+
+The `src/assets/` files are pre-built and committed. Run this when `@actualwave/codemirror-package`
+is updated to a new version:
 
 ```bash
-# Generate WebView assets from node_modules + build lib/ (ESM + type declarations):
-npm run prepare
-
-# Or regenerate only the assets (faster, skips TypeScript compilation):
 npm run copy-assets
 ```
 
-`copy-assets` reads from `node_modules/@actualwave/js-codemirror-package/dist/` and writes:
+`copy-assets` reads from `node_modules/@actualwave/codemirror-package/dist/` and writes:
 - `src/assets/codemirror-editor.umd.js` — plain IIFE bundle (no `import`/`export`)
 - `src/assets/codemirror/` — individual CM6 module files
+
+### Build the library
+
+```bash
+# Compile TypeScript → lib/ (ESM + type declarations):
+npm run prepare
+
+# Type-check only:
+npm run typecheck
+```
 
 ### Run the example app
 
 ```bash
-# 1. Build library + generate assets
+# 1. Build library
 npm run prepare
 
 # 2. Copy assets to the example's Android project
-mkdir -p example/android/app/src/main/assets/codeditor
 cp -r src/assets/* example/android/app/src/main/assets/codeditor/
 
 # 3. Copy assets to the example's iOS project
-mkdir -p example/ios/CodeditorExample/assets/codeditor
 cp -r src/assets/* example/ios/CodeditorExample/assets/codeditor/
 
 # 4. Launch
@@ -639,10 +714,10 @@ cd example && npx expo run:android   # or run:ios
 For iOS, also ensure the `assets` folder reference exists in Xcode (`project.pbxproj`).
 See `COPY_ASSETS.md` for the full manual and automated steps.
 
-Re-run steps 2–4 after any change to `src/assets/`. Re-run step 1 as well after any
-TypeScript source change.
+Re-run steps 2–4 after any change to `src/assets/`. Re-run step 1 after any TypeScript
+source change.
 
-Metro resolves `react-native-codeditor` from the workspace root via `lib/module/index.js`.
+Metro resolves `@actualwave/react-native-codeditor` from the workspace root via `lib/module/index.js`.
 
 Do NOT use `./gradlew clean` — it fails because `react-native-webview` codegen JNI
 directories don't exist until after the first successful build. Use `npx expo run:android` directly.
@@ -660,12 +735,11 @@ npx tsc --noEmit
 ### Updating CodeMirror assets
 
 `src/assets/codemirror/` and `src/assets/codemirror-editor.umd.js` are generated from
-`@actualwave/js-codemirror-package` (a devDependency). To update to a new version:
+`@actualwave/js-codemirror-package` (a devDependency, published to npm). To update:
 
 ```bash
 # 1. Update the version in package.json, then:
-npm install --ignore-scripts
-node node_modules/@actualwave/js-codemirror-package/start.js
+npm install
 
 # 2. Regenerate the assets:
 npm run copy-assets
@@ -675,7 +749,7 @@ cp -r src/assets/* example/android/app/src/main/assets/codeditor/
 cp -r src/assets/* example/ios/CodeditorExample/assets/codeditor/
 ```
 
-Library consumers should copy from `node_modules/react-native-codeditor/src/assets/`
+Library consumers copy from `node_modules/@actualwave/react-native-codeditor/src/assets/`
 into their own project (see [Copy native assets](#2-copy-native-assets)).
 
 ---

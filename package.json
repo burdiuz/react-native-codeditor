@@ -1,6 +1,6 @@
 {
-  "name": "react-native-codeditor",
-  "version": "0.1.0",
+  "name": "@actualwave/react-native-codeditor",
+  "version": "1.0.0",
   "description": "CodeMirror 6 code editor for React Native, embedded in a WebView with a full bidirectional RPC bridge. Offline, no CDN required.",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
@@ -15,31 +15,22 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "src",
+    "src/assets",
     "lib",
-    "android",
-    "ios",
-    "cpp",
-    "*.podspec",
     "app.plugin.js",
     "react-native.config.js",
-    "!ios/build",
-    "!android/build",
-    "!android/gradle",
-    "!android/gradlew",
-    "!android/gradlew.bat",
-    "!android/local.properties",
+    "!lib/module/assets",
+    "!lib/typescript/src/assets",
+    "!**/*.map",
     "!**/__tests__",
     "!**/__fixtures__",
     "!**/__mocks__",
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace react-native-codeditor-example",
     "clean": "del-cli lib",
     "copy-assets": "node scripts/copy-assets.js",
-    "prepare": "node scripts/copy-assets.js && bob build",
-    "postinstall": "patch-package",
+    "prepare": "bob build",
     "typecheck": "tsc"
   },
   "keywords": [
@@ -61,7 +52,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@actualwave/js-codemirror-package": "github:burdiuz/js-codemirror-package",
+    "@actualwave/codemirror-package": "^0.1.0",
     "@react-native/assets-registry": "^0.85.3",
     "@react-native/babel-preset": "0.85.0",
     "@react-native/js-polyfills": "^0.85.3",

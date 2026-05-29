@@ -6,7 +6,7 @@ return(ch=stream.next(),"\""===ch)?(state.tokenize=tokenString,state.tokenize(st
 // Numbers in a baseform
 // Mathematica numbers. Floats (1.2, .2, 1.) can have optionally a precision (`float) or an accuracy definition
 // (``float). Note: while 1.2` is possible 1.2`` is not. At the end an exponent (float*^+12) can follow.
-/* In[23] and Out[34] */// usage
+/* In[23] and Out[34] */ // usage
 // message
 // this makes a look-ahead match for something like variable:{_Integer}
 // the match is then forwarded to the mma-patterns tokenizer.

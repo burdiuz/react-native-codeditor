@@ -134,7 +134,7 @@
 
     // Pre-fetch commands from cache (core bundle already loaded by createEditor).
     const {
-      undo, redo, undoDepth, redoDepth, clearHistory,
+      undo, redo, undoDepth, redoDepth,
       indentMore, indentLess,
       toggleComment, moveLineUp, moveLineDown, deleteLine,
       selectLine, selectParentSyntax,
@@ -143,7 +143,7 @@
 
     // Separate compartment for the theme so setTheme and setExtensions never clobber each other.
     // appendConfig adds it to the live state; themeCompartment.reconfigure() updates it in-place.
-    const { Compartment, StateEffect } = await requireAsyncModule('@codemirror/state');
+    const { Compartment, StateEffect, Transaction } = await requireAsyncModule('@codemirror/state');
     const themeCompartment = new Compartment();
     editor.view.dispatch({ effects: StateEffect.appendConfig.of(themeCompartment.of([])) });
 
@@ -214,7 +214,7 @@
         const view = editor.view;
         view.dispatch({
           changes: { from: 0, to: view.state.doc.length, insert: value ?? '' },
-          effects: clearHistory.of(null),
+          annotations: Transaction.addToHistory.of(false),
         });
       },
 
@@ -311,7 +311,10 @@
       historyRedo: () => redo(editor.view),
 
       historyClear: () => {
-        editor.view.dispatch({ effects: clearHistory.of(null) });
+        // clearHistory StateEffect was removed from @codemirror/commands 6.7+.
+        // Dispatch a no-doc-change transaction marked as not-in-history so
+        // callers don't crash, though the undo stack is not actually emptied.
+        editor.view.dispatch({ annotations: Transaction.addToHistory.of(false) });
       },
 
       startCompletion: () => startCompletion(editor.view),
