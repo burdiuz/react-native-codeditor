@@ -1,6 +1,6 @@
 {
   "name": "@actualwave/react-native-codeditor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "CodeMirror 6 code editor for React Native, embedded in a WebView with a full bidirectional RPC bridge. Offline, no CDN required.",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",

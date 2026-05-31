@@ -6,6 +6,7 @@ export interface WebViewAPIHandlers {
   onHistorySizeUpdate: (size: HistorySize) => void;
   onContentUpdate: (content: string) => void;
   onSelectionChange?: (text: string) => void;
+  onShortcut?: (name: string) => void;
   onLog: (...args: unknown[]) => void;
   onError: (error: unknown) => void;
 }
@@ -113,6 +114,10 @@ class WebViewAPI {
         }
         if (parsed?.type === '__selectionChange__') {
           this.handlers.onSelectionChange?.(typeof parsed.data === 'string' ? parsed.data : '');
+          return;
+        }
+        if (parsed?.type === '__shortcut__') {
+          this.handlers.onShortcut?.(typeof parsed.data === 'string' ? parsed.data : '');
           return;
         }
       } catch {

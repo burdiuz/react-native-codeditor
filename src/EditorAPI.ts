@@ -65,6 +65,8 @@ export interface EditorAPI {
   startCompletion(): Promise<void>;
   setCompletions(items: CompletionItem[]): Promise<void>;
   setSoftKeyboard(enabled: boolean): Promise<void>;
+  registerShortcut(key: string, name: string): Promise<void>;
+  unregisterShortcut(key: string): Promise<void>;
   loadExtension(moduleName: string): Promise<object>;
   destroy(): Promise<void>;
 }

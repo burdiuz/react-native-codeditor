@@ -216,6 +216,7 @@ export default function EditorScreen() {
 | `onLog` | `(...args: unknown[]) => void` | Receives `window.log(...)` calls from inside the WebView. |
 | `onError` | `(error: unknown) => void` | Receives `window.onerror` events from inside the WebView. |
 | `onSelectionChange` | `(text: string) => void` | Optional. Called when the user changes the selection; receives the selected text (empty string when selection collapses). |
+| `onShortcut` | `(name: string) => void` | Optional. Called when a keyboard shortcut registered via `api.editor.registerShortcut()` is triggered. Receives the name string passed at registration time. |
 
 ### Editor configuration
 
@@ -425,6 +426,45 @@ api.editor.setFontSize(size: number): Promise<void>
 api.editor.setSoftKeyboard(enabled: boolean): Promise<void>
 // Enable or disable the soft keyboard for the WebView editor area.
 ```
+
+### Keyboard shortcuts
+
+Register keyboard shortcuts from the React Native side. When triggered inside the editor,
+the shortcut fires `onShortcut` on the `<CodeEditor>` component with the registered name.
+
+Key strings follow [CodeMirror's key binding format](https://codemirror.net/docs/ref/#view.KeyBinding):
+`Mod` resolves to `Cmd` on macOS / iOS and `Ctrl` on Android / Windows.
+
+```ts
+api.editor.registerShortcut(key: string, name: string): Promise<void>
+// Register a keyboard shortcut. When the key combination is pressed, onShortcut(name)
+// fires on the React Native side.
+// e.g. await api.editor.registerShortcut('Mod-s', 'save')
+//      await api.editor.registerShortcut('Mod-Enter', 'run')
+//      await api.editor.registerShortcut('Mod-Shift-Enter', 'fullRun')
+
+api.editor.unregisterShortcut(key: string): Promise<void>
+// Remove a previously registered shortcut.
+```
+
+**Example:**
+
+```tsx
+<CodeEditor
+  onInitialized={async (api) => {
+    await api.editor.registerShortcut('Mod-s', 'save');
+    await api.editor.registerShortcut('Mod-Enter', 'run');
+  }}
+  onShortcut={(name) => {
+    if (name === 'save') handleSave();
+    if (name === 'run') handleRun();
+  }}
+  ...
+/>
+```
+
+Shortcuts are registered with `Prec.highest` so they take priority over CodeMirror's
+built-in key bindings.
 
 ### Advanced
 

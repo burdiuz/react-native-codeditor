@@ -143,7 +143,7 @@
 
     // Separate compartment for the theme so setTheme and setExtensions never clobber each other.
     // appendConfig adds it to the live state; themeCompartment.reconfigure() updates it in-place.
-    const { Compartment, StateEffect, Transaction } = await requireAsyncModule('@codemirror/state');
+    const { Compartment, StateEffect, Transaction, Prec } = await requireAsyncModule('@codemirror/state');
     const themeCompartment = new Compartment();
     editor.view.dispatch({ effects: StateEffect.appendConfig.of(themeCompartment.of([])) });
 
@@ -188,6 +188,19 @@
         keymap.of([...closeBracketsKeymap, ...completionKeymap]),
       ]),
     });
+
+    // Compartment for shortcuts registered from the React Native side at runtime.
+    const shortcutCompartment = new Compartment();
+    editor.view.dispatch({ effects: StateEffect.appendConfig.of(Prec.highest(shortcutCompartment.of([]))) });
+
+    const _registeredShortcuts = new Map();
+    const _updateShortcutKeymap = () => {
+      const entries = Array.from(_registeredShortcuts.entries()).map(([key, name]) => ({
+        key,
+        run: () => { _rnPost('__shortcut__', name); return true; },
+      }));
+      editor.view.dispatch({ effects: shortcutCompartment.reconfigure(keymap.of(entries)) });
+    };
 
     // Spread EditorController methods directly — getValue, setValue, setLanguage,
     // setExtensions, loadExtension, destroy — then add methods not in EditorController.
@@ -343,6 +356,16 @@
         view.dispatch({
           effects: EditorView.scrollIntoView(head, margin !== undefined ? { y: 'center' } : {}),
         });
+      },
+
+      registerShortcut: (key, name) => {
+        _registeredShortcuts.set(key, name);
+        _updateShortcutKeymap();
+      },
+
+      unregisterShortcut: (key) => {
+        _registeredShortcuts.delete(key);
+        _updateShortcutKeymap();
       },
     });
 
