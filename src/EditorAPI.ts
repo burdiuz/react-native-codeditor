@@ -33,11 +33,28 @@ export interface CompletionItem {
   info?: string;
 }
 
+/**
+ * Tagged-template DSL embedding config for the 'javascript' language (e.g.
+ * `` sql`...` ``, `` gql`...` ``), passed per-call to setLanguage/createEditor
+ * and merged with whatever's been registered globally via
+ * registerTaggedTemplate/registerSupportExtension.
+ *   - taggedTemplates: package names exporting createEmbedding(), e.g.
+ *     '@actualwave/codemirror-lang-embed-sql'.
+ *   - supportExtensions: package names (or [name, config] tuples) exporting
+ *     createSupportExtension(), e.g. '@actualwave/codemirror-lang-embed-tailwind',
+ *     or ['@actualwave/codemirror-lang-embed-react-native', { modules }]. Not
+ *     JS-specific by name or contract — currently only mixed into 'javascript'.
+ */
+export interface EmbedsConfig {
+  taggedTemplates?: string[];
+  supportExtensions?: Array<string | [string, Record<string, unknown>]>;
+}
+
 export interface EditorAPI {
   getValue(): Promise<string>;
   setValue(value: string): Promise<void>;
   resetValue(value?: string): Promise<void>;
-  setLanguage(name: string): Promise<void>;
+  setLanguage(name: string, config?: Record<string, unknown>, embeds?: EmbedsConfig): Promise<void>;
   setExtensions(specs: ExtensionSpec[]): Promise<void>;
   setTheme(themeName?: string): Promise<void>;
   setFontSize(size: number): Promise<void>;
@@ -67,6 +84,31 @@ export interface EditorAPI {
   setSoftKeyboard(enabled: boolean): Promise<void>;
   registerShortcut(key: string, name: string): Promise<void>;
   unregisterShortcut(key: string): Promise<void>;
+  /**
+   * Maps a language name to an npm package that doesn't follow the
+   * `@codemirror/lang-{name}` convention (e.g. `'sksl'` → `'@actualwave/codemirror-lang-sksl'`),
+   * for the lifetime of this editor page. The package must be one bundled in the
+   * WebView assets. Takes effect on the next setLanguage() call — follow it with
+   * setLanguage(name) to apply. Alternative to the `languages` prop on CodeEditor,
+   * which registers before the initial language is resolved.
+   */
+  registerLanguage(name: string, packageName: string): Promise<void>;
+  /**
+   * Registers a tagged-template DSL embedding package globally, for the lifetime of
+   * this editor page — picked up by any subsequent setLanguage('javascript', ...) call
+   * (including the one already resolved at createEditor time, so call this before the
+   * language is first set to 'javascript' if you want it included immediately, or follow
+   * it with setLanguage('javascript', ...) to re-resolve). Alternative to passing
+   * `embeds.taggedTemplates` per-call.
+   */
+  registerTaggedTemplate(packageName: string): Promise<void>;
+  /**
+   * Registers a support-extension package (e.g. a completion source with no nested
+   * grammar) globally — same timing/re-resolve caveat as registerTaggedTemplate.
+   * Alternative to passing `embeds.supportExtensions` per-call. Not JS-specific by
+   * name or contract — currently only mixed into the 'javascript' language.
+   */
+  registerSupportExtension(packageName: string, config?: Record<string, unknown>): Promise<void>;
   loadExtension(moduleName: string): Promise<object>;
   destroy(): Promise<void>;
 }

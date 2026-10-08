@@ -1,0 +1,7 @@
+async function moduleInitFunction(requireAsyncModule,exports={}){function requireCodemirrorLangEmbedSksl(){// @actualwave/codemirror-lang-sksl exports a ready-to-use LRLanguage
+// (skslLanguage) directly, same shape as cm6-graphql's graphqlLanguage — no
+// factory call needed for the grammar itself. This is the same grammar the
+// `.sksl` file mode uses; see SINGLE_FILE_PROTOTYPES.md's "Relationship to
+// .sksl files" section. The sksl() factory's `.support` carries the
+// completion source, so it's still called for that.
+function createEmbedding(){return{matcher:matchTagName("sksl"),language:skslLanguage,extension:sksl().support}}if(hasRequiredCodemirrorLangEmbedSksl)return codemirrorLangEmbedSksl;hasRequiredCodemirrorLangEmbedSksl=1;const{skslLanguage,sksl}=require$$0,{matchTagName}=require$$1;return codemirrorLangEmbedSksl={createEmbedding},codemirrorLangEmbedSksl}const module={exports:exports};var codemirrorLangEmbedSksl,hasRequiredCodemirrorLangEmbedSksl,require$$0=await requireAsyncModule("@actualwave/codemirror-lang-sksl"),require$$1=await requireAsyncModule("@actualwave/codemirror-lang-embed-core"),codemirrorLangEmbedSkslExports=requireCodemirrorLangEmbedSksl(),index=/*@__PURE__*/function getDefaultExportFromCjs(x){return x}(codemirrorLangEmbedSkslExports);return module.exports=index,module.exports}

@@ -61,7 +61,10 @@
 (async function() {
   try {
 
-    const { configure, createEditor, requireAsyncModule } = window.CodeMirrorEditor;
+    const {
+      configure, createEditor, requireAsyncModule,
+      registerLanguage, registerTaggedTemplate, registerSupportExtension,
+    } = window.CodeMirrorEditor;
 
     // Maps theme name → [packageSuffix, exportName] for themes in multi-export packages.
     // Single-export packages (darcula, monokai, etc.) export under the same name as the package.
@@ -110,10 +113,18 @@
 
     const extensions = config.extensions ?? [];
 
+    // Custom language packages must be registered before createEditor resolves
+    // config.language, otherwise e.g. language: 'sksl' would throw.
+    for (const [name, packageName] of Object.entries(config.languages ?? {})) {
+      registerLanguage(name, packageName);
+    }
+
     const editor = await createEditor({
       parent: document.body,
       doc: config.content ?? '',
       language: config.language,
+      languageConfig: config.languageConfig,
+      embeds: config.embeds,
       extensions,
       onChange: (() => {
         let _timer = null;
@@ -143,7 +154,7 @@
 
     // Separate compartment for the theme so setTheme and setExtensions never clobber each other.
     // appendConfig adds it to the live state; themeCompartment.reconfigure() updates it in-place.
-    const { Compartment, StateEffect, Transaction } = await requireAsyncModule('@codemirror/state');
+    const { Compartment, StateEffect, Transaction, Prec } = await requireAsyncModule('@codemirror/state');
     const themeCompartment = new Compartment();
     editor.view.dispatch({ effects: StateEffect.appendConfig.of(themeCompartment.of([])) });
 
@@ -189,6 +200,19 @@
       ]),
     });
 
+    // Compartment for shortcuts registered from the React Native side at runtime.
+    const shortcutCompartment = new Compartment();
+    editor.view.dispatch({ effects: StateEffect.appendConfig.of(Prec.highest(shortcutCompartment.of([]))) });
+
+    const _registeredShortcuts = new Map();
+    const _updateShortcutKeymap = () => {
+      const entries = Array.from(_registeredShortcuts.entries()).map(([key, name]) => ({
+        key,
+        run: () => { _rnPost('__shortcut__', name); return true; },
+      }));
+      editor.view.dispatch({ effects: shortcutCompartment.reconfigure(keymap.of(entries)) });
+    };
+
     // Spread EditorController methods directly — getValue, setValue, setLanguage,
     // setExtensions, loadExtension, destroy — then add methods not in EditorController.
     const { getValue, setValue, setLanguage, setExtensions, loadExtension, destroy } = editor;
@@ -209,6 +233,19 @@
       setExtensions,
       loadExtension,
       destroy,
+
+      // Maps a language name to a package that doesn't follow the
+      // @codemirror/lang-{name} convention. Takes effect on the next setLanguage().
+      registerLanguage: (name, packageName) => registerLanguage(name, packageName),
+
+      // Imperative counterpart to createEditor's `embeds` option — registers a
+      // tagged-template DSL embedding / support-extension package globally (for
+      // the lifetime of this page), picked up by any subsequent
+      // setLanguage('javascript', ...) call. See js-codemirror-package's
+      // registerTaggedTemplate/registerSupportExtension for package shape.
+      registerTaggedTemplate: (packageName) => registerTaggedTemplate(packageName),
+      registerSupportExtension: (packageName, supportConfig) =>
+        registerSupportExtension(packageName, supportConfig),
 
       resetValue: (value) => {
         const view = editor.view;
@@ -343,6 +380,16 @@
         view.dispatch({
           effects: EditorView.scrollIntoView(head, margin !== undefined ? { y: 'center' } : {}),
         });
+      },
+
+      registerShortcut: (key, name) => {
+        _registeredShortcuts.set(key, name);
+        _updateShortcutKeymap();
+      },
+
+      unregisterShortcut: (key) => {
+        _registeredShortcuts.delete(key);
+        _updateShortcutKeymap();
       },
     });
 

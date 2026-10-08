@@ -1,15 +1,18 @@
 import { useCallback, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import * as FileSystem from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import CodeEditor from '@actualwave/react-native-codeditor';
 import type { HistorySize, WebViewAPI } from '@actualwave/react-native-codeditor';
 
-// On iOS the editor HTML lives in the app bundle. bundleDirectory gives the
+// On iOS the editor HTML lives in the app bundle. Paths.bundle gives the
 // file:// path to the .app folder; assets/codeditor/ is copied there by the
-// Expo config plugin in copy-assets-plugin.js.
+// library Expo config plugin (app.plugin.js).
 const IOS_EDITOR_URI = Platform.OS === 'ios'
-  ? (FileSystem.bundleDirectory ?? '') + 'assets/codeditor/editor.html'
+  ? new File(Paths.bundle, 'assets/codeditor/editor.html').uri
   : undefined;
+
+// Not following the @codemirror/lang-{name} convention, so must be registered.
+const CUSTOM_LANGUAGES = { sksl: '@actualwave/codemirror-lang-sksl' };
 
 const LANGUAGES = ['javascript', 'sksl', 'python', 'rust', 'sql', 'markdown', 'json'];
 
@@ -192,6 +195,7 @@ export default function App() {
       <CodeEditor
         content={SAMPLES[language]}
         language={language}
+        languages={CUSTOM_LANGUAGES}
         theme={theme}
         viewport={VIEWPORT}
         editorUri={IOS_EDITOR_URI}

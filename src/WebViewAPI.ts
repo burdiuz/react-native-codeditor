@@ -1,5 +1,5 @@
 import { initializeHost } from '@actualwave/webview-interface';
-import type { EditorAPI, ExtensionSpec, HistorySize, ViewportSettings } from './EditorAPI';
+import type { EditorAPI, EmbedsConfig, ExtensionSpec, HistorySize, ViewportSettings } from './EditorAPI';
 
 export interface WebViewAPIHandlers {
   onInitialized: (api: WebViewAPI) => void;
@@ -19,6 +19,9 @@ export interface WebViewRef {
 export interface InitialConfig {
   content?: string;
   language?: string;
+  languageConfig?: Record<string, unknown>;
+  embeds?: EmbedsConfig;
+  languages?: Record<string, string>;
   extensions?: ExtensionSpec[];
   theme?: string;
   viewport?: ViewportSettings;

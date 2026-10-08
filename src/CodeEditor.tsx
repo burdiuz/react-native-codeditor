@@ -5,6 +5,7 @@ import WebViewAPI from "./WebViewAPI";
 import BlockingView from "./BlockingView";
 import type {
   EditorAPI,
+  EmbedsConfig,
   ExtensionSpec,
   HistorySize,
   ViewportSettings,
@@ -48,6 +49,24 @@ export interface CodeEditorProps {
   renderBlockingView?: () => React.ReactNode;
   /** Language name for syntax highlighting, e.g. 'javascript', 'python'. */
   language?: string;
+  /** Options passed to the language factory, e.g. { jsx: true, typescript: true } for 'javascript'. */
+  languageConfig?: Record<string, unknown>;
+  /**
+   * Tagged-template DSL embeddings (e.g. `` sql`...` ``) and javascript support
+   * extensions (e.g. completion-only DSLs with no grammar) to mix into the
+   * 'javascript' language. Alternative to calling api.registerTaggedTemplate() /
+   * api.registerSupportExtension() imperatively — use whichever fits: this prop
+   * for "known up front, declarative," the imperative calls for "registered once,
+   * dynamically, from app code after init."
+   */
+  embeds?: EmbedsConfig;
+  /**
+   * Custom language packages as `{ name: packageName }`, for languages that don't follow
+   * the `@codemirror/lang-{name}` convention, e.g. `{ sksl: '@actualwave/codemirror-lang-sksl' }`.
+   * Registered before the initial `language` is resolved. Alternative to calling
+   * api.registerLanguage() imperatively.
+   */
+  languages?: Record<string, string>;
   /** Additional CodeMirror extension specs loaded on top of the language. */
   extensions?: ExtensionSpec[];
   /** Theme name from the @uiw/codemirror-themes collection, e.g. 'darcula', 'monokai'. */
@@ -75,6 +94,9 @@ const CodeEditor = ({
   onNavigationStateChange,
   renderBlockingView = () => <BlockingView />,
   language,
+  languageConfig,
+  embeds,
+  languages,
   extensions = DEFAULT_EXTENSIONS,
   theme,
   content = "",
@@ -109,8 +131,8 @@ const CodeEditor = ({
     onError,
     onWebViewRefUpdated,
   };
-  const propsRef = useRef({ content, language, extensions, theme, viewport });
-  propsRef.current = { content, language, extensions, theme, viewport };
+  const propsRef = useRef({ content, language, languageConfig, embeds, languages, extensions, theme, viewport });
+  propsRef.current = { content, language, languageConfig, embeds, languages, extensions, theme, viewport };
 
   if (apiRef.current === null) {
     apiRef.current = new WebViewAPI({
@@ -160,7 +182,10 @@ const CodeEditor = ({
     }
   }, [content]);
 
-  // Push language changes to live editor
+  // Push language changes to live editor. Reads languageConfig/embeds from propsRef
+  // (rather than depending on them) so a language switch always carries the current
+  // embeds along — otherwise switching away from and back to 'javascript' would silently
+  // drop any previously-configured tagged-template embeddings/support extensions.
   const prevLanguageRef = useRef<string | undefined | null>(null);
   useEffect(() => {
     if (prevLanguageRef.current === null) {
@@ -170,8 +195,49 @@ const CodeEditor = ({
     if (prevLanguageRef.current === language) return;
     prevLanguageRef.current = language;
 
-    if (language) callEditor((e) => e.setLanguage(language));
+    if (language) {
+      const { languageConfig: lc, embeds: em } = propsRef.current;
+      callEditor((e) => e.setLanguage(language, lc, em));
+    }
   }, [language]);
+
+  // Push embeds changes to live editor — re-resolves the current language with the new
+  // embeds, since tagged-template embeddings/support extensions are baked into the
+  // 'javascript' LanguageSupport at resolution time rather than being separately
+  // reconfigurable. No-op for any language other than 'javascript'.
+  const prevEmbedsRef = useRef<EmbedsConfig | undefined | null>(null);
+  useEffect(() => {
+    if (prevEmbedsRef.current === null) {
+      prevEmbedsRef.current = embeds;
+      return;
+    }
+    if (prevEmbedsRef.current === embeds) return;
+    prevEmbedsRef.current = embeds;
+
+    const { language: l, languageConfig: lc } = propsRef.current;
+    if (l) callEditor((e) => e.setLanguage(l, lc, embeds));
+  }, [embeds]);
+
+  // Push languages changes to live editor — registers the new mappings, then re-resolves
+  // the current language, since it may be one that was previously unresolvable.
+  const prevLanguagesRef = useRef<Record<string, string> | undefined | null>(null);
+  useEffect(() => {
+    if (prevLanguagesRef.current === null) {
+      prevLanguagesRef.current = languages;
+      return;
+    }
+    if (prevLanguagesRef.current === languages) return;
+    prevLanguagesRef.current = languages;
+
+    if (!languages) return;
+    const { language: l, languageConfig: lc, embeds: em } = propsRef.current;
+    callEditor(async (e) => {
+      for (const [name, packageName] of Object.entries(languages)) {
+        await e.registerLanguage(name, packageName);
+      }
+      if (l) await e.setLanguage(l, lc, em);
+    });
+  }, [languages]);
 
   // Push theme changes to live editor
   const prevThemeRef = useRef<string | undefined | null>(null);
@@ -220,6 +286,9 @@ const CodeEditor = ({
       const {
         content: c,
         language: l,
+        languageConfig: lc,
+        embeds: em,
+        languages: lg,
         extensions: e,
         theme: t,
         viewport: v,
@@ -228,6 +297,9 @@ const CodeEditor = ({
       apiRef.current!.setInitialConfig({
         content: c,
         language: l,
+        languageConfig: lc,
+        embeds: em,
+        languages: lg,
         extensions: e,
         theme: t,
         viewport: v,

@@ -107,16 +107,16 @@ The `editor.html` path inside the bundle is `assets/codeditor/editor.html`. The
 absolute `file://` URL is computed at runtime using `expo-file-system`:
 
 ```typescript
-import * as FileSystem from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 
 const IOS_EDITOR_URI = Platform.OS === 'ios'
-  ? (FileSystem.bundleDirectory ?? '') + 'assets/codeditor/editor.html'
+  ? new File(Paths.bundle, 'assets/codeditor/editor.html').uri
   : undefined;
 
 // Pass to <CodeEditor editorUri={IOS_EDITOR_URI} />
 ```
 
-`FileSystem.bundleDirectory` resolves to the `.app` folder path (e.g.
+`Paths.bundle` resolves to the `.app` folder path (e.g.
 `file:///var/containers/Bundle/Application/<UUID>/CodeditorExample.app/`).
 The combined path points to the bundled HTML file regardless of where iOS installed
 the app.
@@ -124,7 +124,7 @@ the app.
 **Path derivation:**
 - Assets copied to: `ios/CodeditorExample/assets/codeditor/`
 - Xcode bundles them as: `MyApp.app/assets/codeditor/`
-- `FileSystem.bundleDirectory` returns: `file:///path/to/MyApp.app/`
+- `Paths.bundle` points to: `file:///path/to/MyApp.app/`
 - Full URI: `file:///path/to/MyApp.app/assets/codeditor/editor.html`
 
 ### After adding expo-file-system to a new project

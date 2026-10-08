@@ -144,16 +144,16 @@ npm install expo-file-system
 
 ```tsx
 import { Platform } from 'react-native';
-import * as FileSystem from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 
 const IOS_EDITOR_URI = Platform.OS === 'ios'
-  ? (FileSystem.bundleDirectory ?? '') + 'assets/codeditor/editor.html'
+  ? new File(Paths.bundle, 'assets/codeditor/editor.html').uri
   : undefined;
 
 <CodeEditor editorUri={IOS_EDITOR_URI} ... />
 ```
 
-`FileSystem.bundleDirectory` returns the `file://` path to the `.app` folder (e.g.
+`Paths.bundle` is the `.app` folder in the bundle (e.g.
 `file:///var/containers/Bundle/Application/<UUID>/MyApp.app/`), which is stable on both
 simulators and real devices regardless of where iOS installed the app.
 
@@ -224,6 +224,7 @@ export default function EditorScreen() {
 |---|---|---|---|
 | `content` | `string` | `''` | Initial document content (see [Content model](#content-model) below). |
 | `language` | `string` | `undefined` | Syntax language, e.g. `'javascript'`, `'python'`, `'sql'`. The language module is loaded from the bundled assets on first use. |
+| `languages` | `Record<string, string>` | `undefined` | Custom language packages as `{ name: packageName }`, for languages that don't follow the `@codemirror/lang-{name}` convention, e.g. `{ sksl: '@actualwave/codemirror-lang-sksl' }`. Registered before the initial `language` is resolved. The package must be bundled in the WebView assets. |
 | `extensions` | `ExtensionSpec[]` | `[]` | Additional CodeMirror 6 extension specs. See [Extension specs](#extension-specs). |
 | `theme` | `string` | `undefined` | Theme name. See [Themes](#themes). |
 | `viewport` | `ViewportSettings` | `undefined` | Controls the `<meta name="viewport">` tag inside the WebView. |
@@ -313,6 +314,12 @@ api.editor.resetValue(value?: string): Promise<void>
 api.editor.setLanguage(name: string): Promise<void>
 // Switches syntax language. Loads the language module on demand.
 // e.g. await api.editor.setLanguage('python')
+
+api.editor.registerLanguage(name: string, packageName: string): Promise<void>
+// Maps a language name to a package that doesn't follow @codemirror/lang-{name}.
+// Takes effect on the next setLanguage(). Alternative to the `languages` prop.
+// e.g. await api.editor.registerLanguage('sksl', '@actualwave/codemirror-lang-sksl');
+//      await api.editor.setLanguage('sksl')
 
 api.editor.setExtensions(specs: ExtensionSpec[]): Promise<void>
 // Replaces the active extension set.
@@ -566,6 +573,9 @@ Pass any of these to the `language` prop or `api.editor.setLanguage()`:
 `angular` `cpp` `css` `go` `html` `java` `javascript` `jinja` `json`
 `less` `lezer` `liquid` `markdown` `php` `python` `rust` `sass` `sql`
 `vue` `wast` `xml` `yaml`
+
+Other bundled packages such as `sksl` are not auto-detected — register them with the
+`languages` prop or `api.editor.registerLanguage()`.
 
 Legacy modes (100+ additional languages via `@codemirror/legacy-modes`) can be loaded
 manually with `api.editor.loadExtension()`:

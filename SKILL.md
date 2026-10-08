@@ -24,22 +24,22 @@ CodeMirror 6 code editor for React Native, embedded in a WebView with a full bid
 
 ```ts
 import CodeEditor from '@actualwave/react-native-codeditor';
-// or named:
-import { CodeEditor } from '@actualwave/react-native-codeditor';
+// or named (WebViewAPI is the class itself, exported as a value):
+import { CodeEditor, WebViewAPI } from '@actualwave/react-native-codeditor';
 
 // Types
 import type {
   CodeEditorProps,    // all props for <CodeEditor />
-  WebViewAPI,         // api object received in onInitialized
   WebViewAPIHandlers, // handler callbacks
   WebViewRef,         // { injectJavaScript, requestFocus? }
-  InitialConfig,      // { content?, language?, extensions?, theme?, viewport? }
+  InitialConfig,      // { content?, language?, languageConfig?, embeds?, languages?, extensions?, theme?, viewport? }
   EditorAPI,          // full interface of api.editor proxy methods
   ExtensionSpec,      // string | [string, string] | [string, object] | unknown
   ViewportSettings,   // { intialScale?, maximumScale?, minimumScale?, userScalable?, viewportWidth? }
   CursorPosition,     // { line: number, ch: number, index: number }
   HistorySize,        // { undo: number, redo: number }
   CompletionItem,     // { label, type?, detail?, info? }
+  EmbedsConfig,       // { taggedTemplates?, supportExtensions? }
 } from '@actualwave/react-native-codeditor';
 ```
 
@@ -71,9 +71,9 @@ npm install expo-file-system
 ```
 
 ```tsx
-import * as FileSystem from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 const IOS_EDITOR_URI = Platform.OS === 'ios'
-  ? (FileSystem.bundleDirectory ?? '') + 'assets/codeditor/editor.html'
+  ? new File(Paths.bundle, 'assets/codeditor/editor.html').uri
   : undefined;
 <CodeEditor editorUri={IOS_EDITOR_URI} ... />
 ```
@@ -146,7 +146,7 @@ CodeEditor component
 | Type | Direction | Meaning |
 |---|---|---|
 | `__editorReady__` | WebView→RN | Editor fully painted; `onInitialized` fires |
-| `__contentChange__` | WebView→RN | Keystroke — carries `{ value, undo, redo }` |
+| `__contentChange__` | WebView→RN | Edit, debounced 300ms — carries `{ value, undo, redo }` |
 | `__selectionChange__` | WebView→RN | Selection changed — carries selected text |
 | `__shortcut__` | WebView→RN | Registered shortcut triggered — carries name string |
 | `__editorLog__` | WebView→RN | `window.log(...)` from WebView |
@@ -179,8 +179,8 @@ apiRef.current?.editor.historyUndo();
 | Prop | Type | Description |
 |---|---|---|
 | `onInitialized` | `(api: WebViewAPI) => void` | Fires when editor is fully ready. Store `api` here. Call `api.focus()` for Android keyboard. |
-| `onContentUpdate` | `(content: string) => void` | Every keystroke, full document text. |
-| `onHistorySizeUpdate` | `(size: HistorySize) => void` | Every keystroke, `{ undo, redo }` depths. |
+| `onContentUpdate` | `(content: string) => void` | After edits (debounced 300ms), full document text. |
+| `onHistorySizeUpdate` | `(size: HistorySize) => void` | After edits (debounced 300ms), `{ undo, redo }` depths. |
 | `onLog` | `(...args: unknown[]) => void` | `window.log()` from the WebView. |
 | `onError` | `(error: unknown) => void` | `window.onerror` from the WebView. |
 
@@ -195,8 +195,11 @@ apiRef.current?.editor.historyUndo();
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `content` | `string` | `''` | Initial document content. Uncontrolled — don't write `onContentUpdate` output back to this prop. |
+| `content` | `string` | `''` | Document content. Initial value is delivered at startup; later prop changes call `setValue` if they differ from the editor's current text. |
 | `language` | `string` | — | Syntax language, e.g. `'javascript'`, `'python'`. Loaded on demand. |
+| `languageConfig` | `Record<string, unknown>` | — | Options passed to the language factory, e.g. `{ jsx: true, typescript: true }` for `'javascript'`. |
+| `languages` | `Record<string, string>` | — | Custom language packages `{ name: packageName }` for names that don't follow `@codemirror/lang-{name}`, e.g. `{ sksl: '@actualwave/codemirror-lang-sksl' }`. Registered before the initial `language` is resolved. |
+| `embeds` | `EmbedsConfig` | — | Tagged-template DSL embeddings and support extensions mixed into `'javascript'`: `{ taggedTemplates?: string[], supportExtensions?: (string \| [string, object])[] }`. |
 | `extensions` | `ExtensionSpec[]` | `[]` | CM6 extension specs. |
 | `theme` | `string` | — | Theme name, e.g. `'darcula'`, `'monokai'`. |
 | `viewport` | `ViewportSettings` | — | `<meta name="viewport">` options. |
@@ -205,7 +208,7 @@ apiRef.current?.editor.historyUndo();
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `editorUri` | `string` | `'file:///android_asset/codeditor/editor.html'` | Override for iOS — use `FileSystem.bundleDirectory`. |
+| `editorUri` | `string` | `'file:///android_asset/codeditor/editor.html'` | Override for iOS — use `new File(Paths.bundle, 'assets/codeditor/editor.html').uri` from `expo-file-system`. |
 | `allowFileAccess` | `boolean` | `true` | Required for `file://` asset loading. |
 | `renderBlockingView` | `() => ReactNode` | `() => <BlockingView />` | Loading overlay while editor initialises. |
 
@@ -233,7 +236,13 @@ api.editor.resetValue(value?: string): Promise<void>     // clears history
 ### Language / theme / extensions
 
 ```ts
-api.editor.setLanguage(name: string): Promise<void>
+api.editor.setLanguage(name: string, config?: Record<string, unknown>, embeds?: EmbedsConfig): Promise<void>
+api.editor.registerLanguage(name: string, packageName: string): Promise<void>
+// Maps a name to a package not following @codemirror/lang-{name}; applies on the next setLanguage().
+// e.g. await registerLanguage('sksl', '@actualwave/codemirror-lang-sksl'); await setLanguage('sksl');
+api.editor.registerTaggedTemplate(packageName: string): Promise<void>
+api.editor.registerSupportExtension(packageName: string, config?: Record<string, unknown>): Promise<void>
+// Both register globally for the page's lifetime ('javascript' only); re-call setLanguage('javascript') to apply.
 api.editor.setTheme(themeName?: string): Promise<void>   // undefined removes theme
 api.editor.setExtensions(specs: ExtensionSpec[]): Promise<void>
 ```
@@ -328,9 +337,9 @@ api.requestFocus(): void
 
 ## Content model
 
-`content` prop is **uncontrolled** — it sets the initial document once. Do not write `onContentUpdate` output back to it (causes feedback loop + cursor reset on every keystroke).
+`content` sets the initial document, and later prop changes are pushed to the editor via `setValue` — but only when they differ from the text the editor last reported, so writing `onContentUpdate` output back to `content` is a harmless no-op. Because `onContentUpdate` is debounced (300ms), avoid transforming the text and feeding it back while the user is typing.
 
-To push content programmatically use the API:
+To push content programmatically you can also use the API:
 
 ```ts
 await api.editor.setValue(newCode);      // preserve history
@@ -357,7 +366,12 @@ Built-in registry: `@codemirror/autocomplete`, `@codemirror/search`, `@codemirro
 ## Supported languages
 
 `angular` `cpp` `css` `go` `html` `java` `javascript` `jinja` `json` `less` `lezer`
-`liquid` `markdown` `php` `python` `rust` `sass` `sksl` `sql` `vue` `wast` `xml` `yaml`
+`liquid` `markdown` `php` `python` `rust` `sass` `sql` `vue` `wast` `xml` `yaml`
+
+Bundled packages that don't follow the `@codemirror/lang-{name}` naming (e.g. `sksl` →
+`@actualwave/codemirror-lang-sksl`) are not auto-detected — map them with the `languages`
+prop or `api.editor.registerLanguage()` first, otherwise `setLanguage` rejects with
+"No language support found".
 
 Legacy modes (100+ more) via `loadExtension`:
 
@@ -370,7 +384,7 @@ const { swift } = await api.editor.loadExtension('@codemirror/legacy-modes/mode/
 ## Themes
 
 `androidstudio` `andromeda` `atomone` `aura` `basic` `bbedit` `copilot` `darcula`
-`dracula` `duotone` `eclipse` `github` `monokai` `nord` `okaidia` `solarized`
+`dracula` `duotone` `eclipse` `github` `material` `monokai` `nord` `okaidia` `solarized`
 `sublime` `tokyoNight` `vscode` `xcode`
 
 Two-word themes use camelCase: `tokyoNight`, `githubDark`, `githubLight`, `vscodeDark`, `xcodeDark`, `xcodeLight`, `solarizedDark`, `solarizedLight`.
@@ -440,11 +454,13 @@ Call `api.focus()` inside `onInitialized` to trigger the Android soft keyboard i
 
 **`onInitialized` timing** — `api` is not available until this fires. Guard all API calls with `if (!apiRef.current) return`.
 
-**Content feedback loop** — do not pass `onContentUpdate` output back to the `content` prop.
+**Content updates are debounced** — `onContentUpdate` fires 300ms after the last edit, so `content` may briefly lag behind the editor. Don't rewrite `content` with modified text mid-typing.
+
+**`setLanguage` rejects for unregistered names** — custom packages like `sksl` must be registered via the `languages` prop or `registerLanguage()` first.
 
 **Android assets not copied** — if the WebView shows "Error loading page", the `src/assets/` files haven't been copied to `android/app/src/main/assets/codeditor/`. Re-run the copy command.
 
-**iOS URI** — the default `editorUri` is Android-only. iOS requires `FileSystem.bundleDirectory + 'assets/codeditor/editor.html'` from `expo-file-system`.
+**iOS URI** — the default `editorUri` is Android-only. iOS requires `new File(Paths.bundle, 'assets/codeditor/editor.html').uri` from `expo-file-system` (SDK 54+ API; on older SDKs use `FileSystem.bundleDirectory`).
 
 **Upgrading the library** — always re-copy assets after upgrading:
 

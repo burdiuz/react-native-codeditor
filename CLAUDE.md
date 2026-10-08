@@ -146,6 +146,7 @@ interface InitialConfig {
   language?: string;
   extensions?: ExtensionSpec[];
   theme?: string;
+  languages?: Record<string, string>;
   viewport?: ViewportSettings;
 }
 ```
@@ -175,8 +176,10 @@ Loaded via XHR, executed via `eval(code + ';moduleInitFunction')` — the `;modu
 suffix retrieves the function reference from strict-mode eval scope.
 
 **Codemirror version: 6.x.** All modules sourced from `@actualwave/codemirror-package`
-(devDependency). `npm run copy-assets` (or `npm run prepare`) regenerates them from
-`node_modules/@actualwave/codemirror-package/dist/`.
+(devDependency). `npm run copy-assets` regenerates them from
+`node_modules/@actualwave/codemirror-package/dist/`. `npm run prepare` does **not** run it —
+it only runs `bob build` (lib/), so run `npm run copy-assets` first when assets must be refreshed
+(always before publishing).
 
 **The WebView is fully offline.** No CDN or internet access required.
 
@@ -262,18 +265,18 @@ cp -r src/assets/* example/ios/CodeditorExample/assets/codeditor/
 
 Copying files to disk is not enough on iOS — Xcode must have a folder reference in
 `project.pbxproj` pointing to `CodeditorExample/assets` (path relative to `ios/`).
-The `example/copy-assets-plugin.js` handles this via `withXcodeProject` during
-`expo prebuild`. See `COPY_ASSETS.md` for the full manual Xcode steps.
+The library's Expo config plugin (`app.plugin.js` in the repo root) handles this via
+`withXcodeProject` during `expo prebuild`. See `COPY_ASSETS.md` for the full manual Xcode steps.
 
 ### iOS: editorUri
 
 The default `editorUri` is Android-only. For iOS, compute the bundle path at runtime:
 
 ```tsx
-import * as FileSystem from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 
 const IOS_EDITOR_URI = Platform.OS === 'ios'
-  ? (FileSystem.bundleDirectory ?? '') + 'assets/codeditor/editor.html'
+  ? new File(Paths.bundle, 'assets/codeditor/editor.html').uri
   : undefined;
 
 <CodeEditor editorUri={IOS_EDITOR_URI} ... />
@@ -285,8 +288,8 @@ linked (`pod install`). It is already present in `example/` (`ExpoFileSystem` in
 
 ### Expo config plugin
 
-`example/copy-assets-plugin.js` automates the copy + Xcode project edit during
-`expo prebuild`. Add it to `app.json` plugins to avoid manual steps on future prebuilds.
+`app.plugin.js` (the library's own plugin, exported as `@actualwave/react-native-codeditor/app.plugin`)
+automates the copy + Xcode project edit during `expo prebuild`. Add the package to `app.json` plugins to avoid manual steps on future prebuilds.
 See `COPY_ASSETS.md` for detailed documentation.
 
 ---
@@ -326,6 +329,7 @@ methods, so they are no-ops until the editor is ready.
 | `content` | `api.editor.setValue(content)` if value differs from `currentContentRef` |
 | `language` | `api.editor.setLanguage(language)` |
 | `theme` | `api.editor.setTheme(theme)` |
+| `languages` | `api.editor.registerLanguage(...)` for each entry, then `setLanguage(language)` again |
 | `extensions` | `api.editor.setExtensions(extensions)` |
 | `viewport` | `api.editor.setViewport(viewport)` |
 
@@ -347,12 +351,13 @@ not re-pushed as prop-change effects.
 | `onError` | `(error) => void` | **required** | Errors from inside the WebView |
 | `onContentUpdate` | `(content: string) => void` | **required** | Fired on every keystroke (CM6 onChange) |
 | `language` | `string` | `undefined` | CM6 language name, e.g. `'javascript'`, `'python'` |
+| `languages` | `Record<string, string>` | `undefined` | Custom language packages `{ name: packageName }` (e.g. `{ sksl: '@actualwave/codemirror-lang-sksl' }`); registered in the GUEST before the initial `language` resolves. codemirror-package has no pre-registered languages beyond `@codemirror/lang-*` / legacy-modes. |
 | `extensions` | `ExtensionSpec[]` | `[]` | CM6 extension specs — see ExtensionSpec below |
 | `theme` | `string` | `undefined` | Theme name, e.g. `'darcula'`, `'github'`. Loaded from per-theme package. |
 | `content` | `string` | `''` | Controlled document content |
 | `viewport` | `ViewportSettings` | `undefined` | Viewport meta scaling |
 | `allowFileAccess` | `boolean` | `true` | WebView prop; required for file:// asset loading |
-| `editorUri` | `string` | `'file:///android_asset/codeditor/editor.html'` | Override for iOS — use `expo-file-system` `bundleDirectory` (see iOS notes below) |
+| `editorUri` | `string` | `'file:///android_asset/codeditor/editor.html'` | Override for iOS — use `expo-file-system` `Paths.bundle` (see iOS notes below) |
 | `renderBlockingView` | `() => ReactNode` | `() => <BlockingView />` | Loading overlay |
 | `onWebViewRefUpdated` | `(ref) => void` | — | Called when internal WebView ref changes |
 | `onLoad/Start/Progress/End` | func | — | WebView event pass-throughs |
@@ -391,6 +396,7 @@ api.resetValue(value?)                 → Promise<void>   (setValue + historyCl
 
 // Language / extensions / theme
 api.setLanguage(name)                  → Promise<void>   (loads lang module on demand)
+api.registerLanguage(name, pkg)        → Promise<void>   (custom language package; follow with setLanguage)
 api.setExtensions(specs)              → Promise<void>   (replaces extension compartment)
 api.setTheme(themeName?)               → Promise<void>   (loads from per-theme package)
 
@@ -481,7 +487,7 @@ cd example && npx expo run:android   # or run:ios
 ```
 
 When updating `@actualwave/js-codemirror-package` specifically, `npm run copy-assets`
-(run automatically by `npm run prepare`) regenerates the WebView assets from the
+(not run by `npm run prepare` — run it explicitly) regenerates the WebView assets from the
 published `dist/` — no manual `node start.js` needed since the package is pre-built.
 
 ---
@@ -530,7 +536,8 @@ event != null && typeof event === 'object' && 'data' in event ? event.data : eve
 ## Build & install
 
 ```bash
-# Install dependencies (postinstall runs copy-assets automatically)
+# Install dependencies (no root postinstall: run `npm run copy-assets` yourself to refresh assets;
+# example/ has a postinstall that applies patches/ via patch-package)
 npm install
 
 # Apply the iOS Swift patch (development only — not needed for Android)
@@ -617,8 +624,9 @@ Resolved all startup failures and made the editor work end-to-end:
 ### Phase 4 — Automated asset pipeline (May 2026)
 `@actualwave/codemirror-package` added as a devDependency. `scripts/copy-assets.js` now
 generates both `src/assets/codemirror-editor.umd.js` and `src/assets/codemirror/` from
-`node_modules/@actualwave/codemirror-package/dist/` automatically. `npm run prepare`
-runs the script before `bob build`, so assets are always in sync with the package version.
+`node_modules/@actualwave/codemirror-package/dist/` automatically. (Originally `npm run prepare`
+ran the script before `bob build`; it no longer does — `prepare` is now only `bob build`, so run
+`npm run copy-assets` explicitly.)
 
 ### Phase 6 — iOS support (May 2026)
 Made the editor work end-to-end on iOS:
@@ -630,7 +638,7 @@ Made the editor work end-to-end on iOS:
 - Fixed iOS WebView "Error loading page": assets now land in `ios/CodeditorExample/assets/codeditor/`
   with a folder reference added to `project.pbxproj` (`path = CodeditorExample/assets`,
   `lastKnownFileType = folder`) so Xcode includes them in Copy Bundle Resources
-- `editorUri` for iOS: `FileSystem.bundleDirectory + 'assets/codeditor/editor.html'` via
+- `editorUri` for iOS: `new File(Paths.bundle, 'assets/codeditor/editor.html').uri` via
   `expo-file-system`; passes `undefined` on Android so the default URI is used
 - `example/copy-assets-plugin.js` extended with `withXcodeProject` to automate the Xcode
   folder reference on future `expo prebuild` runs

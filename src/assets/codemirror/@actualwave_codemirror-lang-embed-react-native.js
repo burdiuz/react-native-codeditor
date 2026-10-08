@@ -1,0 +1,6 @@
+async function moduleInitFunction(requireAsyncModule,exports={}){function requireCodemirrorLangEmbedReactNative(){// Like embed-tailwind, this DSL has no grammar to parse — React/React Native
+// contextual completion is layered entirely on the existing JS/JSX parser via
+// a CompletionSource, so this package exports `createSupportExtension`
+// (plain CM extensions to merge into the JS/TSX language's `support` array)
+// rather than `createEmbedding()` (matcher + nested Language).
+function createSupportExtension(jsLanguageSupport,config){return jsLanguageSupport.language.data.of({autocomplete:reactNativeCompletionSource(config)})}if(hasRequiredCodemirrorLangEmbedReactNative)return codemirrorLangEmbedReactNative;hasRequiredCodemirrorLangEmbedReactNative=1;const{reactNativeCompletionSource}=require$$0;return codemirrorLangEmbedReactNative={createSupportExtension},codemirrorLangEmbedReactNative}const module={exports:exports};var codemirrorLangEmbedReactNative,hasRequiredCodemirrorLangEmbedReactNative,require$$0=await requireAsyncModule("@actualwave/codemirror-lang-react-native"),codemirrorLangEmbedReactNativeExports=requireCodemirrorLangEmbedReactNative(),index=/*@__PURE__*/function getDefaultExportFromCjs(x){return x}(codemirrorLangEmbedReactNativeExports);return module.exports=index,module.exports}
