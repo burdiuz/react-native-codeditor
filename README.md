@@ -224,6 +224,8 @@ export default function EditorScreen() {
 |---|---|---|---|
 | `content` | `string` | `''` | Initial document content (see [Content model](#content-model) below). |
 | `language` | `string` | `undefined` | Syntax language, e.g. `'javascript'`, `'python'`, `'sql'`. The language module is loaded from the bundled assets on first use. |
+| `languageConfig` | `Record<string, unknown>` | `undefined` | Options passed to the language factory, e.g. `{ jsx: true, typescript: true }` for `'javascript'`. Must be plain serializable data. |
+| `embeds` | `EmbedsConfig` | `undefined` | DSLs embedded in `'javascript'` — highlighting and suggestions for tagged templates (`sql`, `gql`, `css`…) and support extensions (Tailwind, React Native). See [Embedded DSLs](#embedded-dsls-in-javascript). Changing it re-resolves the current language. |
 | `languages` | `Record<string, string>` | `undefined` | Custom language packages as `{ name: packageName }`, for languages that don't follow the `@codemirror/lang-{name}` convention, e.g. `{ sksl: '@actualwave/codemirror-lang-sksl' }`. Registered before the initial `language` is resolved. The package must be bundled in the WebView assets. |
 | `extensions` | `ExtensionSpec[]` | `[]` | Additional CodeMirror 6 extension specs. See [Extension specs](#extension-specs). |
 | `theme` | `string` | `undefined` | Theme name. See [Themes](#themes). |
@@ -311,9 +313,17 @@ api.editor.resetValue(value?: string): Promise<void>
 ### Language, extensions, theme
 
 ```ts
-api.editor.setLanguage(name: string): Promise<void>
+api.editor.setLanguage(name: string, config?: object, embeds?: EmbedsConfig): Promise<void>
 // Switches syntax language. Loads the language module on demand.
+// `config` goes to the language factory; `embeds` applies to 'javascript' only.
 // e.g. await api.editor.setLanguage('python')
+//      await api.editor.setLanguage('javascript', { jsx: true }, { taggedTemplates: [...] })
+
+api.editor.registerTaggedTemplate(packageName: string): Promise<void>
+api.editor.registerSupportExtension(packageName: string, config?: object): Promise<void>
+// Register an embed globally for the page. Call before the language is set to
+// 'javascript', or follow with setLanguage('javascript', ...) to re-resolve.
+// Alternative to the `embeds` prop — see "Embedded DSLs".
 
 api.editor.registerLanguage(name: string, packageName: string): Promise<void>
 // Maps a language name to a package that doesn't follow @codemirror/lang-{name}.
@@ -563,6 +573,45 @@ Switch theme at runtime:
 await api.editor.setTheme('monokai');
 await api.editor.setTheme(undefined); // remove theme, use CM6 default
 ```
+
+---
+
+## Embedded DSLs in `javascript`
+
+The `embeds` prop (or `setLanguage(name, config, embeds)`) mixes extra syntax into the
+`'javascript'` language: highlighting **and** autocomplete suggestions. Packages are bundled
+in the WebView assets; embeds only take effect for `language="javascript"`.
+
+```tsx
+<CodeEditor
+  language="javascript"
+  languageConfig={{ jsx: true, typescript: true }}
+  embeds={{
+    taggedTemplates: [
+      '@actualwave/codemirror-lang-embed-css',
+      '@actualwave/codemirror-lang-embed-sql',
+      '@actualwave/codemirror-lang-embed-graphql',
+    ],
+    supportExtensions: [
+      '@actualwave/codemirror-lang-embed-react-native',
+      ['@actualwave/codemirror-lang-embed-tailwind', {}], // [name, config]
+    ],
+  }}
+  {...otherProps}
+/>
+```
+
+A package must be in the list matching what it exports, otherwise it silently fails to load:
+
+| List | Packages | Provides |
+|---|---|---|
+| `taggedTemplates` | `embed-css`, `embed-sql`, `embed-glsl`, `embed-sksl`, `embed-icu-messageformat`, `embed-graphql` | Nested language highlighting + its suggestions (`embed-graphql`: highlighting only) |
+| `supportExtensions` | `embed-tailwind`, `embed-react-native` | Suggestions (and Tailwind class coloring) on the JS language; no nested language |
+
+Tags are matched by name: `css`/`styled`/`styled.X`/`styled(X)` → CSS, `sql`, `gql`, `glsl`,
+`sksl`, `t` → ICU MessageFormat, `tw` → Tailwind. `embed-react-native` needs no tag (JSX, imports,
+`StyleSheet.create`). Only `supportExtensions` accept a config. Pass a stable (memoized/module-level)
+`embeds` object — a new reference re-resolves the language.
 
 ---
 

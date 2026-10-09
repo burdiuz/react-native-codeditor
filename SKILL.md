@@ -199,7 +199,7 @@ apiRef.current?.editor.historyUndo();
 | `language` | `string` | — | Syntax language, e.g. `'javascript'`, `'python'`. Loaded on demand. |
 | `languageConfig` | `Record<string, unknown>` | — | Options passed to the language factory, e.g. `{ jsx: true, typescript: true }` for `'javascript'`. |
 | `languages` | `Record<string, string>` | — | Custom language packages `{ name: packageName }` for names that don't follow `@codemirror/lang-{name}`, e.g. `{ sksl: '@actualwave/codemirror-lang-sksl' }`. Registered before the initial `language` is resolved. |
-| `embeds` | `EmbedsConfig` | — | Tagged-template DSL embeddings and support extensions mixed into `'javascript'`: `{ taggedTemplates?: string[], supportExtensions?: (string \| [string, object])[] }`. |
+| `embeds` | `EmbedsConfig` | — | DSL highlighting + suggestions mixed into `'javascript'`: `{ taggedTemplates?: string[], supportExtensions?: (string \| [string, object])[] }`. See [Embedded DSLs](#embedded-dsls-in-javascript). Changing it re-resolves the current language — pass a stable object. |
 | `extensions` | `ExtensionSpec[]` | `[]` | CM6 extension specs. |
 | `theme` | `string` | — | Theme name, e.g. `'darcula'`, `'monokai'`. |
 | `viewport` | `ViewportSettings` | — | `<meta name="viewport">` options. |
@@ -448,6 +448,39 @@ Call `api.focus()` inside `onInitialized` to trigger the Android soft keyboard i
 
 ---
 
+## Embedded DSLs in `javascript`
+
+`embeds` (prop, or 3rd arg of `setLanguage`) adds highlighting **and** autocomplete suggestions for DSLs inside `'javascript'`. Only applies when the language is `'javascript'`; merged with anything registered via `registerTaggedTemplate` / `registerSupportExtension`. Must be plain serializable data (package names + configs).
+
+```tsx
+<CodeEditor
+  language="javascript"
+  languageConfig={{ jsx: true, typescript: true }}
+  embeds={{
+    taggedTemplates: [
+      '@actualwave/codemirror-lang-embed-css',
+      '@actualwave/codemirror-lang-embed-sql',
+      '@actualwave/codemirror-lang-embed-graphql',
+    ],
+    supportExtensions: [
+      '@actualwave/codemirror-lang-embed-react-native',
+      '@actualwave/codemirror-lang-embed-tailwind',
+    ],
+  }}
+/>
+```
+
+A package must be in the list matching what it exports, else it fails to load:
+
+| List | Packages | Provides |
+|---|---|---|
+| `taggedTemplates` | `embed-css`, `embed-sql`, `embed-glsl`, `embed-sksl`, `embed-icu-messageformat`, `embed-graphql` | Nested language highlighting + its suggestions (`embed-graphql`: highlighting only) |
+| `supportExtensions` | `embed-tailwind`, `embed-react-native` | Suggestions (and Tailwind class coloring) on the JS language; no nested language |
+
+Tags match by name only: `css`/`styled`/`styled.X`/`styled(X)` → CSS, `sql`, `gql` (not `graphql`), `glsl`, `sksl`, `t` → ICU MessageFormat, `tw` → Tailwind. `embed-react-native` needs no tag (JSX, imports, `StyleSheet.create`). Only `supportExtensions` accept a config: `['pkg', config]`. No extra setup is needed for suggestions.
+
+---
+
 ## Common pitfalls
 
 **DDA calls not dispatched** — forgetting `await` silently does nothing. Every `api.editor.*` must be awaited.
@@ -457,6 +490,8 @@ Call `api.focus()` inside `onInitialized` to trigger the Android soft keyboard i
 **Content updates are debounced** — `onContentUpdate` fires 300ms after the last edit, so `content` may briefly lag behind the editor. Don't rewrite `content` with modified text mid-typing.
 
 **`setLanguage` rejects for unregistered names** — custom packages like `sksl` must be registered via the `languages` prop or `registerLanguage()` first.
+
+**Embeds silently do nothing** — a package in the wrong list, a typo, or a missing module is skipped with no error, and embeds are ignored unless `language` is `'javascript'`. Tags are exact (`gql`, not `graphql`).
 
 **Android assets not copied** — if the WebView shows "Error loading page", the `src/assets/` files haven't been copied to `android/app/src/main/assets/codeditor/`. Re-run the copy command.
 
