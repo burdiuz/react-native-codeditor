@@ -183,10 +183,20 @@
     } = await requireAsyncModule('@codemirror/autocomplete');
     const { keymap } = await requireAsyncModule('@codemirror/view');
 
+    const { EditorState } = await requireAsyncModule('@codemirror/state');
+    const { language: languageFacet } = await requireAsyncModule('@codemirror/language');
+
     let _customCompletions = [];
 
+    // Static list set via setCompletions(). Registered as language data (not as
+    // autocompletion({ override })) so it is merged with the language's own sources —
+    // including nested-language ones (tagged-template embeds, Tailwind, React Native).
+    // An `override` would replace every one of those and make embedded DSLs unsuggestable.
     const _customCompletionSource = (context) => {
       if (!_customCompletions.length) return null;
+      // Inside an embedded language (sql`...`, sksl`...`) the static JS list is noise.
+      const lang = context.state.facet(languageFacet);
+      if (lang && !lang.isActiveAt(context.state, context.pos, -1)) return null;
       const word = context.matchBefore(/\w+/);
       if (!word || (word.from === word.to && !context.explicit)) return null;
       return { from: word.from, options: _customCompletions, validFor: /^\w*$/ };
@@ -195,7 +205,8 @@
     editor.view.dispatch({
       effects: StateEffect.appendConfig.of([
         closeBrackets(),
-        autocompletion({ override: [_customCompletionSource], activateOnTyping: true }),
+        autocompletion({ activateOnTyping: true }),
+        EditorState.languageData.of(() => [{ autocomplete: _customCompletionSource }]),
         keymap.of([...closeBracketsKeymap, ...completionKeymap]),
       ]),
     });

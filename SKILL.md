@@ -475,7 +475,7 @@ A package must be in the list matching what it exports, else it fails to load:
 | List | Packages | Provides |
 |---|---|---|
 | `taggedTemplates` | `embed-css`, `embed-sql`, `embed-glsl`, `embed-sksl`, `embed-icu-messageformat`, `embed-graphql` | Nested language highlighting + its suggestions (`embed-graphql`: highlighting only) |
-| `supportExtensions` | `embed-tailwind`, `embed-react-native` | Suggestions (and Tailwind class coloring) on the JS language; no nested language |
+| `supportExtensions` | `embed-tailwind`, `embed-react-native`, `js-completion` | Suggestions (and Tailwind class coloring) on the JS language; no nested language |
 
 Tags match by name only: `css`/`styled`/`styled.X`/`styled(X)` → CSS, `sql`, `gql` (not `graphql`), `glsl`, `sksl`, `t` → ICU MessageFormat, `tw` → Tailwind. `embed-react-native` needs no tag (JSX, imports, `StyleSheet.create`). Only `supportExtensions` accept a config: `['pkg', config]`. No extra setup is needed for suggestions.
 

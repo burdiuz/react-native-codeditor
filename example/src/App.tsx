@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { File, Paths } from 'expo-file-system';
 import CodeEditor from '@actualwave/react-native-codeditor';
-import type { HistorySize, WebViewAPI } from '@actualwave/react-native-codeditor';
+import type { CompletionItem, EmbedsConfig, HistorySize, WebViewAPI } from '@actualwave/react-native-codeditor';
 
 // On iOS the editor HTML lives in the app bundle. Paths.bundle gives the
 // file:// path to the .app folder; assets/codeditor/ is copied there by the
@@ -14,12 +14,49 @@ const IOS_EDITOR_URI = Platform.OS === 'ios'
 // Not following the @codemirror/lang-{name} convention, so must be registered.
 const CUSTOM_LANGUAGES = { sksl: '@actualwave/codemirror-lang-sksl' };
 
+// Module-level constants on purpose: a new `embeds` reference re-resolves the language.
+const EMBEDS: EmbedsConfig = {
+  taggedTemplates: [
+    '@actualwave/codemirror-lang-embed-sql',
+    '@actualwave/codemirror-lang-embed-graphql',
+    '@actualwave/codemirror-lang-embed-css',
+    '@actualwave/codemirror-lang-embed-sksl',
+    '@actualwave/codemirror-lang-embed-glsl',
+    '@actualwave/codemirror-lang-embed-icu-messageformat',
+  ],
+  supportExtensions: [
+    '@actualwave/codemirror-lang-embed-tailwind',
+    '@actualwave/codemirror-lang-embed-react-native',
+    '@actualwave/codemirror-lang-js-completion',
+  ],
+};
+const JAVASCRIPT_CONFIG = { jsx: true, typescript: true };
+
+// Static list pushed via setCompletions() — must NOT show up inside sql`` / sksl``.
+const STATIC_COMPLETIONS: CompletionItem[] = [
+  { label: 'useState', type: 'function', detail: 'react' },
+  { label: 'useLayoutEffect', type: 'function', detail: 'react' },
+  { label: 'KeyboardAvoidingView', type: 'class', detail: 'react-native' },
+];
+
 const LANGUAGES = ['javascript', 'sksl', 'python', 'rust', 'sql', 'markdown', 'json'];
 
 const THEMES = ['darcula', 'monokai', 'github', 'nord', 'dracula', 'vscode'];
 
 const SAMPLES: Record<string, string> = {
   javascript: `// Welcome to CodeEditor
+// Embeds check: type inside the templates, e.g. "vo" -> void, "fl" -> float, "SE" -> SELECT.
+// Outside them the static list (use...) and React Native suggestions should still work.
+import { View, Text } from 'react-native';
+
+const shader = sksl\`
+
+\`;
+
+const query = sql\`
+
+\`;
+
 function greet(name) {
   return 'Hello, ' + name + '!';
 }
@@ -95,6 +132,7 @@ export default function App() {
   const handleInitialized = useCallback((api: WebViewAPI) => {
     apiRef.current = api;
     setStatus('Ready');
+    void api.editor.setCompletions(STATIC_COMPLETIONS);
     void api.focus();
   }, []);
 
@@ -143,7 +181,8 @@ export default function App() {
     const nextLang = LANGUAGES[next]!;
     setLangIndex(next);
     try {
-      await apiRef.current?.editor?.setLanguage(nextLang);
+      // <CodeEditor> pushes `language` (with languageConfig/embeds) itself; a direct
+      // setLanguage(nextLang) here would race it and drop the embeds.
       await apiRef.current?.editor?.resetValue(SAMPLES[nextLang]);
     } catch (e) { console.error('[Lang]', e); }
   }, [langIndex]);
@@ -196,6 +235,8 @@ export default function App() {
         content={SAMPLES[language]}
         language={language}
         languages={CUSTOM_LANGUAGES}
+        languageConfig={language === 'javascript' ? JAVASCRIPT_CONFIG : undefined}
+        embeds={EMBEDS}
         theme={theme}
         viewport={VIEWPORT}
         editorUri={IOS_EDITOR_URI}

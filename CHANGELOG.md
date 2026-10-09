@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.1
+
+### Changed
+- Updated bundled `@actualwave/codemirror-package` assets to 0.1.5, which adds the
+  `@actualwave/codemirror-lang-js-completion` language package for JavaScript completion.
+- `js-completion` is added to the example app's `supportExtensions`.
+- Static completions set via `setCompletions()` are now registered as language data instead of
+  `autocompletion({ override })`, so they merge with the language's own completion sources
+  (including embedded-language ones such as `sql`/`sksl` tagged templates, Tailwind, React Native)
+  and are suppressed inside embedded languages.
+
 ## 1.2.0
 
 ### Added
