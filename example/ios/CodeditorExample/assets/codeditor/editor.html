@@ -228,6 +228,40 @@
     // setExtensions, loadExtension, destroy — then add methods not in EditorController.
     const { getValue, setValue, setLanguage, setExtensions, loadExtension, destroy } = editor;
 
+    // Rebuilds the editor state around `doc` with an empty undo history (an unrecorded transaction
+    // only hides a change from the history — earlier entries stay and get mapped over it, so Undo
+    // would still walk back into the previous document). The live extension set is kept: the new
+    // state is built from the current config and the compartments' contents are re-applied.
+    const _replaceStateFresh = (doc, selection) => {
+      const view = editor.view;
+      const old = view.state;
+      view.setState(EditorState.create({ doc, selection, extensions: old.config.base }));
+      const effects = [];
+      old.config.compartments.forEach((ext, comp) => effects.push(comp.reconfigure(ext)));
+      if (effects.length) view.dispatch({ effects });
+      const state = view.state;
+      _rnPost('__contentChange__', {
+        value: state.doc.toString(),
+        undo: undoDepth(state),
+        redo: redoDepth(state),
+      });
+    };
+
+    // Dry-runs every undo and redo step on a throw-away copy of `state`. A history that does not
+    // match its document makes CodeMirror throw "Applying change set to a document with the wrong
+    // length" on the user's first Undo; catching that here keeps it from ever reaching the user.
+    const _historyConsistent = (state) => {
+      try {
+        let s = state;
+        const step = (tr) => { s = tr.state; };
+        for (let i = 0; i < 1000 && undo({ state: s, dispatch: step }); i++);
+        for (let i = 0; i < 1000 && redo({ state: s, dispatch: step }); i++);
+        return s.doc.eq(state.doc);
+      } catch (e) {
+        return false;
+      }
+    };
+
     Object.assign(editorTarget, {
       getValue,
       setValue: (value) => {
@@ -245,6 +279,51 @@
       loadExtension,
       destroy,
 
+      // Serializable snapshot of the whole editor state: document, selection, undo/redo
+      // history and scroll offset. Pair with restoreState() to move a document in and out
+      // of this editor without losing its history.
+      saveState: async () => {
+        const { historyField } = await requireAsyncModule('@codemirror/commands');
+        return {
+          state: editor.view.state.toJSON({ history: historyField }),
+          scrollTop: editor.view.scrollDOM.scrollTop,
+          scrollLeft: editor.view.scrollDOM.scrollLeft,
+        };
+      },
+
+      // Replaces the editor's state with a snapshot from saveState(). The live extension set
+      // (language, theme, shortcuts, completions...) is kept: the new state is built from the
+      // current config and the compartments' current contents are re-applied. Set the desired
+      // language/theme BEFORE calling this. Notifies the host like a regular content change.
+      restoreState: async (snapshot) => {
+        const { historyField } = await requireAsyncModule('@codemirror/commands');
+        const old = editor.view.state;
+        const next = EditorState.fromJSON(
+          snapshot.state,
+          { extensions: old.config.base },
+          { history: historyField }
+        );
+        if (!_historyConsistent(next)) {
+          console.warn('restoreState: snapshot history does not match its document, restoring text only');
+          _replaceStateFresh(next.doc, next.selection);
+          editor.view.scrollDOM.scrollTop = snapshot.scrollTop ?? 0;
+          editor.view.scrollDOM.scrollLeft = snapshot.scrollLeft ?? 0;
+          return;
+        }
+        editor.view.setState(next);
+        const effects = [];
+        old.config.compartments.forEach((ext, comp) => effects.push(comp.reconfigure(ext)));
+        if (effects.length) editor.view.dispatch({ effects });
+        editor.view.scrollDOM.scrollTop = snapshot.scrollTop ?? 0;
+        editor.view.scrollDOM.scrollLeft = snapshot.scrollLeft ?? 0;
+        const state = editor.view.state;
+        _rnPost('__contentChange__', {
+          value: state.doc.toString(),
+          undo: undoDepth(state),
+          redo: redoDepth(state),
+        });
+      },
+
       // Maps a language name to a package that doesn't follow the
       // @codemirror/lang-{name} convention. Takes effect on the next setLanguage().
       registerLanguage: (name, packageName) => registerLanguage(name, packageName),
@@ -258,13 +337,8 @@
       registerSupportExtension: (packageName, supportConfig) =>
         registerSupportExtension(packageName, supportConfig),
 
-      resetValue: (value) => {
-        const view = editor.view;
-        view.dispatch({
-          changes: { from: 0, to: view.state.doc.length, insert: value ?? '' },
-          annotations: Transaction.addToHistory.of(false),
-        });
-      },
+      // Replaces the document AND empties the undo history.
+      resetValue: (value) => _replaceStateFresh(value ?? ''),
 
       setTheme: (themeName) => _applyTheme(themeName),
 
@@ -358,11 +432,10 @@
 
       historyRedo: () => redo(editor.view),
 
+      // Empties the undo/redo history, keeping the document and selection.
       historyClear: () => {
-        // clearHistory StateEffect was removed from @codemirror/commands 6.7+.
-        // Dispatch a no-doc-change transaction marked as not-in-history so
-        // callers don't crash, though the undo stack is not actually emptied.
-        editor.view.dispatch({ annotations: Transaction.addToHistory.of(false) });
+        const { doc, selection } = editor.view.state;
+        _replaceStateFresh(doc, selection);
       },
 
       startCompletion: () => startCompletion(editor.view),

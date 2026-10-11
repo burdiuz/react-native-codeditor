@@ -30,9 +30,6 @@
 
 ## 1.2.0
 
-### Fixed
-- A `content` change that arrives while the WebView is still booting is now applied on initialization instead of being dropped.
-
 ### Added
 - `languages` prop on `<CodeEditor>` and `api.editor.registerLanguage(name, packageName)` for
   language packages that don't follow the `@codemirror/lang-{name}` naming convention
