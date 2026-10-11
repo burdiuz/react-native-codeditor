@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.2.2
+
+### Fixed
+- A `content` change that arrives while the WebView is still booting is now applied on initialization instead of being dropped.
+- `resetValue()` and `historyClear()` now really empty the undo history (they rebuild the editor
+  state, keeping the live extensions). Before, they only dispatched an unrecorded transaction, so
+  earlier undo steps survived and were applied on top of the new document.
+
+### Added
+- `saveState()` / `restoreState(snapshot)`: JSON snapshot of document, selection, undo/redo history
+  and scroll offset, so a document can leave and re-enter an editor without losing its history.
+  `restoreState` keeps the live extensions (language, theme, shortcuts, completions) and fires the
+  content / history-size callbacks. Exports the `EditorStateSnapshot` type.
+  If a snapshot's undo history does not match its document (undo/redo would throw "Applying change
+  set to a document with the wrong length"), `restoreState` logs a warning and restores the text,
+  selection and scroll only, with an empty history.
+
 ## 1.2.1
 
 ### Changed
@@ -12,6 +29,9 @@
   and are suppressed inside embedded languages.
 
 ## 1.2.0
+
+### Fixed
+- A `content` change that arrives while the WebView is still booting is now applied on initialization instead of being dropped.
 
 ### Added
 - `languages` prop on `<CodeEditor>` and `api.editor.registerLanguage(name, packageName)` for

@@ -9,6 +9,7 @@ export type {
   ViewportSettings,
   CursorPosition,
   HistorySize,
+  EditorStateSnapshot,
   CompletionItem,
   EmbedsConfig,
 } from './EditorAPI';

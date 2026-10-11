@@ -384,6 +384,8 @@ api.editor.historyClear(): Promise<void>
 // Clears the undo/redo history without changing the document.
 
 api.editor.historySize(): Promise<HistorySize>
+api.editor.saveState(): Promise<EditorStateSnapshot>   // doc + selection + undo/redo history + scroll (plain JSON)
+api.editor.restoreState(snapshot): Promise<void>      // keeps live language/theme/shortcuts; set language/theme first
 // Returns the current { undo, redo } depth.
 // Note: history size is also reported automatically via onHistorySizeUpdate.
 ```

@@ -139,6 +139,13 @@ const CodeEditor = ({
       onInitialized: (api) => {
         initializedRef.current = true;
         setInitialized(true);
+        // `content` may have changed while the WebView was still booting (the content effect
+        // skips pushing then), so the editor would keep the stale initial document.
+        const latest = propsRef.current.content;
+        if (latest !== currentContentRef.current) {
+          currentContentRef.current = latest;
+          void api.editor.setValue(latest);
+        }
         callbacksRef.current.onInitialized(api);
       },
       onContentUpdate: (value) => {

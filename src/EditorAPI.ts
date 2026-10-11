@@ -50,6 +50,13 @@ export interface EmbedsConfig {
   supportExtensions?: Array<string | [string, Record<string, unknown>]>;
 }
 
+/** Opaque, JSON-serializable snapshot produced by `saveState()`. */
+export interface EditorStateSnapshot {
+  state: unknown;
+  scrollTop: number;
+  scrollLeft: number;
+}
+
 export interface EditorAPI {
   getValue(): Promise<string>;
   setValue(value: string): Promise<void>;
@@ -78,6 +85,17 @@ export interface EditorAPI {
   historyRedo(): Promise<boolean>;
   historyClear(): Promise<void>;
   historySize(): Promise<HistorySize>;
+  /**
+   * Snapshot of document, selection, undo/redo history and scroll offset. Plain JSON, so it
+   * can be kept in memory or persisted. Restore with `restoreState()`.
+   */
+  saveState(): Promise<EditorStateSnapshot>;
+  /**
+   * Replaces the editor state with a `saveState()` snapshot, keeping the live extensions
+   * (language, theme, shortcuts, completions). Set language/theme first. The content and
+   * history-size callbacks fire afterwards.
+   */
+  restoreState(snapshot: EditorStateSnapshot): Promise<void>;
   scrollToCursor(margin?: number): Promise<void>;
   startCompletion(): Promise<void>;
   setCompletions(items: CompletionItem[]): Promise<void>;

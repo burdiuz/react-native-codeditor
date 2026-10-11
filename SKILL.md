@@ -266,6 +266,8 @@ api.editor.historyUndo(): Promise<boolean>
 api.editor.historyRedo(): Promise<boolean>
 api.editor.historyClear(): Promise<void>
 api.editor.historySize(): Promise<HistorySize>  // { undo, redo }
+api.editor.saveState(): Promise<EditorStateSnapshot>   // doc + selection + undo/redo history + scroll (plain JSON)
+api.editor.restoreState(snapshot): Promise<void>      // keeps live language/theme/shortcuts; set language/theme first
 ```
 
 ### Editing commands
