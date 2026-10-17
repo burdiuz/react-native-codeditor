@@ -114,11 +114,20 @@ function requireAsyncModule(moduleName) {
   const moduleExports = {};
   _pendingStubs.add(moduleExports);
   moduleCache.set(moduleName, moduleExports);
-  const promise = _asyncLoad(moduleName, moduleExports).then((result) => {
-    _pendingStubs.delete(moduleExports);
-    _loadingPromises.delete(moduleName);
-    return result;
-  });
+  const promise = _asyncLoad(moduleName, moduleExports).then(
+    (result) => {
+      _pendingStubs.delete(moduleExports);
+      _loadingPromises.delete(moduleName);
+      return result;
+    },
+    (error) => {
+      // Do not keep a half-initialised stub: a later call must retry the load.
+      _pendingStubs.delete(moduleExports);
+      _loadingPromises.delete(moduleName);
+      if (moduleCache.get(moduleName) === moduleExports) moduleCache.delete(moduleName);
+      throw error;
+    },
+  );
   _loadingPromises.set(moduleName, promise);
   return promise;
 }
@@ -325,11 +334,14 @@ async function resolveLanguageExtension(name, config, embeds = {}) {
     return extras.length ? new LanguageSupport(embedded.language, [embedded.support, extras]) : embedded;
   }
 
+  let langError = null;
   try {
     const mod = await requireAsyncModule(`@codemirror/lang-${name}`);
     const fn = mod[name] ?? Object.values(mod).find((v) => typeof v === 'function');
     if (fn) return fn(config);
-  } catch {}
+  } catch (error) {
+    langError = error;
+  }
 
   try {
     const [legacyMod, { StreamLanguage }] = await Promise.all([
@@ -338,9 +350,12 @@ async function resolveLanguageExtension(name, config, embeds = {}) {
     ]);
     const mode = findLegacyMode(legacyMod, name);
     if (mode) return StreamLanguage.define(mode);
-  } catch {}
+  } catch (error) {
+    langError = langError ?? error;
+  }
 
-  throw new Error(`No language support found for "${name}". Use registerLanguage() for custom packages.`);
+  const reason = langError ? ` (${langError?.message ?? langError})` : '';
+  throw new Error(`No language support found for "${name}"${reason}. Use registerLanguage() for custom packages.`);
 }
 
 /**

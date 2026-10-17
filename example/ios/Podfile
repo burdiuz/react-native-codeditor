@@ -59,6 +59,16 @@ target 'CodeditorExample' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
+    # [swift5-plugin]
+    expo_swift6_targets = %w[Expo ExpoModulesCore ExpoModulesJSI]
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
+        if expo_swift6_targets.include?(target.name)
+          config.build_settings['SWIFT_VERSION'] = '5'
+        end
+      end
+    end
     # expo-modules-core uses @MainActor conformance patterns that Xcode 16 / Swift 6
     # strict concurrency mode rejects. 'minimal' restores Swift 5 behaviour.
     # Expo sets SWIFT_VERSION = 6 for ExpoModulesCore/Expo/ExpoModulesJSI, but Swift 6

@@ -274,7 +274,10 @@
           },
         });
       },
-      setLanguage,
+      // DDA serialises positional `undefined` arguments as `null`. Language factories only
+      // default their options for `undefined`, so lang-markdown/lang-sql throw on `null`
+      // (swallowed by the resolver as "No language support found") — normalise it back.
+      setLanguage: (name, config, embeds) => setLanguage(name, config ?? undefined, embeds ?? undefined),
       setExtensions,
       loadExtension,
       destroy,
