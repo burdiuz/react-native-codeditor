@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.4
+
+### Fixed
+- `react`, `react-native` and `expo` are no longer in `dependencies`. `react` and `react-native` were
+  pinned to exact versions next to the peer entries, so a project on any other version got a second nested
+  copy; `expo` was pulled into bare React Native projects although only `app.plugin.js` uses it.
+  `react` / `react-native` stay peers; `expo` is now an optional peer (needed only for the Expo config plugin).
+
 ## 1.2.2
 
 ### Fixed
