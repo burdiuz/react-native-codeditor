@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Unmounting `CodeEditor` while the WebView handshake is still pending no longer produces an unhandled
+  promise rejection 30 s later. `WebViewAPI.stop()` (now also called when the WebView unmounts) abandons the
+  pending handshake; a handshake that fails while the WebView is still mounted is reported as before.
+
 ## 1.2.4
 
 ### Fixed

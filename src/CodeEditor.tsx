@@ -314,6 +314,9 @@ const CodeEditor = ({
       apiRef.current!.initialize(
         webView as unknown as import("./WebViewAPI").WebViewRef,
       );
+    } else {
+      // WebView unmounted: abandon a handshake that may still be pending, it would time out later.
+      apiRef.current?.stop();
     }
 
     callbacksRef.current.onWebViewRefUpdated?.(webView);

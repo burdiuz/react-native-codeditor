@@ -40,6 +40,8 @@ class WebViewAPI {
   private _onMessage: ((event: unknown) => void) | null = null;
   private _initialConfig: InitialConfig = {};
   private handlers: WebViewAPIHandlers;
+  // Bumped by every initialize() and stop(); a pending handshake only acts while its own generation is current.
+  private generation = 0;
 
   constructor(handlers: WebViewAPIHandlers) {
     this.handlers = handlers;
@@ -59,6 +61,7 @@ class WebViewAPI {
     this._editor = null;
     this.stopFn?.();
     this.stopFn = null;
+    const generation = ++this.generation;
 
     // Methods exposed to the GUEST via DDA. The GUEST calls these on nativeApi.
     const hostRoot = {
@@ -75,11 +78,24 @@ class WebViewAPI {
 
     this._onMessage = onMessage as unknown as (event: unknown) => void;
 
-    void connection.then(({ root: pageApi, stop }) => {
-      this._editor = pageApi as unknown as EditorAPI;
-      this.stopFn = stop;
-      // onInitialized is called when __editorReady__ arrives (after createEditor completes)
-    });
+    void connection.then(
+      ({ root: pageApi, stop }) => {
+        if (generation !== this.generation) {
+          // Stopped or re-initialized while the handshake was pending: nobody wants this connection.
+          stop();
+          return;
+        }
+        this._editor = pageApi as unknown as EditorAPI;
+        this.stopFn = stop;
+        // onInitialized is called when __editorReady__ arrives (after createEditor completes)
+      },
+      (error) => {
+        // The handshake can only be abandoned by dropping its result: the WebView unmounted (stop()) or was
+        // replaced before the GUEST answered, so its timeout is expected. A failure while it is still wanted
+        // propagates as an unhandled rejection like before.
+        if (generation === this.generation) throw error;
+      },
+    );
   }
 
   // Intercepts out-of-band messages before DDA sees them:
@@ -131,6 +147,7 @@ class WebViewAPI {
   };
 
   stop() {
+    this.generation++;
     this.stopFn?.();
     this.stopFn = null;
     this._onMessage = null;
