@@ -340,8 +340,13 @@
       registerSupportExtension: (packageName, supportConfig) =>
         registerSupportExtension(packageName, supportConfig),
 
-      // Replaces the document AND empties the undo history.
-      resetValue: (value) => _replaceStateFresh(value ?? ''),
+      // Replaces the document AND empties the undo history. It is a different document, and setState()
+      // keeps the previous one's scroll offsets, so they are reset too.
+      resetValue: (value) => {
+        _replaceStateFresh(value ?? '');
+        editor.view.scrollDOM.scrollTop = 0;
+        editor.view.scrollDOM.scrollLeft = 0;
+      },
 
       setTheme: (themeName) => _applyTheme(themeName),
 

@@ -114,20 +114,11 @@ function requireAsyncModule(moduleName) {
   const moduleExports = {};
   _pendingStubs.add(moduleExports);
   moduleCache.set(moduleName, moduleExports);
-  const promise = _asyncLoad(moduleName, moduleExports).then(
-    (result) => {
-      _pendingStubs.delete(moduleExports);
-      _loadingPromises.delete(moduleName);
-      return result;
-    },
-    (error) => {
-      // Do not keep a half-initialised stub: a later call must retry the load.
-      _pendingStubs.delete(moduleExports);
-      _loadingPromises.delete(moduleName);
-      if (moduleCache.get(moduleName) === moduleExports) moduleCache.delete(moduleName);
-      throw error;
-    },
-  );
+  const promise = _asyncLoad(moduleName, moduleExports).then((result) => {
+    _pendingStubs.delete(moduleExports);
+    _loadingPromises.delete(moduleName);
+    return result;
+  });
   _loadingPromises.set(moduleName, promise);
   return promise;
 }
@@ -279,9 +270,10 @@ function findLegacyMode(mod, name) {
  *   4. @codemirror/legacy-modes/mode/{name}  (wrapped with StreamLanguage.define)
  *
  * @param {string} name
- * @param {object} [config] - Passed as the sole argument to the resolved factory function
- *   (e.g. { jsx: true, typescript: true } for 'javascript'). Ignored by the legacy-modes
- *   fallback, since those export StreamParser objects rather than factory functions.
+ * @param {object|null} [rawConfig] - Passed as the sole argument to the resolved factory function
+ *   (e.g. { jsx: true, typescript: true } for 'javascript'). `null` is treated as `undefined`.
+ *   Ignored by the legacy-modes fallback, since those export StreamParser objects rather than
+ *   factory functions.
  * @param {object} [embeds] - Only used when name === 'javascript'.
  * @param {string[]} [embeds.taggedTemplates] - Extra tagged-template embedding package
  *   names for this call only, merged with whatever's registered via registerTaggedTemplate.
@@ -290,7 +282,12 @@ function findLegacyMode(mod, name) {
  *   a bare package name, or a [packageName, config] tuple), merged with whatever's registered
  *   via registerSupportExtension (per-call config wins on a shared package name).
  */
-async function resolveLanguageExtension(name, config, embeds = {}) {
+async function resolveLanguageExtension(name, rawConfig, embeds = {}) {
+  // Callers that serialise their arguments (e.g. a WebView bridge) turn a missing positional
+  // `config` into `null`. Language factories only default their options for `undefined`, and
+  // some (lang-markdown, lang-sql) throw a TypeError when given `null`.
+  const config = rawConfig ?? undefined;
+
   if (languagePackages.has(name)) {
     const mod = await requireAsyncModule(languagePackages.get(name));
     const fn = mod[name] ?? Object.values(mod).find((v) => typeof v === 'function');
@@ -334,28 +331,40 @@ async function resolveLanguageExtension(name, config, embeds = {}) {
     return extras.length ? new LanguageSupport(embedded.language, [embedded.support, extras]) : embedded;
   }
 
-  let langError = null;
+  // Every failed attempt is recorded so the final error can say why, instead of reporting a
+  // factory TypeError or a load failure as plain "no language support".
+  const attempts = [];
+
+  const langPackage = `@codemirror/lang-${name}`;
   try {
-    const mod = await requireAsyncModule(`@codemirror/lang-${name}`);
+    const mod = await requireAsyncModule(langPackage);
     const fn = mod[name] ?? Object.values(mod).find((v) => typeof v === 'function');
     if (fn) return fn(config);
+    attempts.push({ source: langPackage, error: new Error('module exports no language factory') });
   } catch (error) {
-    langError = error;
+    attempts.push({ source: langPackage, error });
   }
 
+  const legacyPackage = `@codemirror/legacy-modes/mode/${name}`;
   try {
     const [legacyMod, { StreamLanguage }] = await Promise.all([
-      requireAsyncModule(`@codemirror/legacy-modes/mode/${name}`),
+      requireAsyncModule(legacyPackage),
       requireAsyncModule('@codemirror/language'),
     ]);
     const mode = findLegacyMode(legacyMod, name);
     if (mode) return StreamLanguage.define(mode);
+    attempts.push({ source: legacyPackage, error: new Error('module exports no stream parser') });
   } catch (error) {
-    langError = langError ?? error;
+    attempts.push({ source: legacyPackage, error });
   }
 
-  const reason = langError ? ` (${langError?.message ?? langError})` : '';
-  throw new Error(`No language support found for "${name}"${reason}. Use registerLanguage() for custom packages.`);
+  // The reasons go into the message text, not only `cause`: errors that cross a bridge are
+  // often reduced to their message.
+  const reasons = attempts.map(({ source, error }) => `${source}: ${error?.message ?? error}`).join('; ');
+  throw new Error(
+    `No language support found for "${name}". Use registerLanguage() for custom packages. Tried ${reasons}`,
+    { cause: attempts[0]?.error },
+  );
 }
 
 /**

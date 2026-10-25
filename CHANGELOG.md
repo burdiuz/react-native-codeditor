@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.2.6
 
 ### Fixed
+- `resetValue()` also resets the vertical and horizontal scroll, which `view.setState()` leaves at the previous
+  document's offsets. `historyClear()` still keeps the scroll.
 - Unmounting `CodeEditor` while the WebView handshake is still pending no longer produces an unhandled
   promise rejection 30 s later. `WebViewAPI.stop()` (now also called when the WebView unmounts) abandons the
   pending handshake; a handshake that fails while the WebView is still mounted is reported as before.
